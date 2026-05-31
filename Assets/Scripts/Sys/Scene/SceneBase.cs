@@ -1,5 +1,6 @@
-﻿#nullable enable
+#nullable enable
 using System.Collections;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -20,9 +21,15 @@ namespace  GameSys
     {
         [SerializeField]
         protected   Transform?      m_UIParent  = null;
+
+        [SerializeField]
+        protected   Transform?      m_ResidentUIParent  = null;
         
         [SerializeField]
         protected   ViewBase?       m_View      = null;
+
+        [SerializeField]
+        protected   ViewBase?[]     m_ResidentViews = new ViewBase?[0];
         
         protected   SceneData?      m_Data      = null;
         
@@ -47,12 +54,61 @@ namespace  GameSys
             
             await OnInitialize();
             
-            if( m_View != null )
+            var residentViews = GetResidentViews();
+            for( int i = 0; i < residentViews.Count; ++i )
             {
-                await m_View.Initialize();
-                await m_View.OpenAsync();
-                m_ViewMng.SetPlacedView( m_View );
+                await OpenResidentView( residentViews[i], i );
             }
+        }
+
+        private List<ViewBase> GetResidentViews()
+        {
+            var views = new List<ViewBase>();
+            AddResidentView( views, m_View );
+
+            if( m_ResidentUIParent != null )
+            {
+                var childViews = m_ResidentUIParent.GetComponentsInChildren<ViewBase>( true );
+                for( int i = 0; i < childViews.Length; ++i )
+                {
+                    AddResidentView( views, childViews[i] );
+                }
+            }
+
+            for( int i = 0; m_ResidentViews != null && i < m_ResidentViews.Length; ++i )
+            {
+                AddResidentView( views, m_ResidentViews[i] );
+            }
+
+            return views;
+        }
+
+        private static void AddResidentView( List<ViewBase> views, ViewBase? view )
+        {
+            if( view == null || views.Contains( view ) )
+            {
+                return;
+            }
+
+            views.Add( view );
+        }
+
+        private async UniTask OpenResidentView( ViewBase? view, int layer )
+        {
+            if( view == null || m_ViewMng == null )
+            {
+                return;
+            }
+
+            view.SetSortingOrder( layer );
+            await view.Initialize( GetResidentViewData( view ) );
+            await view.OpenAsync();
+            m_ViewMng.SetPlacedView( view );
+        }
+
+        protected virtual ViewBase.ViewData? GetResidentViewData( ViewBase view )
+        {
+            return null;
         }
 
         //===========================================
@@ -68,9 +124,10 @@ namespace  GameSys
         /// </summary>
         public void Release()
         {
-            if( m_View != null )
+            var residentViews = GetResidentViews();
+            for( int i = 0; i < residentViews.Count; ++i )
             {
-                m_View.Release();
+                residentViews[i].Release();
             }
             
             OnRelease();

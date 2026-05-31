@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Ball
   layers:
   - Default
   - TransparentFX
@@ -41,11 +42,17 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Board
+    uniqueID: 871283737
+    locked: 0
   - name: GameMain
     uniqueID: 2082984495
     locked: 0
   - name: Pachinko
     uniqueID: 852617385
+    locked: 0
+  - name: UI
+    uniqueID: 912261167
     locked: 0
   m_RenderingLayers:
   - Default

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -70,18 +70,7 @@ namespace GameSys
 
             m_Processing = true;
             
-            // 存在するViewのLayerId最大値を求める
-            int layerId = 0;
-            for( int i = 0; i < m_ViewHandles.Count; ++i )
-            {
-                var view = m_ViewHandles[i]?.View;
-                if( view == null )
-                {
-                    continue;
-                }
-                
-                layerId = Math.Max( layerId, view.LayerId );
-            }
+            int layerId = GetMaxLayerId();
             
             var handle = new ViewHandle();
             m_ViewHandles.Add( handle );

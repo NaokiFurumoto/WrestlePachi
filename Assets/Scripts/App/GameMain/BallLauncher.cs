@@ -1,3 +1,5 @@
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -22,6 +24,19 @@ namespace App
 
         private float _lastLaunchTime = float.NegativeInfinity;
         private GameObject _cachedBallPrefab;
+
+        /// <summary>
+        /// 連鎖数に応じて複数の球を順番に発射する。
+        /// GameMainController.OnChainCompleted から呼ぶ。
+        /// </summary>
+        public async UniTaskVoid LaunchAsync(int count, CancellationToken ct)
+        {
+            for (var i = 0; i < count && !ct.IsCancellationRequested; i++)
+            {
+                _LaunchBall();
+                await UniTask.Delay(Mathf.RoundToInt(_cooldownSeconds * 1000) + 100, cancellationToken: ct);
+            }
+        }
 
         private void Update()
         {

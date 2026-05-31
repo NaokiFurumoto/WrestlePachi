@@ -26,8 +26,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: -1.4, y: 1.4, z: 1.4}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5135804211867533754}
   - {fileID: 8258739353905546994}
@@ -110,9 +110,9 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 680194259
-  m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingLayerID: 852617385
+  m_SortingLayer: 3
+  m_SortingOrder: 40
   m_MaskInteraction: 0
   m_Sprite: {fileID: -2788632543973492871, guid: f1a62143bd8375d42976e067a46d6d7d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -153,7 +153,7 @@ Transform:
   m_GameObject: {fileID: 4916514204437681913}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.002, y: 0.013, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -204,9 +204,9 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 680194259
-  m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingLayerID: 852617385
+  m_SortingLayer: 3
+  m_SortingOrder: 30
   m_MaskInteraction: 0
   m_Sprite: {fileID: -4338923341686246978, guid: d07ce5ef7afa4b44da724df85babf68d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -252,7 +252,7 @@ PolygonCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: -0.03}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -264,33 +264,33 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.011555433, y: 0.20119685}
-      - {x: -0.013824463, y: 0.20116311}
-      - {x: -0.026304208, y: 0.18734083}
+    - - {x: 0.02107935, y: 0.20119685}
+      - {x: -0.012092842, y: 0.20116311}
+      - {x: -0.030633258, y: 0.18301177}
       - {x: -0.023907036, y: 0.052887708}
       - {x: -0.04414463, y: 0.043544054}
       - {x: -0.056787923, y: 0.025820233}
       - {x: -0.06316185, y: 0.012728751}
-      - {x: -0.060866117, y: -0.0051341057}
+      - {x: -0.060866117, y: -0.0051341075}
       - {x: -0.18276854, y: -0.068217754}
       - {x: -0.19052672, y: -0.08637291}
-      - {x: -0.17812037, y: -0.10311097}
-      - {x: -0.15355146, y: -0.10623588}
+      - {x: -0.1789862, y: -0.10830584}
+      - {x: -0.15095402, y: -0.10796751}
       - {x: -0.054400187, y: -0.047235146}
       - {x: -0.031355277, y: -0.05784759}
       - {x: 0.008046627, y: -0.059346914}
       - {x: 0.03536892, y: -0.057192504}
-      - {x: 0.036711216, y: -0.056521416}
+      - {x: 0.040174462, y: -0.054789796}
       - {x: 0.1353809, y: -0.13678536}
-      - {x: 0.14953232, y: -0.13403344}
-      - {x: 0.16759562, y: -0.11900878}
-      - {x: 0.16770905, y: -0.10473813}
-      - {x: 0.06247276, y: -0.027865347}
-      - {x: 0.060923815, y: -0.008318484}
+      - {x: 0.15645881, y: -0.13576506}
+      - {x: 0.17279047, y: -0.11814298}
+      - {x: 0.17203811, y: -0.102140695}
+      - {x: 0.06247276, y: -0.027865345}
+      - {x: 0.060923815, y: -0.008318486}
       - {x: 0.060867786, y: 0.019017935}
       - {x: 0.042340517, y: 0.04270178}
       - {x: 0.023049116, y: 0.05328238}
-      - {x: 0.025952645, y: 0.18346077}
+      - {x: 0.03461075, y: 0.18346077}
   m_UseDelaunayMesh: 0
 --- !u!50 &11409723119620185
 Rigidbody2D:
@@ -304,9 +304,9 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 0.5
+  m_Mass: 2
   m_LinearDamping: 0
-  m_AngularDamping: 0.05
+  m_AngularDamping: 0.3
   m_GravityScale: 0
   m_Material: {fileID: 6200000, guid: f87e97f32dbdfe343b0b914380606867, type: 2}
   m_IncludeLayers:
@@ -334,8 +334,8 @@ HingeJoint2D:
   m_BreakTorque: Infinity
   m_BreakAction: 3
   m_AutoConfigureConnectedAnchor: 1
-  m_Anchor: {x: 0, y: 0}
-  m_ConnectedAnchor: {x: 0, y: 0}
+  m_Anchor: {x: 0.004329054, y: -0.031169191}
+  m_ConnectedAnchor: {x: -4.2672606, y: -1.4104367}
   m_UseConnectedAnchor: 1
   m_UseMotor: 0
   m_Motor:

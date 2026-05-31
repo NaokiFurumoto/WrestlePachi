@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using Cysharp.Threading.Tasks;
 //using GApp;
 using System;
@@ -149,7 +149,7 @@ namespace GameSys
         private     bool                m_Processing        = false;
         private     bool                m_IsSystem          = false;
         
-        private     ViewBase?           m_PlacedView        = null;
+        private     List<ViewBase>      m_PlacedViews       = new();
         
         private     static    ViewManager?      s_Instance  = null;
 
@@ -217,7 +217,7 @@ namespace GameSys
             
             m_ViewHandles.Clear();
             
-            m_PlacedView = null;
+            m_PlacedViews.Clear();
             s_Instance = null;
         }
 
@@ -237,18 +237,7 @@ namespace GameSys
 
             m_Processing = true;
             
-            // 存在するViewのLayerId最大値を求める
-            int layerId = 0;
-            for( int i = 0; i < m_ViewHandles.Count; ++i )
-            {
-                var view = m_ViewHandles[i]?.View;
-                if( view == null )
-                {
-                    continue;
-                }
-                
-                layerId = Math.Max( layerId, view.LayerId );
-            }
+            int layerId = GetMaxLayerId();
             
             var handle = new ViewHandle();
             m_ViewHandles.Add( handle );
@@ -286,7 +275,36 @@ namespace GameSys
 
         public void SetPlacedView( ViewBase viewBase )
         {
-            m_PlacedView = viewBase;
+            if( m_PlacedViews.Contains( viewBase ) )
+            {
+                return;
+            }
+
+            m_PlacedViews.Add( viewBase );
+        }
+
+        private int GetMaxLayerId()
+        {
+            int layerId = 0;
+            for( int i = 0; i < m_ViewHandles.Count; ++i )
+            {
+                var view = m_ViewHandles[i]?.View;
+                if( view != null )
+                {
+                    layerId = Math.Max( layerId, view.LayerId );
+                }
+            }
+
+            for( int i = 0; i < m_PlacedViews.Count; ++i )
+            {
+                var view = m_PlacedViews[i];
+                if( view != null )
+                {
+                    layerId = Math.Max( layerId, view.LayerId );
+                }
+            }
+
+            return layerId;
         }
         
         #region View取得
@@ -313,9 +331,10 @@ namespace GameSys
                 }
             }
 
-            if( m_PlacedView != null )
+            for( int i = 0; i < m_PlacedViews.Count; ++i )
             {
-                if( m_PlacedView is T view )
+                var placedView = m_PlacedViews[i];
+                if( placedView is T view )
                 {
                     return view;
                 }
@@ -534,9 +553,9 @@ namespace GameSys
         
         private void _OnWindowResize()
         {
-            if( m_PlacedView != null )
+            for( int i = 0; i < m_PlacedViews.Count; ++i )
             {
-                m_PlacedView.OnWindowResize();
+                m_PlacedViews[i].OnWindowResize();
             }
             
             for( int i = 0; i < m_ViewHandles.Count; ++i )

@@ -25,6 +25,10 @@ namespace App
         private float _lastLaunchTime = float.NegativeInfinity;
         private GameObject _cachedBallPrefab;
 
+#if UNITY_EDITOR
+        private readonly System.Collections.Generic.List<GameObject> _debugSpawnedBalls = new();
+#endif
+
         /// <summary>
         /// 連鎖数に応じて複数の球を順番に発射する。
         /// GameMainController.OnChainCompleted から呼ぶ。
@@ -101,7 +105,20 @@ namespace App
             rigidbody2D.AddForce( launchDirection * _launchImpulse, ForceMode2D.Impulse );
 
             _lastLaunchTime = Time.time;
+#if UNITY_EDITOR
+            _debugSpawnedBalls.Add(ballObject);
+#endif
         }
+
+#if UNITY_EDITOR
+        /// <summary>デバッグ用：シーン上のすべての発射済み玉を即時破棄する。</summary>
+        public void Debug_ClearAllBalls()
+        {
+            foreach (var ball in _debugSpawnedBalls)
+                if (ball != null) Destroy(ball);
+            _debugSpawnedBalls.Clear();
+        }
+#endif
 
         /// <summary>
         /// UnityEngine.Object から GameObject を安全に取り出します。

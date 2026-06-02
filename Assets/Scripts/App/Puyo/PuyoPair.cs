@@ -127,6 +127,11 @@ namespace App.Puyo
         /// <summary>高速落下を開始する</summary>
         public void BeginSoftDrop()  => _isSoftDrop = true;
 
+#if UNITY_EDITOR
+        /// <summary>デバッグ用：軸ぷよの現在列（AutoPlayAgent が使用）。</summary>
+        public int Debug_MainCol => _mainCell.x;
+#endif
+
         /// <summary>高速落下を終了する</summary>
         public void EndSoftDrop()    => _isSoftDrop = false;
 
@@ -250,7 +255,7 @@ namespace App.Puyo
             _sub.transform.DOKill(complete: true);
             _main.transform.SetParent(_board.transform);
             _sub.transform.SetParent(_board.transform);
-            _board.OnPairLocked(_main, _sub);
+            _board.LockPair(_main, _sub);
 
             Destroy(gameObject);
         }

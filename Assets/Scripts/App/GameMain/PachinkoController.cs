@@ -4,11 +4,14 @@ using UnityEngine;
 namespace App
 {
     /// <summary>
-    /// パチンコゾーンを管理するクラス。
-    /// へそ（中心穴）への入賞を検出し、GameMainController に通知する。
+    /// パチンコ台全体を管理するクラス。
+    /// HesoTrigger を購読してへそ入賞を GameMainController に通知する。
     /// </summary>
-    public class PachinkoZone : MonoBehaviour
+    public class PachinkoController : MonoBehaviour
     {
+        // ─── Inspector 参照 ───────────────────────────────────────
+        [SerializeField] private HesoTrigger _hesoTrigger;
+
         // ─── イベント（Observer） ────────────────────────────────
         /// <summary>へそに玉が入賞したときに発火する</summary>
         public event Action OnHesoEntered;
@@ -17,15 +20,16 @@ namespace App
         /// <summary>Game2DContents.Initialize() から呼ばれる</summary>
         public void Initialize()
         {
-            // TODO: へそ入賞コライダーの参照設定
+            _hesoTrigger.OnEntered += NotifyHesoEntered;
+        }
+
+        private void OnDestroy()
+        {
+            _hesoTrigger.OnEntered -= NotifyHesoEntered;
         }
 
         // ─── 入賞検出 ────────────────────────────────────────────
-        /// <summary>
-        /// へそコライダーに玉が触れたときに呼ぶ。
-        /// Heso オブジェクトの OnTriggerEnter2D からも呼べる。
-        /// </summary>
-        public void NotifyHesoEntered()
+        private void NotifyHesoEntered()
         {
             OnHesoEntered?.Invoke();
         }

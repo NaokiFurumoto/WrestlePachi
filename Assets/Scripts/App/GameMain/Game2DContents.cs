@@ -24,8 +24,9 @@ namespace App
 
         // ─── Pachinko ────────────────────────────────────────────
         [Header("Pachinko")]
-        [SerializeField] private BallLauncher  _ballLauncher;
-        [SerializeField] private PachinkoZone  _pachinkoZone;
+        [SerializeField] private BallLauncher        _ballLauncher;
+        [SerializeField] private PachinkoController  _pachinkoController;
+        [SerializeField] private HoldDisplay         _holdDisplay;
 
         // ─── プロパティ ───────────────────────────────────────────
         public Camera        MainCamera    => _mainCamera;
@@ -33,8 +34,9 @@ namespace App
         public Transform     EffectRoot    => _effectRoot;
         public PuyoBoard        PuyoBoard        => _puyoBoard;
         public NextPuyoDisplay  NextPuyoDisplay  => _nextPuyoDisplay;
-        public BallLauncher  BallLauncher  => _ballLauncher;
-        public PachinkoZone  PachinkoZone  => _pachinkoZone;
+        public BallLauncher       BallLauncher       => _ballLauncher;
+        public PachinkoController PachinkoController => _pachinkoController;
+        public HoldDisplay        HoldDisplay        => _holdDisplay;
 
         // ─── 初期化 ──────────────────────────────────────────────
 
@@ -44,7 +46,7 @@ namespace App
         /// </summary>
         public void Initialize()
         {
-            _pachinkoZone.Initialize();
+            _pachinkoController.Initialize();
         }
     }
 }

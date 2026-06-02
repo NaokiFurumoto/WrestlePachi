@@ -46,13 +46,15 @@ namespace App.Puyo
         /// 連鎖が完了したときに発火する（連鎖数を渡す）。
         /// パチンコ玉の発射数など外部ロジックをここで受け取る。
         /// </summary>
-        public event Action<int> OnChainCompleted;
-
-        /// <summary>
-        /// NEXTキューが更新されたときに発火する。
-        /// 先頭2要素が NEXT・NEXT NEXT に対応する。
-        /// </summary>
+        /// <summary>第1引数：連鎖数、第2引数：消えたぷよ合計数</summary>
+        public event Action<int, int>                        OnChainCompleted;
         public event Action<IReadOnlyList<PuyoPairColors>>? OnNextQueueChanged;
+
+        /// <summary>ペアが着地してグリッドに固定されたとき発火する。</summary>
+        public event Action? OnPairLocked;
+
+        /// <summary>スポーン位置が埋まってゲームオーバーになったとき発火する。</summary>
+        public event Action? OnGameOver;
 
         // ─── 内部状態 ────────────────────────────────────────────
         private PuyoPiece[,]          _grid;       // グリッドデータ本体
@@ -126,11 +128,13 @@ namespace App.Puyo
         /// ペアが着地したときに PuyoPair から呼ばれる。
         /// ぷよをグリッドに配置し、連鎖チェックを開始する。
         /// </summary>
-        public void OnPairLocked(PuyoPiece main, PuyoPiece sub)
+        public void LockPair(PuyoPiece main, PuyoPiece sub)
         {
             Place(main);
             Place(sub);
             _activePair = null;
+
+            OnPairLocked?.Invoke();
 
             // 連鎖チェックを非同期で実行（完了後に次のペアをスポーン）
             ProcessChainAsync(_cts.Token).Forget();
@@ -160,18 +164,20 @@ namespace App.Puyo
         /// </summary>
         private async UniTaskVoid ProcessChainAsync(CancellationToken ct)
         {
-            var chainCount = 0;
+            var chainCount   = 0;
+            var clearedCount = 0;
 
             while (TryFindChain(out var targets))
             {
                 chainCount++;
+                clearedCount += targets.Count;
                 await ClearPuyosAsync(targets, ct);
                 await DropFloatingPuyosAsync(ct);
             }
 
             // 連鎖が1回以上あればイベント発火（パチンコ玉発射トリガー）
             if (chainCount > 0)
-                OnChainCompleted?.Invoke(chainCount);
+                OnChainCompleted?.Invoke(chainCount, clearedCount);
 
             SpawnNextPair();
         }
@@ -274,10 +280,17 @@ namespace App.Puyo
         /// </summary>
         private void SpawnNextPair()
         {
+            var spawnCell = new Vector2Int(COLS / 2 - 1, ROWS - 1);
+
+            // スポーン位置が塞がれていればゲームオーバー
+            if (!IsEmpty(spawnCell))
+            {
+                OnGameOver?.Invoke();
+                return;
+            }
+
             var colors = _nextQueue.Dequeue();
             _nextQueue.Enqueue(RandomPairColors()); // 末尾補充して常に3つ維持
-
-            var spawnCell = new Vector2Int(COLS / 2 - 1, ROWS - 1);
             var pair = Instantiate(_pairPrefab, transform);
             pair.Initialize(
                 board:       this,
@@ -297,5 +310,17 @@ namespace App.Puyo
         private PuyoColor RandomColor() => (PuyoColor)UnityEngine.Random.Range(0, _colorCount);
 
         private PuyoPairColors RandomPairColors() => new PuyoPairColors { Main = RandomColor(), Sub = RandomColor() };
+
+#if UNITY_EDITOR
+        /// <summary>デバッグ用：各列の積み上げ高さを返す（AutoPlayAgent が使用）。</summary>
+        public int[] Debug_GetColumnHeights()
+        {
+            var heights = new int[COLS];
+            for (var x = 0; x < COLS; x++)
+                for (var y = ROWS - 1; y >= 0; y--)
+                    if (_grid[x, y] != null) { heights[x] = y + 1; break; }
+            return heights;
+        }
+#endif
     }
 }

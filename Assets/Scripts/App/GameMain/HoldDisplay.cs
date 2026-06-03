@@ -11,7 +11,7 @@ namespace App
     public sealed class HoldDisplay : MonoBehaviour
     {
         // ─── Inspector 参照 ──────────────────────────────────────
-        [Header("保留スロット（4箇所の配置位置）")]
+        [Header("保留スロット（HoldSystem.MaxHolds 個の配置位置）")]
         [SerializeField] private Transform[] _slots = null!;
 
         [Header("HoldBall Prefab")]
@@ -21,7 +21,7 @@ namespace App
         [SerializeField] private Sprite[] _sprites = null!;
 
         // ─── 状態 ───────────────────────────────────────────────
-        private readonly HoldBall?[] _activeBalls = new HoldBall?[4];
+        private readonly HoldBall?[] _activeBalls = new HoldBall?[HoldSystem.MaxHolds];
 
         // ─── イベントハンドラ（GameMainController から購読）────────
 

@@ -47,6 +47,22 @@ namespace App.EditorTools
                 if (GUILayout.Button("Normal (1.0)"))  ctrl.Debug_SetBallsPerPuyo(1.0f);
                 if (GUILayout.Button("Hard (2.0)"))    ctrl.Debug_SetBallsPerPuyo(2.0f);
             }
+
+            EditorGUILayout.Space(6);
+
+            // ─── 色バリアント ──────────────────────────────────────
+            EditorGUILayout.LabelField(
+                $"保留 / ぷよ 種類数（現在: {config.ColorVariant} 種）",
+                EditorStyles.boldLabel);
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                GUI.backgroundColor = config.ColorVariant == 4 ? Color.cyan : Color.white;
+                if (GUILayout.Button("4種  Red〜Blue"))   ctrl.Debug_SetColorVariant(4);
+                GUI.backgroundColor = config.ColorVariant == 5 ? Color.cyan : Color.white;
+                if (GUILayout.Button("5種  Red〜Purple")) ctrl.Debug_SetColorVariant(5);
+                GUI.backgroundColor = Color.white;
+            }
         }
     }
 }

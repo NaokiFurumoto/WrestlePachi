@@ -31,6 +31,13 @@ namespace App
         public void Debug_SetBlackProbability(float value) => _config?.Debug_SetBlackHoldProbability(value);
         public void Debug_SetBallsPerPuyo(float value)     => _config?.Debug_SetBallsPerPuyo(value);
 
+        /// <summary>保留・ぷよの色バリアントをゲーム中に切り替える（4 or 5）。</summary>
+        public void Debug_SetColorVariant(int count)
+        {
+            _config?.Debug_SetColorVariant(count);
+            _contents?.PuyoBoard?.SetColorCount(count);
+        }
+
         // ─── 自動プレイ ───────────────────────────────────────────
         public void Debug_StartAutoPlay(int thinkMs = 300, int moveMs = 100)
         {

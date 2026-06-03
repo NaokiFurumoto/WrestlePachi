@@ -18,6 +18,7 @@ namespace App.EditorTools
             ("黄",   HoldType.Yellow, new Color(1f,   0.9f, 0.2f)),
             ("緑",   HoldType.Green,  new Color(0.3f, 0.9f, 0.3f)),
             ("青",   HoldType.Blue,   new Color(0.3f, 0.6f, 1f  )),
+            ("紫",   HoldType.Purple, new Color(0.6f, 0.1f, 0.9f)),
             ("黒",   HoldType.Black,  new Color(0.5f, 0.5f, 0.5f)),
         };
 

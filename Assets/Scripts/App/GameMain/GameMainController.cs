@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using App.Puyo;
+using App.Skills;
 using Cysharp.Threading.Tasks;
 using GameSys;
 using UnityEngine;
@@ -24,11 +25,12 @@ namespace App
         [SerializeField] private GameModeConfig _config;
 
         // ─── 内部状態 ────────────────────────────────────────────
-        private Game2DContents _contents;
-        private ViewManager?   _viewMng;
-        private GameContext    _ctx;
-        private IGameState     _state;
-        private HoldSystem     _holdSystem;
+        private Game2DContents   _contents;
+        private ViewManager?     _viewMng;
+        private GameContext      _ctx;
+        private IGameState       _state;
+        private HoldSystem       _holdSystem;
+        private TechSkillManager _techSkillManager;
 
         // ─── 公開プロパティ ───────────────────────────────────────
         /// <summary>現在入力を受け付けられるか（IAutoPlayTarget / KeyboardInputBridge 用）</summary>
@@ -44,6 +46,12 @@ namespace App
             _holdSystem = new HoldSystem(destroyCancellationToken);
 
             _ctx = new GameContext(contents, viewMng, _config, ChangeState);
+
+            // スキルを登録。新技は ITechSkill 実装クラスをここに追加するだけでよい
+            _techSkillManager = new TechSkillManager(new ITechSkill[]
+            {
+                new BlackTechSkill(),
+            });
 
             // PuyoBoard イベントを購読
             var board = _contents.PuyoBoard;
@@ -103,7 +111,7 @@ namespace App
         public void StartGame()
         {
             IsGameOver = false;
-            _contents.PuyoBoard.Initialize();
+            _contents.PuyoBoard.Initialize(_config.ColorVariant);
             ChangeState(new PlayingState(_ctx));
         }
 
@@ -141,8 +149,7 @@ namespace App
 
         private void OnTechActivated(HoldType holdType)
         {
-            // TODO: プロレス技の演出・ぷよ消し処理
-            Debug.Log($"[GameMainController] 技発動！ type={holdType}（TODO: ぷよ消し）");
+            _techSkillManager.ExecuteAsync(holdType, _ctx, destroyCancellationToken).Forget();
         }
 
         /// <summary>へそ入賞時の保留種別を抽選する。</summary>
@@ -150,7 +157,7 @@ namespace App
         {
             if (UnityEngine.Random.value < _config.BlackHoldProbability)
                 return HoldType.Black;
-            return (HoldType)UnityEngine.Random.Range(0, 4); // Red〜Blue
+            return (HoldType)UnityEngine.Random.Range(0, _config.ColorVariant); // Red〜Blue or Red〜Purple
         }
 
         // ─── 入力公開メソッド（IAutoPlayTarget / PuyoInputView から呼ぶ）────

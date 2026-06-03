@@ -22,9 +22,10 @@ namespace App.Puyo
     public sealed class PuyoBoard : MonoBehaviour
     {
         // ─── 定数 ───────────────────────────────────────────────
-        public const int COLS          = 6;  // 横列数
-        public const int ROWS          = 14; // 内部縦行数（上2段は非表示バッファ）
-        public const int VISIBLE_ROWS  = 12; // 表示縦行数（本家準拠）
+        public const int COLS              = 6;  // 横列数
+        public const int ROWS              = 14; // 内部縦行数（上2段は非表示バッファ）
+        public const int VISIBLE_ROWS      = 12; // 表示縦行数（本家準拠）
+        public const int MaxOjamaPerTurn   = 30; // 1ターンに落下できるお邪魔ぷよの最大数（本家準拠）
 
         // ─── Inspector設定 ──────────────────────────────────────
         [Header("グリッド設定")]
@@ -60,6 +61,7 @@ namespace App.Puyo
         private PuyoPiece[,]          _grid;       // グリッドデータ本体
         private PuyoPair              _activePair; // 現在落下中のペア
         private Queue<PuyoPairColors> _nextQueue = new();
+        private int                   _pendingOjama; // 次ターン開始前に降らせるお邪魔ぷよの予約数
 
         /// <summary>現在落下中のペア（GameMainController の入力転送に使う）</summary>
         public PuyoPair ActivePair => _activePair;
@@ -81,9 +83,10 @@ namespace App.Puyo
         /// </summary>
         public void Initialize(int colorCount = 4)
         {
-            _colorCount = Mathf.Clamp(colorCount, 2, (int)PuyoColor.OJAMA);
-            _grid       = new PuyoPiece[COLS, ROWS];
-            _cts        = CancellationTokenSource.CreateLinkedTokenSource(
+            _colorCount   = Mathf.Clamp(colorCount, 2, (int)PuyoColor.OJAMA);
+            _grid         = new PuyoPiece[COLS, ROWS];
+            _pendingOjama = 0;
+            _cts          = CancellationTokenSource.CreateLinkedTokenSource(
                               destroyCancellationToken);
 
             // Inspector 未アサイン時のフォールバック
@@ -179,6 +182,14 @@ namespace App.Puyo
             if (chainCount > 0)
                 OnChainCompleted?.Invoke(chainCount, clearedCount);
 
+            // 積まれたお邪魔ぷよを次のペアスポーン前に降らせる（最大30個/ターン、超過分は持ち越し）
+            if (_pendingOjama > 0)
+            {
+                var count     = Mathf.Min(_pendingOjama, MaxOjamaPerTurn);
+                _pendingOjama -= count;
+                await DropOjamaAsync(count, ct);
+            }
+
             SpawnNextPair();
         }
 
@@ -222,7 +233,21 @@ namespace App.Puyo
                 }
 
                 if (group.Count >= 4)
+                {
                     targets.AddRange(group);
+
+                    // グループに隣接するお邪魔ぷよも消去対象に加える
+                    foreach (var member in group)
+                    foreach (var dir in _dirs)
+                    {
+                        var next = member.Cell + dir;
+                        if (next.x < 0 || next.x >= COLS || next.y < 0 || next.y >= ROWS) continue;
+                        var neighbor = _grid[next.x, next.y];
+                        if (neighbor == null || neighbor.Color != PuyoColor.OJAMA) continue;
+                        if (targets.Contains(neighbor)) continue; // 重複防止
+                        targets.Add(neighbor);
+                    }
+                }
             }
 
             return targets.Count > 0;
@@ -272,6 +297,68 @@ namespace App.Puyo
                 await UniTask.Delay(Mathf.RoundToInt(dropDuration * 1000) + 20, cancellationToken: ct);
         }
 
+        // ─── お邪魔ぷよ ─────────────────────────────────────────
+
+        /// <summary>
+        /// 次ターン開始前に降らせるお邪魔ぷよを予約する。
+        /// 実際の落下は ProcessChainAsync 末尾（次ペアスポーン直前）で行われる。
+        /// </summary>
+        public void AddPendingOjama(int count) => _pendingOjama += count;
+
+        /// <summary>列の最上端（積み高さ）を返す。空列なら 0。</summary>
+        private int GetColumnTop(int col)
+        {
+            for (var y = ROWS - 1; y >= 0; y--)
+                if (_grid[col, y] != null) return y + 1;
+            return 0;
+        }
+
+        /// <summary>
+        /// お邪魔ぷよを count 個、左列から右列へ均等に配置して落下アニメーションを再生する。
+        /// 各列を並列で実行し、列間に 40ms のウェーブ効果をかける。
+        /// </summary>
+        private async UniTask DropOjamaAsync(int count, CancellationToken ct)
+        {
+            // ランダムな列順で均等配置（ウェーブ効果もランダム順に追従）
+            var shuffled = Enumerable.Range(0, COLS).OrderBy(_ => UnityEngine.Random.value).ToArray();
+            var drops    = new int[COLS];
+            for (var i = 0; i < count; i++)
+                drops[shuffled[i % COLS]]++;
+
+            var tasks = shuffled
+                .Select((col, order) => drops[col] > 0
+                    ? DropOjamaColumnAsync(col, drops[col], order * 40, ct)
+                    : UniTask.CompletedTask);
+
+            await UniTask.WhenAll(tasks);
+        }
+
+        /// <summary>1列分のお邪魔ぷよを上から順に落下させる。</summary>
+        private async UniTask DropOjamaColumnAsync(int col, int count, int staggerMs, CancellationToken ct)
+        {
+            if (staggerMs > 0)
+                await UniTask.Delay(staggerMs, cancellationToken: ct);
+
+            const float fallDuration = 0.2f;
+            for (var i = 0; i < count; i++)
+            {
+                var topY = GetColumnTop(col);
+                if (topY >= ROWS) break; // 列が満杯ならそれ以上積まない
+
+                var cell  = new Vector2Int(col, topY);
+                var piece = Instantiate(_piecePrefab, transform);
+                piece.Setup(PuyoColor.OJAMA, _colorSprites[(int)PuyoColor.OJAMA]);
+                piece.Cell             = cell;
+                _grid[cell.x, cell.y] = piece;
+
+                // ボード上端の1マス外から落下開始
+                piece.transform.position = CellToWorld(new Vector2Int(col, ROWS + 1));
+                piece.transform.DOMove(CellToWorld(cell), fallDuration).SetEase(Ease.InQuad);
+
+                await UniTask.Delay(Mathf.RoundToInt(fallDuration * 1000) + 30, cancellationToken: ct);
+            }
+        }
+
         // ─── スポーン ────────────────────────────────────────────
 
         /// <summary>
@@ -306,6 +393,10 @@ namespace App.Puyo
             OnNextQueueChanged?.Invoke(NextPairs);
         }
 
+        /// <summary>ゲーム中に色数を切り替える（デバッグ用）。次のスポーンから反映される。</summary>
+        public void SetColorCount(int count)
+            => _colorCount = Mathf.Clamp(count, 2, (int)PuyoColor.OJAMA);
+
         /// <summary>ステージの色数に応じてランダムな色を返す（OJAMAは対象外）</summary>
         private PuyoColor RandomColor() => (PuyoColor)UnityEngine.Random.Range(0, _colorCount);
 
@@ -321,6 +412,7 @@ namespace App.Puyo
                     if (_grid[x, y] != null) { heights[x] = y + 1; break; }
             return heights;
         }
+
 #endif
     }
 }

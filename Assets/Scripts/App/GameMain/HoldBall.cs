@@ -27,7 +27,8 @@ namespace App
             new Color(0.1f, 1.0f, 0.25f),  // Green
             new Color(0.2f, 0.5f,  1.0f),  // Blue
             new Color(0.7f, 0.1f,  1.0f),  // Purple
-            // Black (index 5): オーラなし → Grow を非表示
+            Color.clear,                    // Black: alpha=0 → オーラなし
+            new Color(1.0f, 0.5f,  0.9f),  // Rainbow
         };
 
         private static readonly int s_auraColorId = Shader.PropertyToID("_AuraColor");
@@ -50,7 +51,8 @@ namespace App
         /// </summary>
         public void Setup(HoldType type, Sprite[] sprites)
         {
-            var sprite       = sprites[(int)type];
+            var index        = (int)type;
+            var sprite       = index < sprites.Length ? sprites[index] : sprites[0];
             _renderer.sprite = sprite;
 
             if (_glowRenderer != null)
@@ -89,8 +91,8 @@ namespace App
         /// <summary>HoldType に対応するオーラ色を MaterialPropertyBlock で設定する。</summary>
         private void ApplyAura(HoldType type)
         {
-            var index    = (int)type;
-            var hasAura  = index < s_auraColors.Length;
+            var index   = (int)type;
+            var hasAura = index < s_auraColors.Length && s_auraColors[index].a > 0f;
 
             _glowRenderer.enabled = hasAura;
             if (!hasAura) return;

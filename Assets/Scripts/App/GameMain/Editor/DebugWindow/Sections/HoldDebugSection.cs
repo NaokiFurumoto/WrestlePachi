@@ -14,12 +14,13 @@ namespace App.EditorTools
 
         private static readonly (string label, HoldType type, Color color)[] s_buttons =
         {
-            ("赤",   HoldType.Red,    new Color(1f,   0.4f, 0.4f)),
-            ("黄",   HoldType.Yellow, new Color(1f,   0.9f, 0.2f)),
-            ("緑",   HoldType.Green,  new Color(0.3f, 0.9f, 0.3f)),
-            ("青",   HoldType.Blue,   new Color(0.3f, 0.6f, 1f  )),
-            ("紫",   HoldType.Purple, new Color(0.6f, 0.1f, 0.9f)),
-            ("黒",   HoldType.Black,  new Color(0.5f, 0.5f, 0.5f)),
+            ("赤",   HoldType.Red,     new Color(1f,   0.4f, 0.4f)),
+            ("黄",   HoldType.Yellow,  new Color(1f,   0.9f, 0.2f)),
+            ("緑",   HoldType.Green,   new Color(0.3f, 0.9f, 0.3f)),
+            ("青",   HoldType.Blue,    new Color(0.3f, 0.6f, 1f  )),
+            ("紫",   HoldType.Purple,  new Color(0.6f, 0.1f, 0.9f)),
+            ("黒",   HoldType.Black,   new Color(0.5f, 0.5f, 0.5f)),
+            ("虹",   HoldType.Rainbow, new Color(1f,   0.5f, 0.8f)),
         };
 
         public void OnGUI(GameMainController ctrl)

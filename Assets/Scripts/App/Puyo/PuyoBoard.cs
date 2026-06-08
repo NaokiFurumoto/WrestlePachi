@@ -306,7 +306,7 @@ namespace App.Puyo
         public void AddPendingOjama(int count) => _pendingOjama += count;
 
         /// <summary>列の最上端（積み高さ）を返す。空列なら 0。</summary>
-        private int GetColumnTop(int col)
+        public int GetColumnTop(int col)
         {
             for (var y = ROWS - 1; y >= 0; y--)
                 if (_grid[col, y] != null) return y + 1;
@@ -358,6 +358,155 @@ namespace App.Puyo
                 await UniTask.Delay(Mathf.RoundToInt(fallDuration * 1000) + 30, cancellationToken: ct);
             }
         }
+
+        // ─── スキル用ヘルパー ─────────────────────────────────────
+
+        /// <summary>最もぷよが多い行のインデックスを返す。盤面が空なら -1。</summary>
+        public int FindDensestRow()
+        {
+            var best = -1;
+            var bestCount = 0;
+            for (var y = 0; y < ROWS; y++)
+            {
+                var count = 0;
+                for (var x = 0; x < COLS; x++)
+                    if (_grid[x, y] != null) count++;
+                if (count > bestCount) { bestCount = count; best = y; }
+            }
+            return best;
+        }
+
+        /// <summary>最もぷよが多い列のインデックスを返す。盤面が空なら -1。</summary>
+        public int FindDensestColumn()
+        {
+            var best = -1;
+            var bestCount = 0;
+            for (var x = 0; x < COLS; x++)
+            {
+                var count = GetColumnTop(x);
+                if (count > bestCount) { bestCount = count; best = x; }
+            }
+            return best;
+        }
+
+        /// <summary>
+        /// ぷよが最も密集している 2×2 エリアの左下座標を返す。
+        /// 同数の場合は最初に見つかったエリアを返す。盤面が空なら (-1,-1)。
+        /// </summary>
+        public Vector2Int FindDensest2x2()
+        {
+            var best = new Vector2Int(-1, -1);
+            var bestCount = 0;
+            for (var x = 0; x < COLS - 1; x++)
+            for (var y = 0; y < ROWS - 1; y++)
+            {
+                var count = 0;
+                if (_grid[x,     y    ] != null) count++;
+                if (_grid[x + 1, y    ] != null) count++;
+                if (_grid[x,     y + 1] != null) count++;
+                if (_grid[x + 1, y + 1] != null) count++;
+                if (count > bestCount) { bestCount = count; best = new Vector2Int(x, y); }
+            }
+            return best;
+        }
+
+        /// <summary>ぷよが存在する最も高い行のインデックスを返す。盤面が空なら -1。</summary>
+        public int GetHighestRow()
+        {
+            for (var y = ROWS - 1; y >= 0; y--)
+                for (var x = 0; x < COLS; x++)
+                    if (_grid[x, y] != null) return y;
+            return -1;
+        }
+
+        /// <summary>お邪魔ぷよの全座標リストを返す。</summary>
+        public List<Vector2Int> GetOjamaPositions()
+        {
+            var positions = new List<Vector2Int>();
+            for (var x = 0; x < COLS; x++)
+            for (var y = 0; y < ROWS; y++)
+                if (_grid[x, y] != null && _grid[x, y].Color == PuyoColor.OJAMA)
+                    positions.Add(new Vector2Int(x, y));
+            return positions;
+        }
+
+        /// <summary>指定行にある非 null セルの数を返す（スキルダメージ計算用）。</summary>
+        public int GetNonNullCountInRow(int row)
+        {
+            var count = 0;
+            for (var x = 0; x < COLS; x++)
+                if (_grid[x, row] != null) count++;
+            return count;
+        }
+
+        /// <summary>指定列にある非 null セルの数を返す（スキルダメージ計算用）。</summary>
+        public int GetNonNullCountInCol(int col)
+        {
+            var count = 0;
+            for (var y = 0; y < ROWS; y++)
+                if (_grid[col, y] != null) count++;
+            return count;
+        }
+
+        /// <summary>指定座標リストの中で非 null セルの数を返す（スキルダメージ計算用）。</summary>
+        public int GetNonNullCountInCells(Vector2Int[] cells)
+        {
+            var count = 0;
+            foreach (var c in cells)
+                if (c.x >= 0 && c.x < COLS && c.y >= 0 && c.y < ROWS && _grid[c.x, c.y] != null)
+                    count++;
+            return count;
+        }
+
+        /// <summary>非お邪魔ぷよの座標をランダムに最大 count 個返す。</summary>
+        public List<Vector2Int> GetRandomPuyoPositions(int count)
+        {
+            var all = new List<Vector2Int>();
+            for (var x = 0; x < COLS; x++)
+            for (var y = 0; y < ROWS; y++)
+                if (_grid[x, y] != null && _grid[x, y].Color != PuyoColor.OJAMA)
+                    all.Add(new Vector2Int(x, y));
+            return all.OrderBy(_ => UnityEngine.Random.value).Take(count).ToList();
+        }
+
+        /// <summary>
+        /// スキルによる1セル消去。通常連鎖と異なり、吹き飛ぶ演出で消える。
+        /// </summary>
+        public async UniTask ClearCellBySkillAsync(Vector2Int cell, CancellationToken ct)
+        {
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= ROWS) return;
+            var piece = _grid[cell.x, cell.y];
+            if (piece == null) return;
+            _grid[cell.x, cell.y] = null;
+
+            const float duration = 0.12f;
+            var flyDir = new Vector3(
+                UnityEngine.Random.Range(-2f, 2f),
+                UnityEngine.Random.Range(1f, 3f),
+                0f
+            );
+            piece.transform.DOMove(piece.transform.position + flyDir, duration).SetEase(Ease.OutQuad);
+            piece.transform.DOScale(0f, duration).SetEase(Ease.InQuad);
+            await UniTask.Delay(Mathf.RoundToInt(duration * 1000), cancellationToken: ct);
+            Destroy(piece.gameObject);
+        }
+
+        /// <summary>盤面の全ぷよを消す（ストックMAX全消し用）。通常の消去アニメーションを使う。</summary>
+        public async UniTask ClearAllPuyosAsync(CancellationToken ct)
+        {
+            var pieces = new List<PuyoPiece>();
+            for (var x = 0; x < COLS; x++)
+            for (var y = 0; y < ROWS; y++)
+            {
+                if (_grid[x, y] == null) continue;
+                pieces.Add(_grid[x, y]);
+                _grid[x, y] = null;
+            }
+            await UniTask.WhenAll(pieces.Select(p => ((IClearable)p).ClearAsync(ct)));
+        }
+
+        /// <summary>スキル消去後に浮いたぷよを落下させる。</summary>
+        public UniTask DropFloatingAfterSkillAsync(CancellationToken ct) => DropFloatingPuyosAsync(ct);
 
         // ─── スポーン ────────────────────────────────────────────
 
@@ -411,6 +560,23 @@ namespace App.Puyo
                 for (var y = ROWS - 1; y >= 0; y--)
                     if (_grid[x, y] != null) { heights[x] = y + 1; break; }
             return heights;
+        }
+
+        /// <summary>デバッグ用：盤面の下 heightRows 行をランダムなぷよで埋める。</summary>
+        public void Debug_FillBoard(int heightRows = 6)
+        {
+            for (var x = 0; x < COLS; x++)
+            for (var y = 0; y < heightRows; y++)
+            {
+                if (_grid[x, y] != null) continue;
+                var cell  = new Vector2Int(x, y);
+                var piece = Instantiate(_piecePrefab, transform);
+                var color = (PuyoColor)UnityEngine.Random.Range(0, _colorCount);
+                piece.Setup(color, _colorSprites[(int)color]);
+                piece.Cell                 = cell;
+                _grid[cell.x, cell.y]      = piece;
+                piece.transform.position   = CellToWorld(cell);
+            }
         }
 
 #endif

@@ -17,7 +17,7 @@ namespace App
         [Header("HoldBall Prefab")]
         [SerializeField] private HoldBall _prefab = null!;
 
-        [Header("スプライト（HoldType の int 値順: Red/Yellow/Green/Blue/Black）")]
+        [Header("スプライト（HoldType の int 値順: Red/Yellow/Green/Blue/Purple/Black/Rainbow）")]
         [SerializeField] private Sprite[] _sprites = null!;
 
         // ─── 状態 ───────────────────────────────────────────────

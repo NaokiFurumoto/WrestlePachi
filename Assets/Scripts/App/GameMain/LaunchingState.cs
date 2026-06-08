@@ -27,6 +27,11 @@ namespace App
         {
             var ballCount = _ctx.Config.CalcBallCount(_clearedCount);
             Debug.Log($"[State] → Launching ({_chainCount}連鎖, {_clearedCount}個消え → {ballCount}球)");
+
+            // 連鎖ダメージを敵に与える
+            var damage = DamageCalculator.CalcChainDamage(_clearedCount, _chainCount, _ctx.Config.ChainBaseDamage);
+            _ctx.Enemy?.TakeDamage(damage);
+
             // 玉発射は fire-and-forget。ぷよの落下と同時進行する。
             _ctx.Contents.BallLauncher.LaunchAsync(ballCount, ct).Forget();
         }

@@ -21,6 +21,32 @@ namespace App.EditorTools
                 return;
             }
 
+            // ─── 虹保留確率分母 ────────────────────────────────────
+            var denom = config.RainbowProbabilityDenominator;
+            var denomLabel = denom == 0 ? "なし" : denom == 1 ? "必ず" : $"1/{denom}";
+            EditorGUILayout.LabelField($"虹保留確率（現在: {denomLabel}）", EditorStyles.boldLabel);
+
+            // プリセットボタン
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("なし (0)"))  ctrl.Debug_SetRainbowProbabilityDenominator(0);
+                if (GUILayout.Button("1/100"))      ctrl.Debug_SetRainbowProbabilityDenominator(100);
+                if (GUILayout.Button("1/50"))       ctrl.Debug_SetRainbowProbabilityDenominator(50);
+                if (GUILayout.Button("1/20"))       ctrl.Debug_SetRainbowProbabilityDenominator(20);
+                if (GUILayout.Button("必ず (1)"))   ctrl.Debug_SetRainbowProbabilityDenominator(1);
+            }
+
+            // 手入力フィールド
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField("分母を直接入力:", GUILayout.Width(100));
+                var newDenom = EditorGUILayout.IntField(denom, GUILayout.Width(60));
+                if (newDenom != denom)
+                    ctrl.Debug_SetRainbowProbabilityDenominator(Mathf.Max(0, newDenom));
+            }
+
+            EditorGUILayout.Space(6);
+
             // ─── Black 保留確率 ────────────────────────────────────
             EditorGUILayout.LabelField(
                 $"Black 保留確率（現在: {config.BlackHoldProbability:P0}）",

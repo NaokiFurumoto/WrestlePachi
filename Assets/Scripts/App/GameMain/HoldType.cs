@@ -6,11 +6,12 @@ namespace App
     /// </summary>
     public enum HoldType
     {
-        Red    = 0,
-        Yellow = 1,
-        Green  = 2,
-        Blue   = 3,
-        Purple = 4,
-        Black  = 5,
+        Red     = 0,
+        Yellow  = 1,
+        Green   = 2,
+        Blue    = 3,
+        Purple  = 4,
+        Black   = 5,
+        Rainbow = 6,
     }
 }

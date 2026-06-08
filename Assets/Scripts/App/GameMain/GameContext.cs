@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using GameSys;
 
 namespace App
@@ -10,9 +12,17 @@ namespace App
     /// </summary>
     public sealed class GameContext
     {
-        public  Game2DContents  Contents { get; }
-        public  ViewManager?    ViewMng  { get; }
-        public  GameModeConfig  Config   { get; }
+        public  Game2DContents   Contents { get; }
+        public  ViewManager?     ViewMng  { get; }
+        public  GameModeConfig   Config   { get; }
+        /// <summary>敵コントローラー。ダメージ・撃破判定に使用する</summary>
+        public  EnemyController? Enemy    { get; set; }
+
+        /// <summary>虹PUSH待ち状態。null=待機中でない。OnInputTengeki がここへ TrySetResult() する</summary>
+        public UniTaskCompletionSource? RainbowInputSource { get; set; }
+
+        /// <summary>虹保留中のバイブループ CTS。スキル完了時に Cancel() して停止する</summary>
+        public CancellationTokenSource? RainbowVibrationCts { get; set; }
 
         private readonly Action<IGameState> _changeState;
 

@@ -37,8 +37,9 @@ namespace App.Puyo
         private int        _rotation;   // 現在の回転インデックス（0〜3）
 
         private float _fallTimer;
-        private bool  _isSoftDrop;     // 高速落下中フラグ
-        private bool  _isLocked;       // ロック済みフラグ（二重処理防止）
+        private bool  _isSoftDrop;        // 高速落下中フラグ
+        private bool  _isLocked;          // ロック済みフラグ（二重処理防止）
+        private bool  _isGravityPaused;   // スキル実行中の重力一時停止フラグ
 
         private CancellationTokenSource _cts;
 
@@ -79,9 +80,19 @@ namespace App.Puyo
 
         // ─── 毎フレーム処理 ──────────────────────────────────────
 
+        /// <summary>スキル実行中に重力を一時停止する。タイマーもリセットして再開直後の即落下を防ぐ。</summary>
+        public void PauseGravity()
+        {
+            _isGravityPaused = true;
+            _fallTimer = 0f;
+        }
+
+        /// <summary>スキル完了後に重力を再開する。</summary>
+        public void ResumeGravity() => _isGravityPaused = false;
+
         private void Update()
         {
-            if (_isLocked) return;
+            if (_isLocked || _isGravityPaused) return;
             HandleFall();
         }
 

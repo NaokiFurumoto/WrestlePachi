@@ -17,8 +17,8 @@ namespace App
         // ─── 定数 ───────────────────────────────────────────────
         public const int MaxHolds = 4;
 
-        /// <summary>保留1個を消化するまでの待機時間（秒）。保留アニメ相当。</summary>
-        private const float ActivationDelaySec = 1.2f;
+        /// <summary>slot0 到達後、消化までの待機時間（秒）。スロット回転演出相当。</summary>
+        private const float ActivationDelaySec = 2.0f;
 
         // ─── 状態 ───────────────────────────────────────────────
         /// <summary>null = 空スロット</summary>
@@ -42,7 +42,7 @@ namespace App
         /// <summary>保留数が変化したとき発火（UI 更新用）</summary>
         public event Action<int>? OnHoldCountChanged;
 
-        /// <summary>保留が追加されたとき発火（index: スロット番号=3固定、type: 保留種別）</summary>
+        /// <summary>保留が追加されたとき発火（index: 配置されたスロット番号、type: 保留種別）</summary>
         public event Action<int, HoldType>? OnHoldAdded;
 
         /// <summary>保留がスロット間を移動したとき発火（from→to）</summary>
@@ -51,8 +51,11 @@ namespace App
         /// <summary>保留が消化されたとき発火（index: スロット番号=0固定）</summary>
         public event Action<int>? OnHoldConsumed;
 
-        /// <summary>技が発動するとき発火（type: 発動した保留の種別）</summary>
-        public event Action<HoldType>? OnTechActivated;
+        /// <summary>
+        /// 技が発動するとき呼ばれる非同期ハンドラ。
+        /// 返した UniTask が完了するまでシーケンスは次の保留へ進まない。
+        /// </summary>
+        public Func<HoldType, UniTask>? OnTechActivated;
 
         // ─── 初期化 ──────────────────────────────────────────────
         public HoldSystem(CancellationToken ct) => _ct = ct;
@@ -60,47 +63,36 @@ namespace App
         // ─── 公開メソッド ────────────────────────────────────────
 
         /// <summary>
-        /// へそ入賞時に呼ぶ。slot4（index=3）に出現させ、左へ自動シフトする。
-        /// slot1（index=0）に到達したら消化シーケンスを開始する。
+        /// へそ入賞時に呼ぶ。左から最初の空きスロットに直接配置する。
+        /// slot0 に配置された場合は消化シーケンスを開始する。
         /// </summary>
         public void AddHold(HoldType holdType)
         {
-            // slot4 が埋まっていれば満杯（最大4保留）
-            if (_slots[MaxHolds - 1] != null)
+            // 左から最初の空きスロットを探す
+            var index = -1;
+            for (var i = 0; i < MaxHolds; i++)
+            {
+                if (_slots[i] != null) continue;
+                index = i;
+                break;
+            }
+
+            if (index < 0)
             {
                 Debug.Log("[HoldSystem] 保留満杯のため無視");
                 return;
             }
 
-            // slot4 に出現
-            _slots[MaxHolds - 1] = holdType;
-            OnHoldAdded?.Invoke(MaxHolds - 1, holdType);
+            _slots[index] = holdType;
+            OnHoldAdded?.Invoke(index, holdType);
             OnHoldCountChanged?.Invoke(HoldCount);
 
-            // 左方向へスライド（空きスロットがある限り移動）
-            ShiftNewHoldLeft(MaxHolds - 1);
-
-            // slot1 に保留が到達していて未消化なら消化開始
-            if (!_isActivating && _slots[0] != null)
+            // slot0 に配置されたとき、未消化なら消化シーケンス開始
+            if (index == 0 && !_isActivating)
                 ActivateSequenceAsync().Forget();
         }
 
         // ─── 内部処理 ────────────────────────────────────────────
-
-        /// <summary>
-        /// 追加直後の保留を左方向へスライドさせる。
-        /// 左隣が空いている限り移動し、塞がったら停止。
-        /// </summary>
-        private void ShiftNewHoldLeft(int fromIndex)
-        {
-            for (var i = fromIndex; i > 0; i--)
-            {
-                if (_slots[i] == null || _slots[i - 1] != null) break;
-                _slots[i - 1] = _slots[i];
-                _slots[i]     = null;
-                OnHoldShifted?.Invoke(i, i - 1);
-            }
-        }
 
         /// <summary>
         /// slot1（index=0）消化後、残り保留を全て左へ詰める。
@@ -140,11 +132,14 @@ namespace App
                 _slots[0] = null;
 
                 OnHoldConsumed?.Invoke(0);
-                OnTechActivated?.Invoke(holdType);
-                Debug.Log($"[HoldSystem] 技発動！ type={holdType} 残り保留: {HoldCount}");
 
-                // 残り保留を左に詰める（slot2→slot1 など）
+                // 消化直後に左詰めする（スキル演出中に新保留が入っても最後尾に入るように）
                 ShiftAllLeft();
+                Debug.Log($"[HoldSystem] 技発動！ type={holdType}  残り保留: {HoldCount}");
+
+                // スキル演出が完了するまで待機してから次の保留へ進む
+                if (OnTechActivated != null)
+                    await OnTechActivated.Invoke(holdType);
             }
 
             _isActivating = false;

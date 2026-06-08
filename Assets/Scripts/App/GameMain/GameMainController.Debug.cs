@@ -28,8 +28,9 @@ namespace App
         public void Debug_ForceGameOver()                                   => _state?.OnBoardGameOver();
 
         // ─── GameModeConfig ───────────────────────────────────────
-        public void Debug_SetBlackProbability(float value) => _config?.Debug_SetBlackHoldProbability(value);
-        public void Debug_SetBallsPerPuyo(float value)     => _config?.Debug_SetBallsPerPuyo(value);
+        public void Debug_SetBlackProbability(float value)           => _config?.Debug_SetBlackHoldProbability(value);
+        public void Debug_SetBallsPerPuyo(float value)               => _config?.Debug_SetBallsPerPuyo(value);
+        public void Debug_SetRainbowProbabilityDenominator(int value) => _config?.Debug_SetRainbowProbabilityDenominator(value);
 
         /// <summary>保留・ぷよの色バリアントをゲーム中に切り替える（4 or 5）。</summary>
         public void Debug_SetColorVariant(int count)
@@ -48,6 +49,8 @@ namespace App
         }
 
         public void Debug_StopAutoPlay() => _autoPlayAgent?.Stop();
+
+        public void Debug_FillBoard(int rows = 6) => _contents?.PuyoBoard?.Debug_FillBoard(rows);
 
         // ─── エディタ専用フィールド ───────────────────────────────
         private AutoPlayAgent _autoPlayAgent;

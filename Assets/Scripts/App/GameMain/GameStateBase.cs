@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 
 namespace App
 {
-    public enum GamePhase { Playing, Clearing, Launching, GameOver }
+    public enum GamePhase { Playing, Clearing, Launching, SkillExecuting, GameOver }
 
     // ─── Interface ────────────────────────────────────────────────────────────
 

@@ -41,6 +41,10 @@ namespace App
                 || keyboard.upArrowKey.wasPressedThisFrame)                                        _controller.OnInputRotateCW();
             if (keyboard.zKey.wasPressedThisFrame || keyboard.qKey.wasPressedThisFrame)           _controller.OnInputRotateCCW();
 
+            // ─── 天撃ボタン（ストック発動）───────────────────────────
+            if (keyboard.spaceKey.wasPressedThisFrame)
+                _controller.OnInputTengeki();
+
             // ─── ソフトドロップ（押しっぱなし判定）──────────────────
             var wantsSoftDrop = keyboard.downArrowKey.isPressed || keyboard.sKey.isPressed;
             if (wantsSoftDrop && !_softDropActive)

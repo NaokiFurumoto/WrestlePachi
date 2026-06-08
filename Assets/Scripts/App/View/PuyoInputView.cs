@@ -11,7 +11,6 @@ namespace App
     /// </summary>
     public sealed class PuyoInputView : ViewBase
     {
-        public const string PREFAB_KEY = "Prefabs/Views/PiyoInputView";
 
         /// <summary>コントローラー参照を渡す初期化データ</summary>
         public class InputViewData : ViewData

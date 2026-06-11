@@ -36,6 +36,7 @@ namespace App
         [Header("敵")]
         [SerializeField] private EnemyController? _enemy;
 
+
         // ─── 内部状態 ────────────────────────────────────────────
         private Game2DContents   _contents;
         private ViewManager?     _viewMng;
@@ -44,6 +45,7 @@ namespace App
         private HoldSystem       _holdSystem;
         private TechSkillManager _techSkillManager;
         private SkillStockSystem _skillStockSystem;
+        private bool             _isSimulatorMode;
 
         // ─── 公開プロパティ ───────────────────────────────────────
         /// <summary>現在入力を受け付けられるか（IAutoPlayTarget / KeyboardInputBridge 用）</summary>
@@ -81,6 +83,9 @@ namespace App
                 new RainbowTechSkill(_rainbowController),
             });
 
+            // スキル実行時に Bloom 演出を再生（Singleton 経由でどこからでも呼べる）
+            _techSkillManager.OnSkillExecuted += BloomEffectController.PlaySkill;
+
             // PuyoBoard イベントを購読
             var board = _contents.PuyoBoard;
             board.OnPairLocked       += OnBoardPairLocked;
@@ -89,7 +94,8 @@ namespace App
             board.OnGameOver         += OnBoardGameOver;
 
             // パチンコゾーン → 保留システム
-            _contents.PachinkoController.OnHesoEntered += OnHesoEntered;
+            _contents.PachinkoController.OnHesoEntered   += OnHesoEntered;
+            _contents.PachinkoController.OnPocketEntered += OnPocketEntered;
 
             // 保留システム → View
             _holdSystem.OnTechActivated = OnTechActivatedAsync;
@@ -121,10 +127,13 @@ namespace App
             board.OnNextQueueChanged -= OnBoardNextQueueChanged;
             board.OnGameOver         -= OnBoardGameOver;
 
-            _contents.PachinkoController.OnHesoEntered -= OnHesoEntered;
+            _contents.PachinkoController.OnHesoEntered   -= OnHesoEntered;
+            _contents.PachinkoController.OnPocketEntered -= OnPocketEntered;
 
             if (_enemy != null)
                 _enemy.OnDefeated -= OnEnemyDefeated;
+
+            _techSkillManager.OnSkillExecuted -= BloomEffectController.PlaySkill;
 
             _holdSystem.OnTechActivated = null;
             _holdSystem.OnHoldAdded     -= OnHoldSystemAdded;
@@ -178,7 +187,26 @@ namespace App
         // ─── パチンコゾーン / 保留 ────────────────────────────────
 
         private void OnHesoEntered()
-            => _holdSystem.AddHold(SelectHoldType());
+        {
+            if (_isSimulatorMode) return;
+            _holdSystem.AddHold(SelectHoldType());
+        }
+
+        private void OnPocketEntered()
+        {
+            if (_isSimulatorMode) return;
+            _contents.BallLauncher.LaunchAsync(1, destroyCancellationToken).Forget();
+        }
+
+        /// <summary>
+        /// シミュレーターモードを切り替える。
+        /// ON にするとぷよが停止し、へそ入賞でも保留が追加されなくなる。
+        /// </summary>
+        public void SetSimulatorMode(bool active)
+        {
+            _isSimulatorMode = active;
+            if (active) _contents.PuyoBoard.Suspend();
+        }
 
         /// <summary>
         /// HoldSystem から await される非同期ハンドラ。

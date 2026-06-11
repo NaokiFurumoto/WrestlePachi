@@ -104,6 +104,20 @@ namespace App.Puyo
 
         private void OnDestroy() => _cts?.Cancel();
 
+        /// <summary>
+        /// シミュレーターモード用：ぷよの落下をすべて停止する。
+        /// 再開はシーンリロード（GameMainController.RestartGame）で行う。
+        /// </summary>
+        public void Suspend()
+        {
+            _cts?.Cancel();
+            if (_activePair != null)
+            {
+                Destroy(_activePair.gameObject);
+                _activePair = null;
+            }
+        }
+
         // ─── 座標変換 ────────────────────────────────────────────
 
         public float CellSize => _cellSize;

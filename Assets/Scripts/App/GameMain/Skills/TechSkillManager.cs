@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -14,6 +15,12 @@ namespace App.Skills
     public sealed class TechSkillManager
     {
         private readonly Dictionary<HoldType, ITechSkill> _skills;
+
+        /// <summary>
+        /// スキルが実際に実行されたとき（CanExecute=true の場合のみ）発火する。
+        /// ストックに積まれた場合は発火しない。
+        /// </summary>
+        public Action<HoldType>? OnSkillExecuted { get; set; }
 
         public TechSkillManager(IEnumerable<ITechSkill> skills)
         {
@@ -40,6 +47,9 @@ namespace App.Skills
                     Debug.LogWarning($"[TechSkillManager] ストックが満杯のため HoldType={holdType} を破棄");
                 return UniTask.CompletedTask;
             }
+
+            // CanExecute=true で実際にスキルが実行される → 演出コールバックを通知
+            OnSkillExecuted?.Invoke(holdType);
 
             if (!skill.HasCutIn)
             {

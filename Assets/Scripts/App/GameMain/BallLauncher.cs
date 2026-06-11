@@ -20,14 +20,17 @@ namespace App
         [Header( "発射設定" )]
         [SerializeField] private Vector2 _launchDirection = new Vector2( 1f, 0.8f );
         [SerializeField, Min( 0f )] private float _launchImpulse = 12f;
-        [SerializeField, Min( 0f )] private float _cooldownSeconds = 0.15f;
+        [SerializeField, Min( 0f )] private float _cooldownSeconds = 0.4f;
+
+        [Header( "発射ばらつき（シミュレーター用）" )]
+        [SerializeField, Range( 0f, 30f )] private float _angleSpread    = 3f;   // 角度ランダム幅（±度）
+        [SerializeField, Range( 0f, 0.3f )] private float _impulseVariance = 0.05f; // 強さランダム幅（±割合）
 
         private float _lastLaunchTime = float.NegativeInfinity;
         private GameObject _cachedBallPrefab;
 
-#if UNITY_EDITOR
-        private readonly System.Collections.Generic.List<GameObject> _debugSpawnedBalls = new();
-#endif
+        // 発射した玉をすべて追跡する（シミュレーター終了時の一括消去に使用）
+        private readonly System.Collections.Generic.List<GameObject> _spawnedBalls = new();
 
         /// <summary>
         /// 連鎖数に応じて複数の球を順番に発射する。
@@ -99,25 +102,30 @@ namespace App
             }
 
             var launchDirection = _GetLaunchDirection();
+            var launchImpulse   = _GetLaunchImpulse();
 
             rigidbody2D.linearVelocity = Vector2.zero;
             rigidbody2D.angularVelocity = 0f;
-            rigidbody2D.AddForce( launchDirection * _launchImpulse, ForceMode2D.Impulse );
+            rigidbody2D.AddForce( launchDirection * launchImpulse, ForceMode2D.Impulse );
 
             _lastLaunchTime = Time.time;
-#if UNITY_EDITOR
-            _debugSpawnedBalls.Add(ballObject);
-#endif
+            _spawnedBalls.Add(ballObject);
+        }
+
+        /// <summary>シミュレーター用：1球をクールダウン無視で即時発射する。</summary>
+        public void LaunchOneForSimulator() => _LaunchBall();
+
+        /// <summary>シーン上のすべての発射済み玉を即時破棄する。</summary>
+        public void ClearAllBalls()
+        {
+            foreach (var ball in _spawnedBalls)
+                if (ball != null) Destroy(ball);
+            _spawnedBalls.Clear();
         }
 
 #if UNITY_EDITOR
-        /// <summary>デバッグ用：シーン上のすべての発射済み玉を即時破棄する。</summary>
-        public void Debug_ClearAllBalls()
-        {
-            foreach (var ball in _debugSpawnedBalls)
-                if (ball != null) Destroy(ball);
-            _debugSpawnedBalls.Clear();
-        }
+        /// <summary>デバッグ用（後方互換）</summary>
+        public void Debug_ClearAllBalls() => ClearAllBalls();
 #endif
 
         /// <summary>
@@ -140,16 +148,34 @@ namespace App
 
         /// <summary>
         /// 発射方向を正規化して返します。未設定時は右斜め上を使います。
+        /// _angleSpread の範囲でランダムな角度ブレを加えます。
         /// </summary>
         private Vector2 _GetLaunchDirection()
         {
-            if( _launchDirection.sqrMagnitude >= MinDirectionSqrMagnitude )
-            {
-                return _launchDirection.normalized;
-            }
+            var baseDir = _launchDirection.sqrMagnitude >= MinDirectionSqrMagnitude
+                ? _launchDirection.normalized
+                : new Vector2( 1f, 0.8f ).normalized;
 
-            Debug.LogWarning( "BallLauncher: 発射方向が 0 ベクトルだったため、右斜め上の既定値を使用します。", this );
-            return new Vector2( 1f, 0.8f ).normalized;
+            if( _launchDirection.sqrMagnitude < MinDirectionSqrMagnitude )
+                Debug.LogWarning( "BallLauncher: 発射方向が 0 ベクトルだったため、右斜め上の既定値を使用します。", this );
+
+            // ±_angleSpread 度のランダム回転を加える
+            var angleDeg  = Random.Range( -_angleSpread, _angleSpread );
+            var rad       = angleDeg * Mathf.Deg2Rad;
+            var cos       = Mathf.Cos( rad );
+            var sin       = Mathf.Sin( rad );
+            return new Vector2(
+                baseDir.x * cos - baseDir.y * sin,
+                baseDir.x * sin + baseDir.y * cos
+            );
+        }
+
+        /// <summary>
+        /// 発射強度に ±_impulseVariance のランダムばらつきを乗せて返します。
+        /// </summary>
+        private float _GetLaunchImpulse()
+        {
+            return _launchImpulse * Random.Range( 1f - _impulseVariance, 1f + _impulseVariance );
         }
 
         /// <summary>

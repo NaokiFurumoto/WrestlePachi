@@ -42,11 +42,39 @@ namespace App.Skills
             if (cutInView != null) await cutInView.PlayAttackAsync(ct);
             await ViewManager.PopViewAsync(handle); // アニメ完了後すぐスライドアウト
 
-            // お邪魔を一気に並列消去（タックルの爆発感）
-            var tasks = new List<UniTask>();
+            var ojamaSprite = board.ColorSprites[(int)PuyoColor.OJAMA];
+            var effect      = GameEffectController.Instance;
+
+            // ① タックルを全セル並列で再生し、完了まで待つ
+            var tackleTasks = new List<UniTask>();
             foreach (var cell in ojamaPositions)
-                tasks.Add(board.ClearCellBySkillAsync(cell, ct));
-            await UniTask.WhenAll(tasks);
+            {
+                var worldPos   = board.CellToWorld(cell);
+                var tackleFrom = worldPos + Vector3.left * 2.0f;
+                if (effect != null)
+                    tackleTasks.Add(effect.PlayTackleAsync(tackleFrom, worldPos, ct));
+            }
+            await UniTask.WhenAll(tackleTasks);
+
+            // ② 全セルを並列で震わせる
+            var shakeTasks = new List<UniTask>();
+            foreach (var cell in ojamaPositions)
+                shakeTasks.Add(board.ShakePuyoAsync(cell, 0.4f, ct));
+            await UniTask.WhenAll(shakeTasks);
+
+            // ③ Dissolve を全セル並列で再生し、完了まで待つ
+            var dissolveTasks = new List<UniTask>();
+            foreach (var cell in ojamaPositions)
+            {
+                var worldPos = board.CellToWorld(cell);
+                if (effect != null)
+                    dissolveTasks.Add(effect.PlayOjamaDissolveAsync(worldPos, ojamaSprite, ct));
+            }
+            await UniTask.WhenAll(dissolveTasks);
+
+            // ④ アニメーションなしで即時消去
+            foreach (var cell in ojamaPositions)
+                board.RemoveCellInstant(cell);
 
             await board.DropFloatingAfterSkillAsync(ct);
             ctx.Enemy?.TakeDamage(DamageCalculator.CalcSkillDamage(ojamaPositions.Count, 2.5f));

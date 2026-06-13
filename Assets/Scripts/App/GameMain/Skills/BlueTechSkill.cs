@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using App;
 using App.Puyo;
@@ -39,14 +40,31 @@ namespace App.Skills
             if (cutInView != null) await cutInView.PlayAttackAsync(ct);
             await ViewManager.PopViewAsync(handle); // アニメ完了後すぐスライドアウト
 
-            // 最多列を上→下にスイープ消去
+            // 最多列を上→下にスイープ消去（各セルの位置から縦スイープ＋爆散を発生させる）
             var targetCol = board.FindDensestColumn();
             var puyoCount = board.GetNonNullCountInCol(targetCol);
             var topRow    = board.GetColumnTop(targetCol) - 1;
+            var effect    = GameEffectController.Instance;
+
+            var clearTasks = new List<UniTask>();
             for (var row = topRow; row >= 0; row--)
             {
-                await board.ClearCellBySkillAsync(new Vector2Int(targetCol, row), ct);
+                var cell     = new Vector2Int(targetCol, row);
+                var worldPos = board.CellToWorld(cell);
+                var color    = board.GetColorAt(cell) ?? PuyoColor.BLUE;
+                effect?.PlayVerticalSweep(worldPos, ct);
+                effect?.PlayBurst(worldPos, color, ct);
+                clearTasks.Add(board.ClearCellBySkillAsync(cell, ct));
                 await UniTask.Delay(30, cancellationToken: ct);
+            }
+            await UniTask.WhenAll(clearTasks);
+
+            // 着地時の水飛沫
+            var landPos = board.CellToWorld(new Vector2Int(targetCol, 0));
+            for (var i = 0; i < 4; i++)
+            {
+                var splashPos = landPos + new Vector3(Random.Range(-0.5f, 0.5f), 0f, 0f);
+                effect?.PlayBurst(splashPos, PuyoColor.BLUE, ct);
             }
 
             await board.DropFloatingAfterSkillAsync(ct);

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using App.Puyo;
 using App.Skills;
 using Cysharp.Threading.Tasks;
@@ -18,6 +17,7 @@ namespace App
     /// 委譲：
     ///   キーボード入力  → KeyboardInputBridge
     ///   画面表示        → GameOverHUD
+    ///   保留/パチンコ系 → GameMainController.Hold.cs（partial）
     ///   デバッグ API    → GameMainController.Debug.cs（partial / #if UNITY_EDITOR）
     /// </summary>
     public sealed partial class GameMainController : MonoBehaviour, IDisposable, IAutoPlayTarget
@@ -36,28 +36,31 @@ namespace App
         [Header("敵")]
         [SerializeField] private EnemyController? _enemy;
 
+        [Header("演出")]
+        [SerializeField] private GameEffectController _effectController;
 
         // ─── 内部状態 ────────────────────────────────────────────
         private Game2DContents   _contents;
-        private ViewManager?     _viewMng;
         private GameContext      _ctx;
         private IGameState       _state;
         private HoldSystem       _holdSystem;
         private TechSkillManager _techSkillManager;
         private SkillStockSystem _skillStockSystem;
         private bool             _isSimulatorMode;
+        private float            _remainingTime;
+        private int              _lastNotifiedSecond = -1;
 
         // ─── 公開プロパティ ───────────────────────────────────────
         /// <summary>現在入力を受け付けられるか（IAutoPlayTarget / KeyboardInputBridge 用）</summary>
         public bool IsGameOver   { get; private set; }
         public bool AcceptsInput => _state?.AcceptsInput ?? false;
+        public EnemyController?  Enemy => _enemy;
 
         // ─── 初期化 ──────────────────────────────────────────────
 
         public UniTask InitializeAsync(Game2DContents contents, ViewManager viewMng)
         {
             _contents   = contents;
-            _viewMng    = viewMng;
             _holdSystem = new HoldSystem(destroyCancellationToken);
 
             _ctx = new GameContext(contents, viewMng, _config, ChangeState);
@@ -84,7 +87,11 @@ namespace App
             });
 
             // スキル実行時に Bloom 演出を再生（Singleton 経由でどこからでも呼べる）
-            _techSkillManager.OnSkillExecuted += BloomEffectController.PlaySkill;
+            _techSkillManager.OnSkillExecuted += ScreenEffectController.PlaySkill;
+
+            // ゲーム演出コントローラーを初期化
+            if (_effectController != null)
+                _effectController.Initialize(_contents.PuyoBoard, _techSkillManager);
 
             // PuyoBoard イベントを購読
             var board = _contents.PuyoBoard;
@@ -133,7 +140,10 @@ namespace App
             if (_enemy != null)
                 _enemy.OnDefeated -= OnEnemyDefeated;
 
-            _techSkillManager.OnSkillExecuted -= BloomEffectController.PlaySkill;
+            _techSkillManager.OnSkillExecuted -= ScreenEffectController.PlaySkill;
+
+            if (_effectController != null)
+                _effectController.Dispose(_contents.PuyoBoard, _techSkillManager);
 
             _holdSystem.OnTechActivated = null;
             _holdSystem.OnHoldAdded     -= OnHoldSystemAdded;
@@ -153,12 +163,37 @@ namespace App
         public void StartGame()
         {
             IsGameOver = false;
+            _remainingTime      = _config.TimeLimitSeconds;
+            _lastNotifiedSecond = -1;
             _contents.PuyoBoard.Initialize(_config.ColorVariant);
             ChangeState(new PlayingState(_ctx));
+            var hud = ViewManager.GetView<GameMainHudView>();
+            if (_enemy != null) hud?.SetEnemy(_enemy);
+            hud?.SetTime(_remainingTime);
+            if (_enemy != null) hud?.SetStage(_enemy.EnemyIndex + 1, _enemy.TotalCount);
         }
 
         public void RestartGame()
             => UnitySceneManager.LoadScene(UnitySceneManager.GetActiveScene().name);
+
+        // ─── タイマー更新 ─────────────────────────────────────────
+
+        private void Update()
+        {
+            if (IsGameOver || _config.TimeLimitSeconds <= 0f) return;
+
+            _remainingTime = Mathf.Max(0f, _remainingTime - Time.deltaTime);
+
+            var currentSecond = Mathf.CeilToInt(_remainingTime);
+            if (currentSecond != _lastNotifiedSecond)
+            {
+                _lastNotifiedSecond = currentSecond;
+                ViewManager.GetView<GameMainHudView>()?.SetTime(_remainingTime);
+            }
+
+            if (_remainingTime <= 0f)
+                _state?.OnBoardGameOver();
+        }
 
         // ─── ステートマシン ───────────────────────────────────────
 
@@ -168,6 +203,10 @@ namespace App
             _state = next;
             _state.OnEnter(destroyCancellationToken);
             IsGameOver = _state.Phase == GamePhase.GameOver;
+
+            // PlayingState に遷移したタイミングでストックを1つ消費して発動
+            if (_state is PlayingState && _skillStockSystem.TryConsumeStock(out var stockedHold))
+                _techSkillManager.StartSkillAsync(stockedHold, _ctx, _skillStockSystem, destroyCancellationToken).Forget();
         }
 
         // ─── PuyoBoard イベントハンドラ ──────────────────────────
@@ -184,106 +223,12 @@ namespace App
         private void OnBoardGameOver()
             => _state?.OnBoardGameOver();
 
-        // ─── パチンコゾーン / 保留 ────────────────────────────────
-
-        private void OnHesoEntered()
-        {
-            if (_isSimulatorMode) return;
-            _holdSystem.AddHold(SelectHoldType());
-        }
-
-        private void OnPocketEntered()
-        {
-            if (_isSimulatorMode) return;
-            _contents.BallLauncher.LaunchAsync(1, destroyCancellationToken).Forget();
-        }
-
-        /// <summary>
-        /// シミュレーターモードを切り替える。
-        /// ON にするとぷよが停止し、へそ入賞でも保留が追加されなくなる。
-        /// </summary>
-        public void SetSimulatorMode(bool active)
-        {
-            _isSimulatorMode = active;
-            if (active) _contents.PuyoBoard.Suspend();
-        }
-
-        /// <summary>
-        /// HoldSystem から await される非同期ハンドラ。
-        /// 返した UniTask が完了するまで HoldSystem は次の保留へ進まない。
-        /// </summary>
-        private UniTask OnTechActivatedAsync(HoldType holdType)
-        {
-            // PlayingState 以外（連鎖中・玉発射中・スキル実行中）はストックに積んで即完了
-            if (_state is not PlayingState)
-            {
-                if (!_skillStockSystem.TryAddStock(holdType))
-                    Debug.LogWarning($"[GameMainController] ストックが満杯のため HoldType={holdType} を破棄");
-                return UniTask.CompletedTask;
-            }
-            return _techSkillManager.StartSkillAsync(holdType, _ctx, _skillStockSystem, destroyCancellationToken);
-        }
-
-        /// <summary>天撃ボタン入力：虹PUSH待ち中はRainbowInputSourceを完了させる。それ以外はストック発動。</summary>
-        public void OnInputTengeki()
-        {
-            // 虹PUSH待ち中 → ビュー上のボタンと同じ扱いで TCS を完了させる
-            if (_ctx.RainbowInputSource != null)
-            {
-                _ctx.RainbowInputSource.TrySetResult();
-                return;
-            }
-            if (_state is not PlayingState) return;
-            if (_skillStockSystem.TryConsumeStock(out var holdType))
-                _techSkillManager.StartSkillAsync(holdType, _ctx, _skillStockSystem, destroyCancellationToken).Forget();
-        }
-
-        /// <summary>ストックMAX到達時：全ストック消費して盤面を全消しする。</summary>
-        private async UniTaskVoid OnSkillStockMaxAsync(CancellationToken ct)
-        {
-            _skillStockSystem.ConsumeAll();
-            await _ctx.Contents.PuyoBoard.ClearAllPuyosAsync(ct);
-        }
-
-        /// <summary>へそ入賞時の保留種別を抽選する。</summary>
-        private HoldType SelectHoldType()
-        {
-            // 虹保留チェック（1/RainbowProbabilityDenominator の確率）
-            var denom = _config.RainbowProbabilityDenominator;
-            if (denom > 0 && UnityEngine.Random.Range(0, denom) == 0)
-                return HoldType.Rainbow;
-
-            if (UnityEngine.Random.value < _config.BlackHoldProbability)
-                return HoldType.Black;
-
-            return (HoldType)UnityEngine.Random.Range(0, _config.ColorVariant); // Red〜Blue or Red〜Purple
-        }
-
-        /// <summary>保留追加時のハンドラ。虹保留なら バイブループを開始する。</summary>
-        private void OnHoldSystemAdded(int index, HoldType holdType)
-        {
-            if (holdType != HoldType.Rainbow) return;
-            // 多重起動防止
-            _ctx.RainbowVibrationCts?.Cancel();
-            _ctx.RainbowVibrationCts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
-            VibrationLoopAsync(_ctx.RainbowVibrationCts.Token).Forget();
-        }
-
         private void OnEnemyDefeated()
         {
             // TODO: クリア演出を実装する
             Debug.Log("[GameMainController] 敵を撃破！クリア");
-        }
-
-        private static async UniTaskVoid VibrationLoopAsync(CancellationToken ct)
-        {
-            while (!ct.IsCancellationRequested)
-            {
-#if UNITY_IOS || UNITY_ANDROID
-                Handheld.Vibrate();
-#endif
-                await UniTask.Delay(500, cancellationToken: ct).SuppressCancellationThrow();
-            }
+            if (_enemy != null)
+                ViewManager.GetView<GameMainHudView>()?.SetStage(_enemy.EnemyIndex + 1, _enemy.TotalCount);
         }
 
         // ─── 入力公開メソッド（IAutoPlayTarget / PuyoInputView から呼ぶ）────

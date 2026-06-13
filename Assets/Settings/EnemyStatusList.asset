@@ -14,8 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::App.EnemyStatusList
   _enemies:
   - _enemyName: "\u30B6\u30B3A"
+    _faceSprite: {fileID: 9179305393461085373, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     _maxHp: 10
   - _enemyName: "\u30B6\u30B3B"
+    _faceSprite: {fileID: 2265719180881648205, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     _maxHp: 20
   - _enemyName: "\u30B6\u30B3C"
+    _faceSprite: {fileID: -1792255549776868007, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     _maxHp: 30

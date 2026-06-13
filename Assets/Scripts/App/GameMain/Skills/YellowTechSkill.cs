@@ -41,11 +41,15 @@ namespace App.Skills
             if (cutInView != null) await cutInView.PlayAttackAsync(ct);
             await ViewManager.PopViewAsync(handle); // アニメ完了後すぐスライドアウト
 
-            // ランダム5個をポンポン消去
+            // ランダム5個をポンポン消去（スタンプ落下 → 着地と同時に消去）
             foreach (var cell in targets)
             {
+                var worldPos = board.CellToWorld(cell);
+                var color    = board.GetColorAt(cell) ?? PuyoColor.YELLOW;
+                GameEffectController.Instance?.PlayStomp(worldPos, ct);
+                GameEffectController.Instance?.PlayBurst(worldPos, color, ct);
                 await board.ClearCellBySkillAsync(cell, ct);
-                await UniTask.Delay(30, cancellationToken: ct);
+                await UniTask.Delay(150, cancellationToken: ct);
             }
 
             await board.DropFloatingAfterSkillAsync(ct);

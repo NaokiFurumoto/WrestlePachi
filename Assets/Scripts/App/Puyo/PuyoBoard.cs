@@ -5,6 +5,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
+using App;
 
 namespace App.Puyo
 {
@@ -48,7 +49,7 @@ namespace App.Puyo
         /// パチンコ玉の発射数など外部ロジックをここで受け取る。
         /// </summary>
         /// <summary>第1引数：連鎖数、第2引数：消えたぷよ合計数</summary>
-        public event Action<int, int>                        OnChainCompleted;
+        public event Action<int, int>?                       OnChainCompleted;
         public event Action<IReadOnlyList<PuyoPairColors>>? OnNextQueueChanged;
 
         /// <summary>ペアが着地してグリッドに固定されたとき発火する。</summary>
@@ -56,6 +57,12 @@ namespace App.Puyo
 
         /// <summary>スポーン位置が埋まってゲームオーバーになったとき発火する。</summary>
         public event Action? OnGameOver;
+
+        /// <summary>ぷよが消える直前に発火する（消去対象の座標リスト）。</summary>
+        public event Action<IReadOnlyList<Vector2Int>>? OnAboutToClear;
+
+        /// <summary>1連鎖ステップ完了後に発火する（何連鎖目か・このステップで消えた数）。</summary>
+        public event Action<int, int>? OnChainStep;
 
         // ─── 内部状態 ────────────────────────────────────────────
         private PuyoPiece[,]          _grid;       // グリッドデータ本体
@@ -188,8 +195,12 @@ namespace App.Puyo
             {
                 chainCount++;
                 clearedCount += targets.Count;
+                OnAboutToClear?.Invoke(targets.Select(p => p.Cell).ToList());
+                await UniTask.WhenAll(targets.Select(p => p.FlashMatchedAsync(ct)));
                 await ClearPuyosAsync(targets, ct);
                 await DropFloatingPuyosAsync(ct);
+                await UniTask.Delay(200, cancellationToken: ct);
+                OnChainStep?.Invoke(chainCount, targets.Count);
             }
 
             // 連鎖が1回以上あればイベント発火（パチンコ玉発射トリガー）
@@ -366,10 +377,14 @@ namespace App.Puyo
                 _grid[cell.x, cell.y] = piece;
 
                 // ボード上端の1マス外から落下開始
+                var landPos = CellToWorld(cell);
                 piece.transform.position = CellToWorld(new Vector2Int(col, ROWS + 1));
-                piece.transform.DOMove(CellToWorld(cell), fallDuration).SetEase(Ease.InQuad);
+                piece.transform.DOMove(landPos, fallDuration).SetEase(Ease.InQuad);
 
                 await UniTask.Delay(Mathf.RoundToInt(fallDuration * 1000) + 30, cancellationToken: ct);
+
+                // 着地演出
+                piece.PlayLandBounce();
             }
         }
 
@@ -444,6 +459,13 @@ namespace App.Puyo
             return positions;
         }
 
+        /// <summary>指定座標のぷよの色を返す。空・範囲外は null。</summary>
+        public PuyoColor? GetColorAt(Vector2Int cell)
+        {
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= ROWS) return null;
+            return _grid[cell.x, cell.y]?.Color;
+        }
+
         /// <summary>指定行にある非 null セルの数を返す（スキルダメージ計算用）。</summary>
         public int GetNonNullCountInRow(int row)
         {
@@ -502,6 +524,32 @@ namespace App.Puyo
             piece.transform.DOMove(piece.transform.position + flyDir, duration).SetEase(Ease.OutQuad);
             piece.transform.DOScale(0f, duration).SetEase(Ease.InQuad);
             await UniTask.Delay(Mathf.RoundToInt(duration * 1000), cancellationToken: ct);
+            Destroy(piece.gameObject);
+        }
+
+        /// <summary>
+        /// 指定セルのぷよを震わせる（被弾演出）。
+        /// </summary>
+        public async UniTask ShakePuyoAsync(Vector2Int cell, float duration, CancellationToken ct)
+        {
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= ROWS) return;
+            var piece = _grid[cell.x, cell.y];
+            if (piece == null) return;
+
+            var shake = piece.transform.DOShakePosition(duration, strength: 0.12f, vibrato: 30);
+            using (ct.Register(() => shake.Kill()))
+                await shake.AsyncWaitForCompletion();
+        }
+
+        /// <summary>
+        /// アニメーションなしで即時消去する。Dissolve などエフェクト側で演出済みの場合に使う。
+        /// </summary>
+        public void RemoveCellInstant(Vector2Int cell)
+        {
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= ROWS) return;
+            var piece = _grid[cell.x, cell.y];
+            if (piece == null) return;
+            _grid[cell.x, cell.y] = null;
             Destroy(piece.gameObject);
         }
 

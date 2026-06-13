@@ -15,6 +15,9 @@ namespace App
         [Header("2D")]
         [SerializeField] private Game2DContents _contents;
 
+        [Header("UI")]
+        [SerializeField] private GameUIContents _ui;
+
         [Header("Controller")]
         [SerializeField] private GameMainController  _controller;
         [SerializeField] private KeyboardInputBridge _keyboardBridge;
@@ -32,17 +35,26 @@ namespace App
         private async UniTaskVoid BootstrapAsync()
         {
             // エディタ直接再生時、シーンに配置されていない Manager を自動生成する
-            if (!PrefabManager.isValid)
-            {
-                var go = new GameObject("[PrefabManager]");
-                go.AddComponent<PrefabManager>();
-            }
+            _AutoCreate<SceneFade>("[SceneFade]");
+            _AutoCreate<PrefabManager>("[PrefabManager]");
+            _AutoCreate<SoundManager>("[SoundManager]");
+            _AutoCreate<LocalizationManager>("[LocalizationManager]");
+            _AutoCreate<StaminaManager>("[StaminaManager]");
 
             await Intialize(null);
             _OnEndSceneFadeOut();
         }
 
+        private static void _AutoCreate<T>(string name) where T : MonoBehaviour
+        {
+            if (FindObjectOfType<T>() == null)
+                new GameObject(name).AddComponent<T>();
+        }
+
         // ─── SceneBase override ──────────────────────────────────
+
+        protected override Transform? GetUIParent()         => _ui != null ? _ui.DynamicViewRoot : base.GetUIParent();
+        protected override Transform? GetResidentUIParent() => _ui != null ? _ui.ResidentRoot    : base.GetResidentUIParent();
 
         /// <summary>
         /// シーン初期化。
@@ -53,7 +65,7 @@ namespace App
             // 1. 2D配下コンポーネントを初期化（PuyoBoard・PachinkoZone等）
             _contents.Initialize();
 
-            // 2. ゲーム進行コントローラーを初期化
+            // 2. ゲーム進行コントローラーを初期化（UI 参照を一緒に渡す）
             await _controller.InitializeAsync(_contents, ViewMng);
 
             // 3. コントローラー参照を各コンポーネントに注入
@@ -64,9 +76,7 @@ namespace App
         protected override ViewBase.ViewData GetResidentViewData(ViewBase view)
         {
             if (view is PuyoInputView)
-            {
                 return new PuyoInputView.InputViewData { Controller = _controller };
-            }
 
             return base.GetResidentViewData(view);
         }
@@ -85,6 +95,9 @@ namespace App
         /// </summary>
         protected override void _OnEndSceneFadeOut()
         {
+            if (StaminaManager.isValid)
+                StaminaManager.Instance.Consume(1);
+
             _controller.StartGame();
         }
     }

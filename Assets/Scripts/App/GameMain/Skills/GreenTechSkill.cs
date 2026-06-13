@@ -49,8 +49,16 @@ namespace App.Skills
                 new Vector2Int(origin.x,     origin.y + 1),
             };
             var puyoCount = board.GetNonNullCountInCells(cells);
+
+            // 2×2 中心にラリアットアニメーション
+            var centerWorld = (board.CellToWorld(cells[0]) + board.CellToWorld(cells[2])) * 0.5f;
+            GameEffectController.Instance?.PlayLariat(centerWorld, ct);
+
             foreach (var cell in cells)
             {
+                var worldPos = board.CellToWorld(cell);
+                var color    = board.GetColorAt(cell) ?? PuyoColor.GREEN;
+                GameEffectController.Instance?.PlayBurst(worldPos, color, ct);
                 await board.ClearCellBySkillAsync(cell, ct);
                 await UniTask.Delay(30, cancellationToken: ct);
             }

@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8697312563016609365
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2321160573549678466}
+  - component: {fileID: 1738941648659977390}
+  m_Layer: 0
+  m_Name: ArrowSweepEffect
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2321160573549678466
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8697312563016609365}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1738941648659977390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8697312563016609365}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a8ea29ad0554fe4eb04482746d085a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::App.Effects.ArrowSweepEffect
+  _sprite: {fileID: -5489611850890110686, guid: f2482d37e9bd3324ca6522a8252eaca9, type: 3}
+  _material: {fileID: 2100000, guid: 8a66c6244a757bd4e85e70bd4c9dc2e4, type: 2}
+  _sortingLayerName: Effect
+  _sortingOrder: 20
+  _waves:
+  - Scale: 0.7
+    Distance: 3
+    Duration: 0.18
+    Delay: 0
+  - Scale: 1
+    Distance: 2.5
+    Duration: 0.23
+    Delay: 0.04
+  - Scale: 1.3
+    Distance: 2
+    Duration: 0.3
+    Delay: 0.08

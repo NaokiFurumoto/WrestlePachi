@@ -51,6 +51,9 @@ TagManager:
   - name: Pachinko
     uniqueID: 852617385
     locked: 0
+  - name: Effect
+    uniqueID: 437767545
+    locked: 0
   - name: UI
     uniqueID: 912261167
     locked: 0

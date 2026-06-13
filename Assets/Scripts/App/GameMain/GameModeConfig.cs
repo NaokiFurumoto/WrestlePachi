@@ -9,6 +9,13 @@ namespace App
     [CreateAssetMenu(fileName = "GameModeConfig", menuName = "WrestlePachi/GameModeConfig")]
     public sealed class GameModeConfig : ScriptableObject
     {
+        // ─── 制限時間 ─────────────────────────────────────────────
+        [Header("制限時間")]
+        [Tooltip("ゲームの制限時間（秒）。0 にすると無制限")]
+        [SerializeField, Min(0f)] private float _timeLimitSeconds = 180f;
+
+        public float TimeLimitSeconds => _timeLimitSeconds;
+
         // ─── 玉発射 ───────────────────────────────────────────────
         [Header("玉発射")]
         [Tooltip("消えたぷよ1個あたりの発射球数。1.0=1個→1球、0.5=2個→1球")]

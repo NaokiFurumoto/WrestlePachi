@@ -39,12 +39,19 @@ namespace App.Skills
             if (cutInView != null) await cutInView.PlayAttackAsync(ct);
             await ViewManager.PopViewAsync(handle); // アニメ完了後すぐスライドアウト
 
-            // 最多行を左→右にスイープ消去
+            // 最多行を左→右にスイープ消去（各セルから矢印＋爆散エフェクト発生）
             var targetRow = board.FindDensestRow();
             var puyoCount = board.GetNonNullCountInRow(targetRow);
+            var effect    = GameEffectController.Instance;
             for (var col = 0; col < PuyoBoard.COLS; col++)
             {
-                await board.ClearCellBySkillAsync(new Vector2Int(col, targetRow), ct);
+                var cell     = new Vector2Int(col, targetRow);
+                var worldPos = board.CellToWorld(cell);
+                var color    = board.GetColorAt(cell) ?? PuyoColor.RED;
+
+                effect?.PlayArrowSweep(worldPos, ct);
+                effect?.PlayBurst(worldPos, color, ct);
+                await board.ClearCellBySkillAsync(cell, ct);
                 await UniTask.Delay(30, cancellationToken: ct);
             }
 

@@ -12,13 +12,17 @@ namespace App
     public sealed class EnemyStatus
     {
         [Header("基本情報")]
-        [SerializeField] private string _enemyName = "敵";
+        [SerializeField] private string  _enemyName  = "敵";
+        [SerializeField] private Sprite? _faceSprite = null;
 
         [Header("HP")]
         [SerializeField, Min(1)] private int _maxHp = 1000;
 
         /// <summary>敵の名前</summary>
-        public string EnemyName => _enemyName;
+        public string  EnemyName  => _enemyName;
+
+        /// <summary>顔画像スプライト</summary>
+        public Sprite? FaceSprite => _faceSprite;
 
         /// <summary>最大HP</summary>
         public int MaxHp => _maxHp;

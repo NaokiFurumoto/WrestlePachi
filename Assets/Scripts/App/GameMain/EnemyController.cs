@@ -17,8 +17,14 @@ namespace App
         /// <summary>HP が変化したとき発火する（現在HP, 最大HP）</summary>
         public event Action<int, int>? OnHpChanged;
 
+        /// <summary>ダメージを受けたとき発火する（ダメージ量）</summary>
+        public event Action<int>? OnDamaged;
+
         /// <summary>HP が 0 になったとき発火する</summary>
         public event Action? OnDefeated;
+
+        /// <summary>敵が切り替わったとき発火する（顔スプライト）</summary>
+        public event Action<Sprite?>? OnEnemySet;
 
         /// <summary>現在HP</summary>
         public int CurrentHp { get; private set; }
@@ -27,14 +33,27 @@ namespace App
         public int MaxHp => CurrentStatus?.MaxHp ?? 0;
 
         /// <summary>現在の敵名</summary>
-        public string EnemyName => CurrentStatus?.EnemyName ?? string.Empty;
+        public string  EnemyName  => CurrentStatus?.EnemyName  ?? string.Empty;
+
+        /// <summary>現在の顔スプライト</summary>
+        public Sprite? FaceSprite => CurrentStatus?.FaceSprite;
 
         /// <summary>撃破済みかどうか</summary>
         public bool IsDefeated => CurrentHp <= 0;
 
+        /// <summary>現在の敵インデックス（0始まり）</summary>
+        public int EnemyIndex => _enemyIndex;
+
+        /// <summary>敵の総数（= 最終ステージ数）</summary>
+        public int TotalCount => _statusList?.Count ?? 0;
+
         private EnemyStatus? CurrentStatus => _statusList?.Get(_enemyIndex);
 
-        private void Awake() => ResetHp();
+        private void Awake()
+        {
+            ResetHp();
+            OnEnemySet?.Invoke(FaceSprite);
+        }
 
         /// <summary>
         /// 指定インデックスの敵に切り替え、HPをリセットする。
@@ -43,6 +62,7 @@ namespace App
         {
             _enemyIndex = index;
             ResetHp();
+            OnEnemySet?.Invoke(FaceSprite);
         }
 
         /// <summary>
@@ -53,6 +73,7 @@ namespace App
             if (IsDefeated) return;
             CurrentHp = Mathf.Max(0, CurrentHp - damage);
             OnHpChanged?.Invoke(CurrentHp, MaxHp);
+            OnDamaged?.Invoke(damage);
             if (CurrentHp <= 0) OnDefeated?.Invoke();
         }
 

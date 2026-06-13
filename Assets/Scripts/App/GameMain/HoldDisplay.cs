@@ -28,6 +28,8 @@ namespace App
         /// <summary>slot4（index=3）に保留玉を生成する。</summary>
         public void OnHoldAdded(int index, HoldType holdType)
         {
+            if (!IsValidIndex(index)) return;
+
             var ball = Instantiate(_prefab, _slots[index]);
             ball.transform.localPosition = Vector3.zero;
             ball.Setup(holdType, _sprites);
@@ -38,6 +40,8 @@ namespace App
         /// <summary>保留玉を from スロットから to スロットへアニメーション移動する。</summary>
         public void OnHoldShifted(int from, int to)
         {
+            if (!IsValidIndex(from) || !IsValidIndex(to)) return;
+
             var ball = _activeBalls[from];
             if (ball == null) return;
 
@@ -49,12 +53,39 @@ namespace App
         /// <summary>slot1（index=0）の保留玉を消化アニメーションで消す。</summary>
         public void OnHoldConsumed(int index)
         {
+            if (!IsValidIndex(index)) return;
+
             var ball = _activeBalls[index];
             if (ball == null) return;
 
             _activeBalls[index] = null;
             ball.HideAsync(destroyCancellationToken).Forget();
         }
+
+        // ─── 内部ユーティリティ ──────────────────────────────────
+
+        private bool IsValidIndex(int index)
+        {
+            if (index >= 0 && index < _slots.Length) return true;
+            Debug.LogError(
+                $"[HoldDisplay] _slots のサイズ({_slots.Length})が不足しています。" +
+                $"index={index}, HoldSystem.MaxHolds={HoldSystem.MaxHolds}\n" +
+                "Inspector で _slots に Transform を4つ設定してください。",
+                this
+            );
+            return false;
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (_slots != null && _slots.Length != HoldSystem.MaxHolds)
+                Debug.LogWarning(
+                    $"[HoldDisplay] _slots の要素数は {HoldSystem.MaxHolds} にしてください（現在 {_slots.Length}）。",
+                    this
+                );
+        }
+#endif
     }
 }
 #nullable disable

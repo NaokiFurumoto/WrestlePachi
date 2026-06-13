@@ -42,6 +42,16 @@ namespace  GameSys
         #endregion プロパティ
 
         /// <summary>
+        /// ViewManager に渡す UI 親 Transform。サブクラスでオーバーライド可能。
+        /// </summary>
+        protected virtual Transform? GetUIParent() => m_UIParent;
+
+        /// <summary>
+        /// 常駐 View を検索する Transform。サブクラスでオーバーライド可能。
+        /// </summary>
+        protected virtual Transform? GetResidentUIParent() => m_ResidentUIParent;
+
+        /// <summary>
         /// 初期化
         /// </summary>
         public async UniTask Intialize( SceneData? data )
@@ -50,10 +60,10 @@ namespace  GameSys
 
             GameScreen.CalcScreenSize();
             m_ViewMng = new ViewManager();
-            m_ViewMng.Initialize( m_UIParent );
-            
+            m_ViewMng.Initialize( GetUIParent() );
+
             await OnInitialize();
-            
+
             var residentViews = GetResidentViews();
             for( int i = 0; i < residentViews.Count; ++i )
             {
@@ -66,9 +76,10 @@ namespace  GameSys
             var views = new List<ViewBase>();
             AddResidentView( views, m_View );
 
-            if( m_ResidentUIParent != null )
+            var residentUIParent = GetResidentUIParent();
+            if( residentUIParent != null )
             {
-                var childViews = m_ResidentUIParent.GetComponentsInChildren<ViewBase>( true );
+                var childViews = residentUIParent.GetComponentsInChildren<ViewBase>( true );
                 for( int i = 0; i < childViews.Length; ++i )
                 {
                     AddResidentView( views, childViews[i] );

@@ -24,7 +24,7 @@ namespace App
         private void OnPocketEntered()
         {
             if (_isSimulatorMode) return;
-            _contents.BallLauncher.LaunchAsync(1, destroyCancellationToken).Forget();
+            _contents.BallLauncher.LaunchAsync(1).Forget();
         }
 
         /// <summary>
@@ -45,15 +45,40 @@ namespace App
         /// </summary>
         private UniTask OnTechActivatedAsync(HoldType holdType)
         {
-            // PlayingState 以外（連鎖中・玉発射中・スキル実行中）はストックに積んで即完了
+            bool willStock = _state is not PlayingState || !_techSkillManager.CanExecute(holdType, _ctx);
+            FireHoldBeam(holdType, willStock);
+
             if (_state is not PlayingState)
             {
-                if (!_skillStockSystem.TryAddStock(holdType))
-                    Debug.LogWarning($"[GameMainController] ストックが満杯のため HoldType={holdType} を破棄");
+                _skillStockSystem.SetStock(holdType);
                 return UniTask.CompletedTask;
             }
             return _techSkillManager.StartSkillAsync(holdType, _ctx, _skillStockSystem, destroyCancellationToken);
         }
+
+        private void FireHoldBeam(HoldType holdType, bool willStock)
+        {
+            if (_holdBeamEffect == null || _contents.HoldDisplay == null) return;
+
+            var from = _contents.HoldDisplay.ConsumeOriginPosition;
+            var to   = willStock
+                ? _tengekiButton?.transform.position ?? _contents.PuyoBoard.transform.position
+                : _contents.PuyoBoard.transform.position;
+
+            _holdBeamEffect.PlayAsync(from, to, HoldTypeToBeamColor(holdType), destroyCancellationToken).Forget();
+        }
+
+        private static Color HoldTypeToBeamColor(HoldType holdType) => holdType switch
+        {
+            HoldType.Red     => new Color(1f,  0.2f, 0.2f),
+            HoldType.Yellow  => new Color(1f,  0.9f, 0.1f),
+            HoldType.Green   => new Color(0.2f,1f,   0.3f),
+            HoldType.Blue    => new Color(0.2f,0.5f, 1f),
+            HoldType.Purple  => new Color(0.7f,0.2f, 1f),
+            HoldType.Black   => new Color(0.4f,0.4f, 0.4f),
+            HoldType.Rainbow => Color.white,
+            _                => Color.white,
+        };
 
         /// <summary>保留追加時のハンドラ。虹保留ならバイブレーションループを開始する。</summary>
         private void OnHoldSystemAdded(int index, HoldType holdType)
@@ -61,7 +86,9 @@ namespace App
             if (holdType != HoldType.Rainbow) return;
             _ctx.RainbowVibrationCts?.Cancel();
             _ctx.RainbowVibrationCts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
-            VibrationLoopAsync(_ctx.RainbowVibrationCts.Token).Forget();
+            var ct = _ctx.RainbowVibrationCts.Token;
+            VibrationLoopAsync(ct).Forget();
+            _tengekiButton?.StartShakeAsync(ct).Forget();
         }
 
         /// <summary>ストックMAX到達時：全ストック消費して盤面を全消しする。</summary>
@@ -81,7 +108,10 @@ namespace App
                 _ctx.RainbowInputSource.TrySetResult();
                 return;
             }
+
             if (_state is not PlayingState) return;
+
+            // ぷよがなくてスキル不発の場合も TechSkillManager 内でストックに戻る
             if (_skillStockSystem.TryConsumeStock(out var holdType))
                 _techSkillManager.StartSkillAsync(holdType, _ctx, _skillStockSystem, destroyCancellationToken).Forget();
         }
@@ -91,14 +121,39 @@ namespace App
         /// <summary>へそ入賞時の保留種別を抽選する。</summary>
         private HoldType SelectHoldType()
         {
-            var denom = _config.RainbowProbabilityDenominator;
+            var stage = _ctx.CurrentStage;
+
+            var denom = stage?.RainbowDenominator ?? _config.RainbowProbabilityDenominator;
             if (denom > 0 && Random.Range(0, denom) == 0)
                 return HoldType.Rainbow;
 
-            if (Random.value < _config.BlackHoldProbability)
+            var blackDenom = stage?.BlackHoldDenominator ?? (int)(1f / Mathf.Max(_config.BlackHoldProbability, 0.0001f));
+            if (blackDenom > 0 && Random.Range(0, blackDenom) == 0)
                 return HoldType.Black;
 
-            return (HoldType)Random.Range(0, _config.ColorVariant);
+            return stage != null
+                ? SelectColorByWeight(stage)
+                : (HoldType)Random.Range(0, _config.ColorVariant);
+        }
+
+        /// <summary>各色の重みに応じて保留色を抽選する。</summary>
+        private static HoldType SelectColorByWeight(StageConfig stage)
+        {
+            int count = stage.ColorCount;
+            int[] weights = { stage.WeightRed, stage.WeightYellow, stage.WeightGreen, stage.WeightBlue, stage.WeightPurple };
+
+            int total = 0;
+            for (int i = 0; i < count; i++) total += weights[i];
+            if (total <= 0) return (HoldType)Random.Range(0, count);
+
+            int r = Random.Range(0, total);
+            int cumulative = 0;
+            for (int i = 0; i < count; i++)
+            {
+                cumulative += weights[i];
+                if (r < cumulative) return (HoldType)i;
+            }
+            return HoldType.Red;
         }
 
         // ─── バイブレーション ────────────────────────────────────

@@ -17,7 +17,6 @@ namespace App
 
         public override void OnEnter(CancellationToken ct)
         {
-            Debug.Log("[State] → GameOver");
             // TODO: ゲームオーバー演出・リトライUI表示
         }
 

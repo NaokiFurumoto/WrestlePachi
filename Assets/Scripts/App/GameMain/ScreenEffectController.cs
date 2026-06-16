@@ -40,12 +40,27 @@ namespace App
         [Header("デバッグ確認用（読み取り専用）")]
         [SerializeField] private float _currentIntensity;
 
+        [Header("ラジアルブラー")]
+        [SerializeField] private Material? _radialBlurMat;
+        [SerializeField] private float _radialBlurPeak = 0.25f;
+        [SerializeField] private float _radialBlurRise = 0.03f;
+        [SerializeField] private float _radialBlurFade = 2.0f;
+
+        [Header("撃破インパクト演出")]
+        [SerializeField] private float _hitStopDuration     = 0.20f;
+        [SerializeField] private float _timeSlowScale       = 0.05f;
+        [SerializeField] private float _timeSlowDuration    = 3.0f;
+        [SerializeField] private float _timeSlowRecover     = 0.8f;
+
+        private static readonly int RadialBlurIntensityId = Shader.PropertyToID("_Intensity");
+
         private Bloom?               _bloom;
         private ColorAdjustments?    _colorAdj;
         private ChromaticAberration? _chromaticAberration;
         private Tween?               _tween;
         private Tween?               _warningTween;
         private Tween?               _chromaTween;
+        private Tween?               _radialBlurTween;
 
         // ── ライフサイクル ────────────────────────────────────────────
 
@@ -77,6 +92,7 @@ namespace App
             _tween?.Kill();
             _warningTween?.Kill();
             _chromaTween?.Kill();
+            _radialBlurTween?.Kill();
             if (Instance == this) Instance = null;
         }
 
@@ -113,9 +129,18 @@ namespace App
         public static void StopWarning()
             => Instance?.StopWarningLoop();
 
+        /// <summary>ラジアルブラーを一瞬かけてフェードアウトする。</summary>
+        public static void PlayRadialBlur(float peakOverride = -1f, float fadeOverride = -1f)
+            => Instance?.DoRadialBlur(peakOverride, fadeOverride);
+
+        /// <summary>撃破インパクト演出（ヒットストップ＋タイムスロー＋シェイク＋ラジアルブラー）。await 可能。</summary>
+        public static Cysharp.Threading.Tasks.UniTask PlayDefeatImpact(System.Threading.CancellationToken ct)
+            => Instance?.DoDefeatImpactAsync(ct) ?? Cysharp.Threading.Tasks.UniTask.CompletedTask;
+
         // ── デバッグ ─────────────────────────────────────────────────
 
 #if UNITY_EDITOR
+        [ContextMenu("テスト：ラジアルブラー")] void DbgRadialBlur() => DoRadialBlur(-1f, -1f);
         [ContextMenu("テスト：へそ入賞")] void DbgHeso()    => PlayHesoEffect();
         [ContextMenu("テスト：Red")]     void DbgRed()     => PlayBloomBurst(SkillColor(HoldType.Red));
         [ContextMenu("テスト：Yellow")]  void DbgYellow()  => PlayBloomBurst(SkillColor(HoldType.Yellow));
@@ -236,6 +261,38 @@ namespace App
             _bloom.tint.Override(Color.white);
             _currentIntensity = _baseIntensity;
             _bloom.intensity.Override(_baseIntensity);
+        }
+
+        private async Cysharp.Threading.Tasks.UniTask DoDefeatImpactAsync(System.Threading.CancellationToken ct)
+        {
+            PlayClear();
+            DoRadialBlur(-1f, -1f);
+            ScreenShakeController.Shake(ShakePreset.Heavy);
+            await TimeManager.HitStopAsync(_hitStopDuration, ct);
+            await TimeManager.TimeSlowAsync(_timeSlowScale, _timeSlowDuration, _timeSlowRecover, ct);
+        }
+
+        private void DoRadialBlur(float peakOverride, float fadeOverride)
+        {
+            if (_radialBlurMat == null) return;
+
+            var peak = peakOverride > 0f ? peakOverride : _radialBlurPeak;
+            var fade = fadeOverride > 0f ? fadeOverride  : _radialBlurFade;
+
+            _radialBlurTween?.Kill();
+            _radialBlurMat.SetFloat(RadialBlurIntensityId, 0f);
+
+            _radialBlurTween = DOTween.Sequence()
+                .Append(DOTween.To(
+                    () => _radialBlurMat.GetFloat(RadialBlurIntensityId),
+                    v  => _radialBlurMat.SetFloat(RadialBlurIntensityId, v),
+                    peak, _radialBlurRise).SetEase(Ease.OutQuad))
+                .Append(DOTween.To(
+                    () => _radialBlurMat.GetFloat(RadialBlurIntensityId),
+                    v  => _radialBlurMat.SetFloat(RadialBlurIntensityId, v),
+                    0f, fade).SetEase(Ease.InCubic))
+                .OnComplete(() => _radialBlurMat.SetFloat(RadialBlurIntensityId, 0f))
+                .SetUpdate(true); // timeScale = 0 中でも動く
         }
 
         // ── スキル種別→発光色 ─────────────────────────────────────

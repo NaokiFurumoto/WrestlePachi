@@ -27,6 +27,7 @@ namespace GameSys
             Heartbeat,   // ハートビート  ：鼓動するように拡縮を繰り返す
             Stamp,       // スタンプ      ：バウンスしながら着地するドーン演出
             ColorCycle,  // カラーサイクル：指定した2色の間を循環変化する
+            Bob,         // ボブ          ：上下にゆっくり浮遊するループ演出
         }
 
         public enum LoopMode
@@ -135,6 +136,16 @@ namespace GameSys
         private float _stampDuration = 0.6f;
 
         // ─────────────────────────────────────────
+        // Bob（ボブ）
+        // ─────────────────────────────────────────
+        [Header("── Bob（上下浮遊） ──")]
+        [SerializeField, Tooltip("上下の振れ幅（ローカル座標単位）")]
+        private float _bobAmplitude = 5f;
+
+        [SerializeField, Tooltip("1往復（上→下→上）にかかる時間（秒）")]
+        private float _bobDuration = 0.8f;
+
+        // ─────────────────────────────────────────
         // ColorCycle（カラーサイクル）
         // ─────────────────────────────────────────
         [Header("── ColorCycle（色循環） ──")]
@@ -151,6 +162,7 @@ namespace GameSys
         private SpriteRenderer? _spriteRenderer;
         private Tween? _currentTween;
         private Vector3 _defaultScale;
+        private Vector3 _defaultPosition;
         private Color _defaultColor;
         private bool _initialized;
 
@@ -165,8 +177,9 @@ namespace GameSys
             if (_initialized) return;
             _graphic = GetComponent<Graphic>();
             _spriteRenderer = GetComponent<SpriteRenderer>();
-            _defaultScale = transform.localScale;
-            _defaultColor = GetCurrentColor();
+            _defaultScale    = transform.localScale;
+            _defaultPosition = transform.localPosition;
+            _defaultColor    = GetCurrentColor();
             _initialized = true;
         }
 
@@ -189,6 +202,7 @@ namespace GameSys
                 AnimType.Heartbeat  => HeartbeatAsync(ct),
                 AnimType.Stamp      => StampAsync(ct),
                 AnimType.ColorCycle => ColorCycleAsync(ct),
+                AnimType.Bob        => BobAsync(ct),
                 _                   => UniTask.CompletedTask,
             };
         }
@@ -198,6 +212,9 @@ namespace GameSys
 
         /// <summary>実行中のアニメーションを停止して初期状態に戻す。</summary>
         public void Stop() => KillCurrent(resetState: true);
+
+        /// <summary>実行中のアニメーションをその場で停止する（初期状態に戻さない）。</summary>
+        public void Pause() => KillCurrent(resetState: false);
 
         /// <summary>Inspector の右クリックから再生中にテストできる。</summary>
         [ContextMenu("▶ テスト再生（再生中のみ有効）")]
@@ -311,6 +328,19 @@ namespace GameSys
             SetColor(_defaultColor);
         }
 
+        public UniTask BobAsync(CancellationToken ct = default)
+        {
+            Initialize(); KillCurrent();
+            float half = _bobDuration / _speed * 0.5f;
+            // Bob は Yoyo 固定（上下往復）。LoopMode.None なら 1往復のみ。
+            int loops = _loopMode == LoopMode.None ? 2 : -1;
+            _currentTween = transform
+                .DOLocalMoveY(_defaultPosition.y + _bobAmplitude, half)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(loops, LoopType.Yoyo);
+            return PlayAndAwait(ct);
+        }
+
         // ─────────────────────────────────────────
         // ヘルパー
         // ─────────────────────────────────────────
@@ -403,6 +433,16 @@ namespace GameSys
                             .SetEase(Ease.InOutSine).SetLoops(loops, LoopType.Yoyo).SetDelay(_delaySeconds).Play();
                     break;
                 }
+
+                case AnimType.Bob:
+                {
+                    float half = _bobDuration / _speed * 0.5f;
+                    int loops = _loopMode == LoopMode.None ? 2 : -1;
+                    _currentTween = transform
+                        .DOLocalMoveY(_defaultPosition.y + _bobAmplitude, half)
+                        .SetEase(Ease.InOutSine).SetLoops(loops, LoopType.Yoyo).SetDelay(_delaySeconds).Play();
+                    break;
+                }
             }
         }
 
@@ -411,7 +451,8 @@ namespace GameSys
             _currentTween?.Kill();
             _currentTween = null;
             if (!resetState) return;
-            transform.localScale = _defaultScale;
+            transform.localScale    = _defaultScale;
+            transform.localPosition = _defaultPosition;
             SetColor(_defaultColor);
         }
 

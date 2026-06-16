@@ -1,4 +1,5 @@
 #nullable enable
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using GameSys;
 using TMPro;
@@ -21,6 +22,7 @@ namespace App
         [SerializeField] private TMP_Text?        _enemyHpText;
         [SerializeField] private float            _hpAnimDuration = 0.4f;
         [SerializeField] private DamageEffect?    _damageEffect;
+
 
         private EnemyController? _enemy;
 
@@ -111,7 +113,8 @@ namespace App
 
         private void OnEnemyDamaged(int damage)
         {
-            _damageEffect?.PlayAsync(damage, destroyCancellationToken).Forget();
+            if (_damageEffect != null)
+                _damageEffect.PlayAsync(damage, destroyCancellationToken).Forget();
         }
 
         private void SetEnemyHpText(int currentHp, int maxHp)
@@ -166,6 +169,7 @@ namespace App
             if (_staminaText == null) return;
             _staminaText.text = $"{current}/{max}";
         }
+
     }
 }
 #nullable disable

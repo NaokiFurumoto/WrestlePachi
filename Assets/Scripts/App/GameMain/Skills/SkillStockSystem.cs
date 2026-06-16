@@ -1,52 +1,43 @@
 using System;
-using System.Collections.Generic;
 
 namespace App.Skills
 {
     /// <summary>
-    /// スキルストック管理システム。
-    /// CanExecute=false のスキルを最大5つストックし、天撃ボタンで任意発動できる。
-    /// MAX到達時は OnMaxReached イベントで全消しを通知する。
+    /// 1ストック管理システム。
+    /// 新しい保留が来たら上書き。天撃ボタン押下で手動消費する。
     /// </summary>
     public sealed class SkillStockSystem
     {
-        private const int MaxStocks = 5;
-        private readonly Queue<HoldType> _stocks = new();
+        private HoldType? _stock;
 
-        public int Count => _stocks.Count;
-        public bool IsFull => _stocks.Count >= MaxStocks;
-        public bool IsEmpty => _stocks.Count == 0;
+        public HoldType? Current  => _stock;
+        public bool      HasStock => _stock.HasValue;
 
-        /// <summary>ストック数が変化したときに発火する（現在のストック数を渡す）。</summary>
-        public event Action<int>? OnStockChanged;
+        /// <summary>ストック内容が変化したとき発火。null = 空になった。</summary>
+        public event Action<HoldType?>? OnStockChanged;
 
-        /// <summary>MAX（5個）到達したときに発火する（全消し自動発動に使う）。</summary>
-        public event Action? OnMaxReached;
-
-        /// <summary>ストックに積む。満杯なら false を返す。</summary>
-        public bool TryAddStock(HoldType holdType)
+        /// <summary>保留種別をストックする。既存ストックは上書き。</summary>
+        public void SetStock(HoldType holdType)
         {
-            if (IsFull) return false;
-            _stocks.Enqueue(holdType);
-            OnStockChanged?.Invoke(Count);
-            if (IsFull) OnMaxReached?.Invoke();
-            return true;
+            _stock = holdType;
+            OnStockChanged?.Invoke(_stock);
         }
 
-        /// <summary>ストックから1つ取り出す（FIFO）。空なら false を返す。</summary>
+        /// <summary>ストックを1つ取り出す。空なら false。</summary>
         public bool TryConsumeStock(out HoldType holdType)
         {
-            if (IsEmpty) { holdType = default; return false; }
-            holdType = _stocks.Dequeue();
-            OnStockChanged?.Invoke(Count);
+            if (!_stock.HasValue) { holdType = default; return false; }
+            holdType = _stock.Value;
+            _stock   = null;
+            OnStockChanged?.Invoke(null);
             return true;
         }
 
-        /// <summary>全消し発動時に呼ぶ。全ストックを消費する。</summary>
+        /// <summary>ゲームリセット時などに全クリア。</summary>
         public void ConsumeAll()
         {
-            _stocks.Clear();
-            OnStockChanged?.Invoke(0);
+            _stock = null;
+            OnStockChanged?.Invoke(null);
         }
     }
 }

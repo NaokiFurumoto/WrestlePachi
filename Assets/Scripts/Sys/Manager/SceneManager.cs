@@ -100,7 +100,7 @@ namespace GameSys
             m_CurrentScene = _FindSceneBase();
             if( m_CurrentScene != null )
             {
-                yield return m_CurrentScene.Intialize( data );
+                yield return m_CurrentScene.Intialize( data ).ToCoroutine();
             }
             
             yield return null;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using App.Puyo;
 using App.Skills;
 using Cysharp.Threading.Tasks;
@@ -38,12 +39,15 @@ namespace App
 
         [Header("演出")]
         [SerializeField] private GameEffectController _effectController;
+        [SerializeField] private HoldBeamEffect?      _holdBeamEffect;
 
         // ─── 内部状態 ────────────────────────────────────────────
-        private Game2DContents   _contents;
-        private GameContext      _ctx;
-        private IGameState       _state;
-        private HoldSystem       _holdSystem;
+        private Game2DContents              _contents;
+        private TengekiButton?              _tengekiButton;
+        private GameContext                 _ctx;
+        private IGameState                  _state;
+        private HoldSystem                  _holdSystem;
+        private CancellationTokenSource?    _stateCts;
         private TechSkillManager _techSkillManager;
         private SkillStockSystem _skillStockSystem;
         private bool             _isSimulatorMode;
@@ -60,11 +64,14 @@ namespace App
 
         public UniTask InitializeAsync(Game2DContents contents, ViewManager viewMng)
         {
-            _contents   = contents;
-            _holdSystem = new HoldSystem(destroyCancellationToken);
+            _contents      = contents;
+            _tengekiButton = contents.TengekiButton;
+            if (_tengekiButton != null) _tengekiButton.OnClicked += OnInputTengeki;
+            _holdSystem    = new HoldSystem(destroyCancellationToken);
 
             _ctx = new GameContext(contents, viewMng, _config, ChangeState);
-            _ctx.Enemy = _enemy;
+            _ctx.Enemy         = _enemy;
+            _ctx.RestartGame   = RestartGame;
 
             // 敵撃破イベント
             if (_enemy != null)
@@ -72,7 +79,7 @@ namespace App
 
             // ストックシステム初期化
             _skillStockSystem = new SkillStockSystem();
-            _skillStockSystem.OnMaxReached += () => OnSkillStockMaxAsync(destroyCancellationToken).Forget();
+            _skillStockSystem.OnStockChanged += _ => UpdateTengekiButtonGlow();
 
             // スキルを登録。新技は ITechSkill 実装クラスをここに追加するだけでよい
             _techSkillManager = new TechSkillManager(new ITechSkill[]
@@ -126,6 +133,10 @@ namespace App
 
         public void Dispose()
         {
+            _stateCts?.Cancel();
+            _stateCts?.Dispose();
+            _stateCts = null;
+
             if (_contents == null) return;
 
             var board = _contents.PuyoBoard;
@@ -163,9 +174,7 @@ namespace App
         public void StartGame()
         {
             IsGameOver = false;
-            _remainingTime      = _config.TimeLimitSeconds;
-            _lastNotifiedSecond = -1;
-            _contents.PuyoBoard.Initialize(_config.ColorVariant);
+            ApplyStageConfig(_enemy?.EnemyIndex ?? 0, initBoard: true);
             ChangeState(new PlayingState(_ctx));
             var hud = ViewManager.GetView<GameMainHudView>();
             if (_enemy != null) hud?.SetEnemy(_enemy);
@@ -173,14 +182,38 @@ namespace App
             if (_enemy != null) hud?.SetStage(_enemy.EnemyIndex + 1, _enemy.TotalCount);
         }
 
+        // initBoard=true はゲーム開始時のみ。敵切り替え時は false（盤面リセット禁止）
+        private void ApplyStageConfig(int stageIndex, bool initBoard = false)
+        {
+            var stage = StageConfigList.Instance?.Get(stageIndex);
+            _ctx.CurrentStage   = stage;
+            _remainingTime      = stage?.TimeLimit ?? _config.TimeLimitSeconds;
+            _lastNotifiedSecond = -1;
+            var colorCount    = stage?.ColorCount      ?? _config.ColorVariant;
+            var fallSpeed     = stage?.PuyoFallSpeed   ?? 1f;
+            var garbageRows   = stage?.GarbageInitialRows ?? 0;
+            if (initBoard)
+                _contents.PuyoBoard.Initialize(colorCount, garbageRows);
+            else
+                _contents.PuyoBoard.SetColorCount(colorCount);
+            _contents.PuyoBoard.SetFallSpeedMultiplier(fallSpeed);
+        }
+
         public void RestartGame()
-            => UnitySceneManager.LoadScene(UnitySceneManager.GetActiveScene().name);
+        {
+            var sceneName = UnitySceneManager.GetActiveScene().name;
+            if (SceneManager.isValid)
+                SceneManager.Instance.TransitScene(sceneName);
+            else
+                UnitySceneManager.LoadScene(sceneName);
+        }
 
         // ─── タイマー更新 ─────────────────────────────────────────
 
         private void Update()
         {
-            if (IsGameOver || _config.TimeLimitSeconds <= 0f) return;
+            var timeLimit = _ctx.CurrentStage?.TimeLimit ?? _config.TimeLimitSeconds;
+            if (IsGameOver || timeLimit <= 0f) return;
 
             _remainingTime = Mathf.Max(0f, _remainingTime - Time.deltaTime);
 
@@ -199,14 +232,23 @@ namespace App
 
         private void ChangeState(IGameState next)
         {
+            _stateCts?.Cancel();
+            _stateCts?.Dispose();
+            _stateCts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+
             _state?.OnExit();
             _state = next;
-            _state.OnEnter(destroyCancellationToken);
+            _state.OnEnter(_stateCts.Token);
             IsGameOver = _state.Phase == GamePhase.GameOver;
+            UpdateTengekiButtonGlow();
+        }
 
-            // PlayingState に遷移したタイミングでストックを1つ消費して発動
-            if (_state is PlayingState && _skillStockSystem.TryConsumeStock(out var stockedHold))
-                _techSkillManager.StartSkillAsync(stockedHold, _ctx, _skillStockSystem, destroyCancellationToken).Forget();
+        // ストックあり + PlayingState のときだけボタンを光らせ、Bob ループも連動させる
+        private void UpdateTengekiButtonGlow()
+        {
+            var showGlow = _skillStockSystem.HasStock && _state is PlayingState;
+            _tengekiButton?.SetStockGlow(showGlow ? _skillStockSystem.Current : null);
+            _tengekiButton?.SetBobActive(showGlow);
         }
 
         // ─── PuyoBoard イベントハンドラ ──────────────────────────
@@ -225,10 +267,25 @@ namespace App
 
         private void OnEnemyDefeated()
         {
-            // TODO: クリア演出を実装する
-            Debug.Log("[GameMainController] 敵を撃破！クリア");
-            if (_enemy != null)
-                ViewManager.GetView<GameMainHudView>()?.SetStage(_enemy.EnemyIndex + 1, _enemy.TotalCount);
+            if (_enemy == null) return;
+
+            var nextIndex    = _enemy.EnemyIndex + 1;
+            var hasNextStage = nextIndex < _enemy.TotalCount;
+            Action? onNext   = hasNextStage ? () => AdvanceToNextStage(nextIndex) : null;
+            ChangeState(new EnemyDyingState(_ctx, hasNextStage, onNext));
+        }
+
+        // ステージクリア後に「次のステージへ」を押したときに呼ぶ
+        private void AdvanceToNextStage(int nextIndex)
+        {
+            if (_enemy == null) return;
+            _enemy.SetEnemy(nextIndex);
+            ApplyStageConfig(nextIndex, initBoard: true);
+            var hud = ViewManager.GetView<GameMainHudView>();
+            hud?.SetEnemy(_enemy);
+            hud?.SetStage(nextIndex + 1, _enemy.TotalCount);
+            hud?.SetTime(_remainingTime);
+            ChangeState(new PlayingState(_ctx));
         }
 
         // ─── 入力公開メソッド（IAutoPlayTarget / PuyoInputView から呼ぶ）────

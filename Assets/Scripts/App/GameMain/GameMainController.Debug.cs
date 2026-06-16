@@ -22,10 +22,18 @@ namespace App
         // ─── ゲーム操作 ───────────────────────────────────────────
         public void Debug_AddHold(HoldType type)                            => _holdSystem?.AddHold(type);
         public void Debug_ForceHesoEntry()                                  => OnHesoEntered();
-        public void Debug_LaunchBalls(int count)                            => _contents?.BallLauncher?.LaunchAsync(count, destroyCancellationToken).Forget();
+        public void Debug_LaunchBalls(int count)                            => _contents?.BallLauncher?.LaunchAsync(count).Forget();
         public void Debug_ClearAllBalls()                                   => _contents?.BallLauncher?.Debug_ClearAllBalls();
         public void Debug_ForceChainCompleted(int chainCount, int cleared)  => _state?.OnChainCompleted(chainCount, cleared);
         public void Debug_ForceGameOver()                                   => _state?.OnBoardGameOver();
+        public void Debug_ForceGameClear()                                  => ChangeState(new GameClearState(_ctx));
+        public void Debug_InstantKillEnemy()                                => _enemy?.InstantKill();
+
+        public (int index, int total, int hp, int maxHp) Debug_GetEnemyInfo()
+        {
+            if (_enemy == null) return (-1, 0, 0, 0);
+            return (_enemy.EnemyIndex, _enemy.TotalCount, _enemy.CurrentHp, _enemy.MaxHp);
+        }
 
         // ─── GameModeConfig ───────────────────────────────────────
         public void Debug_SetBlackProbability(float value)           => _config?.Debug_SetBlackHoldProbability(value);

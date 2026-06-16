@@ -38,6 +38,7 @@ namespace App
             _AutoCreate<SceneFade>("[SceneFade]");
             _AutoCreate<PrefabManager>("[PrefabManager]");
             _AutoCreate<SoundManager>("[SoundManager]");
+            _AutoCreate<AppSound>("[AppSound]");
             _AutoCreate<LocalizationManager>("[LocalizationManager]");
             _AutoCreate<StaminaManager>("[StaminaManager]");
 

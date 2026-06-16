@@ -1,6 +1,5 @@
 #nullable enable
 using System.Threading;
-using UnityEngine;
 
 namespace App
 {
@@ -15,8 +14,7 @@ namespace App
         public override GamePhase Phase        => GamePhase.Playing;
         public override bool      AcceptsInput => true;
 
-        public override void OnEnter(CancellationToken ct)
-            => Debug.Log("[State] → Playing");
+        public override void OnEnter(CancellationToken ct) { }
 
         /// <summary>ペアが着地したら連鎖処理ステートへ</summary>
         public override void OnPairLocked()

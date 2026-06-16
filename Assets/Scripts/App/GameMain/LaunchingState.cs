@@ -25,15 +25,16 @@ namespace App
 
         public override void OnEnter(CancellationToken ct)
         {
-            var ballCount = _ctx.Config.CalcBallCount(_clearedCount);
-            Debug.Log($"[State] → Launching ({_chainCount}連鎖, {_clearedCount}個消え → {ballCount}球)");
+            var ballCount = _ctx.CurrentStage != null
+                ? Mathf.Max(1, Mathf.RoundToInt(_clearedCount * _ctx.CurrentStage.BallsPerPuyo))
+                : _ctx.Config.CalcBallCount(_clearedCount);
 
             // 連鎖ダメージを敵に与える
             var damage = DamageCalculator.CalcChainDamage(_clearedCount, _chainCount, _ctx.Config.ChainBaseDamage);
             _ctx.Enemy?.TakeDamage(damage);
 
             // 玉発射は fire-and-forget。ぷよの落下と同時進行する。
-            _ctx.Contents.BallLauncher.LaunchAsync(ballCount, ct).Forget();
+            _ctx.Contents.BallLauncher.LaunchAsync(ballCount).Forget();
         }
 
         /// <summary>次のペアがスポーンしたらプレイ再開</summary>

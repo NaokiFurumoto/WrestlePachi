@@ -27,6 +27,8 @@ namespace App
         [SerializeField] private BallLauncher        _ballLauncher;
         [SerializeField] private PachinkoController  _pachinkoController;
         [SerializeField] private HoldDisplay         _holdDisplay;
+        [SerializeField] private TengekiButton       _tengekiButton;
+
 
         // ─── プロパティ ───────────────────────────────────────────
         public Camera        MainCamera    => _mainCamera;
@@ -37,6 +39,7 @@ namespace App
         public BallLauncher       BallLauncher       => _ballLauncher;
         public PachinkoController PachinkoController => _pachinkoController;
         public HoldDisplay        HoldDisplay        => _holdDisplay;
+        public TengekiButton      TengekiButton      => _tengekiButton;
 
         // ─── 初期化 ──────────────────────────────────────────────
 

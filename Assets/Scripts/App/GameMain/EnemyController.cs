@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace App
@@ -11,8 +13,7 @@ namespace App
     /// </summary>
     public sealed class EnemyController : MonoBehaviour
     {
-        [SerializeField] private EnemyStatusList? _statusList;
-        [SerializeField] private int              _enemyIndex;
+        [SerializeField] private int _enemyIndex;
 
         /// <summary>HP が変化したとき発火する（現在HP, 最大HP）</summary>
         public event Action<int, int>? OnHpChanged;
@@ -30,13 +31,13 @@ namespace App
         public int CurrentHp { get; private set; }
 
         /// <summary>最大HP</summary>
-        public int MaxHp => CurrentStatus?.MaxHp ?? 0;
+        public int MaxHp => CurrentStage?.EnemyHp ?? 0;
 
         /// <summary>現在の敵名</summary>
-        public string  EnemyName  => CurrentStatus?.EnemyName  ?? string.Empty;
+        public string EnemyName => CurrentStage?.EnemyName ?? string.Empty;
 
         /// <summary>現在の顔スプライト</summary>
-        public Sprite? FaceSprite => CurrentStatus?.FaceSprite;
+        public Sprite? FaceSprite => CurrentStage?.EnemySprite;
 
         /// <summary>撃破済みかどうか</summary>
         public bool IsDefeated => CurrentHp <= 0;
@@ -44,10 +45,10 @@ namespace App
         /// <summary>現在の敵インデックス（0始まり）</summary>
         public int EnemyIndex => _enemyIndex;
 
-        /// <summary>敵の総数（= 最終ステージ数）</summary>
-        public int TotalCount => _statusList?.Count ?? 0;
+        /// <summary>敵の総数（= ステージ数）</summary>
+        public int TotalCount => StageConfigList.Instance?.Count ?? 0;
 
-        private EnemyStatus? CurrentStatus => _statusList?.Get(_enemyIndex);
+        private StageConfig? CurrentStage => StageConfigList.Instance?.Get(_enemyIndex);
 
         private void Awake()
         {
@@ -88,10 +89,18 @@ namespace App
             OnDefeated?.Invoke();
         }
 
+        /// <summary>
+        /// やられ演出を再生して完了を待つ。
+        /// Animator や SE は後からここに追加する。
+        /// </summary>
+        public async UniTask PlayDefeatAsync(CancellationToken ct)
+        {
+            await UniTask.Delay(1000, DelayType.Realtime, cancellationToken: ct);
+        }
+
         private void ResetHp()
         {
-            var status = CurrentStatus;
-            CurrentHp = status != null ? status.MaxHp : 0;
+            CurrentHp = CurrentStage?.EnemyHp ?? 0;
         }
     }
 }

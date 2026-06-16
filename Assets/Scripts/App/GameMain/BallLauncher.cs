@@ -8,7 +8,7 @@ namespace App
     /// <summary>
     /// Space キー入力で球を生成し、右斜め上へ打ち出すランチャーです。
     /// </summary>
-    public sealed class BallLauncher : MonoBehaviour
+    public sealed class BallLauncher : MonoBehaviour, ISuspendable
     {
         private const string DefaultBallPrefabPath = "Prefabs/GameMain/Pachinco/Ball";
         private const float MinDirectionSqrMagnitude = 0.0001f;
@@ -26,22 +26,23 @@ namespace App
         [SerializeField, Range( 0f, 30f )] private float _angleSpread    = 3f;   // 角度ランダム幅（±度）
         [SerializeField, Range( 0f, 0.3f )] private float _impulseVariance = 0.05f; // 強さランダム幅（±割合）
 
+        [Header( "管理" )]
+        [SerializeField] private Transform _ballRoot;
+
         private float _lastLaunchTime = float.NegativeInfinity;
         private GameObject _cachedBallPrefab;
 
-        // 発射した玉をすべて追跡する（シミュレーター終了時の一括消去に使用）
-        private readonly System.Collections.Generic.List<GameObject> _spawnedBalls = new();
-
         /// <summary>
         /// 連鎖数に応じて複数の球を順番に発射する。
-        /// GameMainController.OnChainCompleted から呼ぶ。
+        /// ゲームステート遷移に影響されないよう自身の CT を使う。
         /// </summary>
-        public async UniTaskVoid LaunchAsync(int count, CancellationToken ct)
+        public async UniTaskVoid LaunchAsync(int count)
         {
-            for (var i = 0; i < count && !ct.IsCancellationRequested; i++)
+            for (var i = 0; i < count && enabled; i++)
             {
                 _LaunchBall();
-                await UniTask.Delay(Mathf.RoundToInt(_cooldownSeconds * 1000) + 100, cancellationToken: ct);
+                await UniTask.Delay(Mathf.RoundToInt(_cooldownSeconds * 1000) + 100,
+                    cancellationToken: destroyCancellationToken);
             }
         }
 
@@ -85,7 +86,7 @@ namespace App
             }
 
             var spawnPosition = transform.TransformPoint( _spawnOffset );
-            var instantiatedObject = Instantiate( ( Object )prefab, spawnPosition, Quaternion.identity );
+            var instantiatedObject = Instantiate( ( Object )prefab, spawnPosition, Quaternion.identity, _ballRoot );
             var ballObject = _ToGameObject( instantiatedObject );
             if( ballObject == null )
             {
@@ -109,7 +110,6 @@ namespace App
             rigidbody2D.AddForce( launchDirection * launchImpulse, ForceMode2D.Impulse );
 
             _lastLaunchTime = Time.time;
-            _spawnedBalls.Add(ballObject);
         }
 
         /// <summary>シミュレーター用：1球をクールダウン無視で即時発射する。</summary>
@@ -118,9 +118,16 @@ namespace App
         /// <summary>シーン上のすべての発射済み玉を即時破棄する。</summary>
         public void ClearAllBalls()
         {
-            foreach (var ball in _spawnedBalls)
-                if (ball != null) Destroy(ball);
-            _spawnedBalls.Clear();
+            if (_ballRoot == null) return;
+            foreach (Transform child in _ballRoot)
+                Destroy(child.gameObject);
+        }
+
+        /// <summary>発射を停止し、飛行中の球をすべて破棄する。</summary>
+        public void Suspend()
+        {
+            enabled = false;
+            ClearAllBalls();
         }
 
 #if UNITY_EDITOR

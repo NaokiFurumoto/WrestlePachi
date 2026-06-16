@@ -1,6 +1,5 @@
 #nullable enable
 using System.Threading;
-using UnityEngine;
 
 namespace App
 {
@@ -15,8 +14,7 @@ namespace App
         public override GamePhase Phase        => GamePhase.Clearing;
         public override bool      AcceptsInput => false;
 
-        public override void OnEnter(CancellationToken ct)
-            => Debug.Log("[State] → Clearing");
+        public override void OnEnter(CancellationToken ct) { }
 
         /// <summary>連鎖が1回以上あれば玉発射ステートへ</summary>
         public override void OnChainCompleted(int chainCount, int clearedCount)

@@ -79,7 +79,6 @@ namespace App
 
             if (index < 0)
             {
-                Debug.Log("[HoldSystem] 保留満杯のため無視");
                 return;
             }
 
@@ -135,7 +134,6 @@ namespace App
 
                 // 消化直後に左詰めする（スキル演出中に新保留が入っても最後尾に入るように）
                 ShiftAllLeft();
-                Debug.Log($"[HoldSystem] 技発動！ type={holdType}  残り保留: {HoldCount}");
 
                 // スキル演出が完了するまで待機してから次の保留へ進む
                 if (OnTechActivated != null)

@@ -18,6 +18,7 @@ namespace App
 
         private void OnGUI()
         {
+            if (_controller == null) return;
             if (!_controller.IsGameOver) return;
 
             var cx = Screen.width  * 0.5f;
@@ -27,11 +28,6 @@ namespace App
                 new Rect(cx - 200, cy - 60, 400, 60),
                 "GAME OVER",
                 new GUIStyle(GUI.skin.label) { fontSize = 40, alignment = TextAnchor.MiddleCenter });
-
-            GUI.Label(
-                new Rect(cx - 200, cy + 10, 400, 40),
-                "[ R ] でリスタート",
-                new GUIStyle(GUI.skin.label) { fontSize = 24, alignment = TextAnchor.MiddleCenter });
         }
     }
 }

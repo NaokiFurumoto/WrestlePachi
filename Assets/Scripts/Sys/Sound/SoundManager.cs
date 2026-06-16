@@ -46,6 +46,8 @@ namespace GameSys
 
         private     List<PlayData>      m_StopList      = new List<PlayData>( 16 );
         private     bool                m_IsInitialized = false;
+
+        private     Dictionary<string, SoundClump>  m_SEClumpDict   = new();
         
         //private     ResourceManager.LoadInfo<BGMClump>?             m_LoadBGMClump          = null;
         //private     List<ResourceManager.LoadInfo<SoundClump>>      m_SEClumpLoadInfos      = new ();
@@ -251,7 +253,17 @@ namespace GameSys
 
         public void LoadSE( string clumpKey )
         {
-            //StartCoroutine( _LoadSEAudioClump( clumpKey ) );
+            if( m_SEClumpDict.ContainsKey( clumpKey ) ) return;
+
+            var clump = Resources.Load<SoundClump>( $"Sound/SE/{clumpKey}" );
+            if( clump == null )
+            {
+                Debug.LogWarning( $"[SoundManager] SoundClump が見つかりません: Resources/Sound/SE/{clumpKey}" );
+                return;
+            }
+
+            clump.CreateDict();
+            m_SEClumpDict[clumpKey] = clump;
         }
 
         //private IEnumerator _LoadSEAudioClump( string clumpKey )
@@ -444,17 +456,10 @@ namespace GameSys
         
         private SoundClump.ClipInfo? _GetSEAudioClip( string clumpKey, string key )
         {
-            //var loadInfo = _GetSELoadInfo( clumpKey );
-            //if( loadInfo == null )
-            //{
-            //    return null;
-            //}
-            
-            //if( loadInfo.Result.Dict.TryGetValue( key, out var info ) )
-            //{
-            //    return info;
-            //}
-            
+            if( m_SEClumpDict.TryGetValue( clumpKey, out var clump ) &&
+                clump.Dict.TryGetValue( key, out var info ) )
+                return info;
+
             return null;
         }
         

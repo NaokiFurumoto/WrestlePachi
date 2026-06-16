@@ -28,6 +28,8 @@ namespace App.Puyo
         [SerializeField] private float _lockDelay        = 0.3f;  // 着地後のロック猶予（秒）
         [SerializeField] private float _fallDuration     = 0.12f; // 落下アニメーション時間（秒）
 
+        private float _baseFallInterval; // Initialize 後に倍率計算の基準として使う
+
         // ─── 内部状態 ────────────────────────────────────────────
         private PuyoBoard  _board;
         private PuyoPiece  _main;       // 軸ぷよ（回転の中心）
@@ -57,12 +59,13 @@ namespace App.Puyo
             PuyoColor  subColor,
             Sprite[]   sprites)
         {
-            _board     = board;
-            _sprites   = sprites;
-            _rotation  = 0;         // 初期回転：サブが上
-            _mainCell  = spawnCell;
-            _cts       = CancellationTokenSource.CreateLinkedTokenSource(
-                             destroyCancellationToken);
+            _board            = board;
+            _sprites          = sprites;
+            _rotation         = 0;
+            _mainCell         = spawnCell;
+            _baseFallInterval = _fallInterval;
+            _cts              = CancellationTokenSource.CreateLinkedTokenSource(
+                                    destroyCancellationToken);
 
             // 軸ぷよ生成
             _main = Instantiate(piecePrefab, board.CellToWorld(spawnCell), Quaternion.identity, transform);
@@ -145,6 +148,10 @@ namespace App.Puyo
 
         /// <summary>高速落下を終了する</summary>
         public void EndSoftDrop()    => _isSoftDrop = false;
+
+        /// <summary>落下速度倍率を設定する（2.0 = 2倍速、0.5 = 半速）。</summary>
+        public void SetFallSpeedMultiplier(float multiplier)
+            => _fallInterval = _baseFallInterval / Mathf.Max(multiplier, 0.01f);
 
         // ─── 移動・回転ロジック ───────────────────────────────────
 

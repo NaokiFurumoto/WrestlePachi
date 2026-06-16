@@ -62,6 +62,9 @@ namespace App
             ball.HideAsync(destroyCancellationToken).Forget();
         }
 
+        /// <summary>保留消化スロット（slot0）のワールド座標。ビーム発射元として使用。</summary>
+        public Vector3 ConsumeOriginPosition => _slots.Length > 0 ? _slots[0].position : Vector3.zero;
+
         // ─── 内部ユーティリティ ──────────────────────────────────
 
         private bool IsValidIndex(int index)

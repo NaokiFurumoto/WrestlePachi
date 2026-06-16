@@ -22,16 +22,12 @@ namespace App
 
         private void Update()
         {
+            if (_controller == null) return;
+
             var keyboard = Keyboard.current;
             if (keyboard == null) return;
 
-            // ゲームオーバー中: R キーでリスタート
-            if (_controller.IsGameOver)
-            {
-                if (keyboard.rKey.wasPressedThisFrame)
-                    _controller.RestartGame();
-                return;
-            }
+            if (_controller.IsGameOver) return;
 
             // ─── ぷよ操作 ─────────────────────────────────────────
             if (keyboard.leftArrowKey.wasPressedThisFrame  || keyboard.aKey.wasPressedThisFrame)  _controller.OnInputMoveLeft();

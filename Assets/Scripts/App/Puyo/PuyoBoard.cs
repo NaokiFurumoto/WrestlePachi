@@ -20,7 +20,7 @@ namespace App.Puyo
     /// ぷよぷよのゲームボードを管理するクラス。
     /// 6×12（表示）のグリッドデータ・ぷよの配置・スポーン・連鎖チェックを担当する。
     /// </summary>
-    public sealed class PuyoBoard : MonoBehaviour
+    public sealed class PuyoBoard : MonoBehaviour, ISuspendable
     {
         // ─── 定数 ───────────────────────────────────────────────
         public const int COLS              = 6;  // 横列数
@@ -79,16 +79,16 @@ namespace App.Puyo
         /// <summary>色スプライト配列（NextPuyoDisplay の初期化に使う）</summary>
         public Sprite[] ColorSprites => _colorSprites;
 
-        private int _colorCount; // 使用する色数（ステージで変わる）
+        private int   _colorCount;          // 使用する色数（ステージで変わる）
+        private float _fallSpeedMultiplier = 1f; // 落下速度倍率（ステージで変わる）
         private CancellationTokenSource _cts;
 
         // ─── 初期化 ──────────────────────────────────────────────
 
         /// <summary>
-        /// ゲーム開始時に呼ぶ。ステージ数に応じて使用色数を指定する。
-        /// 例：ステージ1→4色、ステージ後半→5色（紫追加）
+        /// ゲーム開始時に呼ぶ。
         /// </summary>
-        public void Initialize(int colorCount = 4)
+        public void Initialize(int colorCount = 4, int garbageInitialRows = 0)
         {
             _colorCount   = Mathf.Clamp(colorCount, 2, (int)PuyoColor.OJAMA);
             _grid         = new PuyoPiece[COLS, ROWS];
@@ -100,6 +100,9 @@ namespace App.Puyo
             if (_pairPrefab  == null) _pairPrefab  = Resources.Load<PuyoPair> ("Prefabs/GameMain/Puyo/PuyoPair");
             if (_piecePrefab == null) _piecePrefab = Resources.Load<PuyoPiece>("Prefabs/GameMain/Puyo/PuyoPiece");
 
+            if (garbageInitialRows > 0)
+                PlaceInitialGarbage(garbageInitialRows);
+
             // キューを3つ分初期化（落下中1 + NEXT + NEXT NEXT）
             _nextQueue.Clear();
             _nextQueue.Enqueue(RandomPairColors());
@@ -109,12 +112,25 @@ namespace App.Puyo
             SpawnNextPair();
         }
 
+        /// <summary>ゲーム開始時に盤面の下から rows 行をお邪魔ぷよで即時配置する。</summary>
+        private void PlaceInitialGarbage(int rows)
+        {
+            var clampedRows = Mathf.Clamp(rows, 0, VISIBLE_ROWS - 2); // 上2行は常に空ける
+            for (var y = 0; y < clampedRows; y++)
+            for (var x = 0; x < COLS; x++)
+            {
+                var cell  = new Vector2Int(x, y);
+                var piece = Instantiate(_piecePrefab, transform);
+                piece.Setup(PuyoColor.OJAMA, _colorSprites[(int)PuyoColor.OJAMA]);
+                piece.Cell                = cell;
+                _grid[cell.x, cell.y]    = piece;
+                piece.transform.position = CellToWorld(cell);
+            }
+        }
+
         private void OnDestroy() => _cts?.Cancel();
 
-        /// <summary>
-        /// シミュレーターモード用：ぷよの落下をすべて停止する。
-        /// 再開はシーンリロード（GameMainController.RestartGame）で行う。
-        /// </summary>
+        /// <summary>落下ループを停止し、操作中のペアを即時破棄する。</summary>
         public void Suspend()
         {
             _cts?.Cancel();
@@ -122,6 +138,18 @@ namespace App.Puyo
             {
                 Destroy(_activePair.gameObject);
                 _activePair = null;
+            }
+        }
+
+        /// <summary>グリッド上の全ぷよを即時破棄する。</summary>
+        public void ClearAll()
+        {
+            for (var x = 0; x < COLS; x++)
+            for (var y = 0; y < ROWS; y++)
+            {
+                if (_grid[x, y] == null) continue;
+                Destroy(_grid[x, y].gameObject);
+                _grid[x, y] = null;
             }
         }
 
@@ -215,6 +243,7 @@ namespace App.Puyo
                 await DropOjamaAsync(count, ct);
             }
 
+            if (ct.IsCancellationRequested) return;
             SpawnNextPair();
         }
 
@@ -598,15 +627,21 @@ namespace App.Puyo
                 subColor:    colors.Sub,
                 sprites:     _colorSprites
             );
+            if (_fallSpeedMultiplier != 1f)
+                pair.SetFallSpeedMultiplier(_fallSpeedMultiplier);
             _activePair = pair;
 
             // NEXT・NEXT NEXT（キュー先頭2つ）を通知
             OnNextQueueChanged?.Invoke(NextPairs);
         }
 
-        /// <summary>ゲーム中に色数を切り替える（デバッグ用）。次のスポーンから反映される。</summary>
+        /// <summary>ゲーム中に色数を切り替える。次のスポーンから反映される。</summary>
         public void SetColorCount(int count)
             => _colorCount = Mathf.Clamp(count, 2, (int)PuyoColor.OJAMA);
+
+        /// <summary>落下速度倍率を設定する。次のスポーンから反映される。</summary>
+        public void SetFallSpeedMultiplier(float multiplier)
+            => _fallSpeedMultiplier = Mathf.Max(multiplier, 0.01f);
 
         /// <summary>ステージの色数に応じてランダムな色を返す（OJAMAは対象外）</summary>
         private PuyoColor RandomColor() => (PuyoColor)UnityEngine.Random.Range(0, _colorCount);

@@ -10,5 +10,6 @@ namespace App
         public const string SKILL_CUT_IN  = "Prefabs/Views/SkillCutinView";
         public const string SKILL_RAINBOW = "Prefabs/Views/SkillRainbowView";
         public const string GAME_CLEAR    = "Prefabs/Views/GameClearView";
+        public const string GAME_OPTION   = "Prefabs/Views/GameOptionView";
     }
 }

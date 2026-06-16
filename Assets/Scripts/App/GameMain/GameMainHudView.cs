@@ -22,6 +22,7 @@ namespace App
         [SerializeField] private TMP_Text?        _enemyHpText;
         [SerializeField] private float            _hpAnimDuration = 0.4f;
         [SerializeField] private DamageEffect?    _damageEffect;
+        [SerializeField] private UIAnimator?      _enemyAnimator;
 
 
         private EnemyController? _enemy;
@@ -113,8 +114,10 @@ namespace App
 
         private void OnEnemyDamaged(int damage)
         {
-            if (_damageEffect != null)
+if (_damageEffect != null)
                 _damageEffect.PlayAsync(damage, destroyCancellationToken).Forget();
+            if (_enemyAnimator != null)
+                _enemyAnimator.ShakeAsync(destroyCancellationToken).Forget();
         }
 
         private void SetEnemyHpText(int currentHp, int maxHp)

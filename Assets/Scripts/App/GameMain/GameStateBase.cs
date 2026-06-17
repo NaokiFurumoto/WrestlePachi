@@ -4,7 +4,7 @@ using Cysharp.Threading.Tasks;
 
 namespace App
 {
-    public enum GamePhase { Playing, Clearing, Launching, SkillExecuting, GameOver, EnemyDying, GameClear }
+    public enum GamePhase { Playing, Clearing, Launching, SkillExecuting, GameOver, EnemyDying, GameClear, Paused }
 
     // ─── Interface ────────────────────────────────────────────────────────────
 
@@ -14,8 +14,9 @@ namespace App
     /// </summary>
     public interface IGameState
     {
-        GamePhase Phase       { get; }
+        GamePhase Phase        { get; }
         bool      AcceptsInput { get; }
+        bool      CanPause     { get; }
 
         void OnEnter(CancellationToken ct);
         void OnExit();
@@ -41,6 +42,7 @@ namespace App
 
         public abstract GamePhase Phase        { get; }
         public virtual  bool      AcceptsInput => false;
+        public virtual  bool      CanPause     => false;
 
         public virtual void OnEnter(CancellationToken ct) { }
         public virtual void OnExit() { }

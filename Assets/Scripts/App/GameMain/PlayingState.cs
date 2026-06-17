@@ -13,6 +13,7 @@ namespace App
 
         public override GamePhase Phase        => GamePhase.Playing;
         public override bool      AcceptsInput => true;
+        public override bool      CanPause     => true;
 
         public override void OnEnter(CancellationToken ct) { }
 

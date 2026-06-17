@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using GameSys;
@@ -15,6 +16,10 @@ namespace App
     /// </summary>
     public sealed class GameMainHudView : ViewBase
     {
+        // ── オプションボタン ─────────────────────────────────────────────
+        public event Action? OptionClicked;
+        public void OnOptionButtonClicked() => OptionClicked?.Invoke();
+
         // ── 敵HPゲージ・顔 ──────────────────────────────────────────────
         [Header("敵HPゲージ・顔")]
         [SerializeField] private Image            _hpBarImage  = default!;

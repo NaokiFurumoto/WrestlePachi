@@ -35,7 +35,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -114, y: -43}
-  m_SizeDelta: {x: 501.443, y: 70}
+  m_SizeDelta: {x: 501.443, y: 63.8372}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &8117586497142960316
 CanvasRenderer:
@@ -67,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 200/100
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 44e6f4edef1dcc0459f38b1dc7ded543, type: 2}
-  m_sharedMaterial: {fileID: -3420481776825388746, guid: 44e6f4edef1dcc0459f38b1dc7ded543, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 6c120491fe1541345a5638c20e7baf22, type: 2}
+  m_sharedMaterial: {fileID: -3420481776825388746, guid: 6c120491fe1541345a5638c20e7baf22, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -921,6 +921,7 @@ GameObject:
   - component: {fileID: 3295062988439201748}
   - component: {fileID: 2210173242880873660}
   - component: {fileID: 5182201838471980083}
+  - component: {fileID: 5424652839860334926}
   m_Layer: 5
   m_Name: Text_Title
   m_TagString: Untagged
@@ -1047,6 +1048,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &5424652839860334926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3637440413022245919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4196fcef447850542817f5a7e585661d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizedText
+  key: common.stamina
 --- !u!1 &3757322189958351087
 GameObject:
   m_ObjectHideFlags: 0
@@ -1484,6 +1498,7 @@ GameObject:
   - component: {fileID: 7906972851977911826}
   - component: {fileID: 4508599816429353483}
   - component: {fileID: 615247197862666108}
+  - component: {fileID: 1954744767763387661}
   m_Layer: 5
   m_Name: Text_Title
   m_TagString: Untagged
@@ -1610,6 +1625,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1954744767763387661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6378085831778735272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4196fcef447850542817f5a7e585661d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizedText
+  key: hud.stage
 --- !u!1 &6517652662450099743
 GameObject:
   m_ObjectHideFlags: 0
@@ -1798,6 +1826,7 @@ GameObject:
   - component: {fileID: 7783251314033234797}
   - component: {fileID: 2218497675269931985}
   - component: {fileID: 6648116426552945204}
+  - component: {fileID: 5028960907322959911}
   m_Layer: 5
   m_Name: Btn_Stop
   m_TagString: Untagged
@@ -1862,6 +1891,62 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &5028960907322959911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7064704786911603538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 6648116426552945204}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5154216033647135440}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &7407068069569056891
 GameObject:
   m_ObjectHideFlags: 0
@@ -2142,6 +2227,7 @@ MonoBehaviour:
   _loopMode: 0
   _delaySeconds: 0
   _playOnAwake: 0
+  _useUnscaledTime: 0
   _punchStrength: 0.3
   _punchDuration: 0.4
   _punchVibrato: 10
@@ -2159,6 +2245,7 @@ MonoBehaviour:
   _heartbeatDuration: 0.4
   _stampFromScale: 1.5
   _stampDuration: 0.6
+  _popInDuration: 0.35
   _bobAmplitude: 5
   _bobDuration: 0.8
   _colorTo: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -2249,6 +2336,7 @@ GameObject:
   - component: {fileID: 1720473162888315462}
   - component: {fileID: 1370893399968730264}
   - component: {fileID: 2822880046383651811}
+  - component: {fileID: 5719052471727455128}
   m_Layer: 5
   m_Name: Text_Title
   m_TagString: Untagged
@@ -2375,6 +2463,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &5719052471727455128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8273347786643010861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4196fcef447850542817f5a7e585661d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizedText
+  key: hud.timelimit
 --- !u!1 &8518505715913897165
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 353edd53558dd4340b44de09244c2317, type: 3}
+  m_Name: LocalizationDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizationDatabase
+  entries:
+  - key: common.stamina
+    japanese: "スタミナ"
+    english: Stamina
+    korean: "스태미나"
+  - key: common.retry
+    japanese: "リトライ"
+    english: Retry
+    korean: "재시작"
+  - key: common.title
+    japanese: "タイトルへ"
+    english: Title
+    korean: "타이틀"
+  - key: common.stage_select
+    japanese: "ステージ選択"
+    english: Stage Select
+    korean: "스테이지 선택"
+  - key: hud.stage
+    japanese: "ステージ"
+    english: Stage
+    korean: "스테이지"
+  - key: hud.timelimit
+    japanese: "制限時間"
+    english: Time
+    korean: "제한 시간"
+  - key: option.resume
+    japanese: "再開"
+    english: Resume
+    korean: "계속하기"
+  - key: option.recover_timer
+    japanese: "次回回復まで"
+    english: Next Recovery
+    korean: "다음 회복까지"
+  - key: option.skill_cutin
+    japanese: "スキルカットイン"
+    english: Skill Cut-in
+    korean: "스킬 컷인"
+  - key: gameclear.next_battle
+    japanese: "次のバトル"
+    english: Next Battle
+    korean: "다음 배틀"
+  - key: dlg.retry
+    japanese: "リトライしますか？"
+    english: Retry?
+    korean: "재시작할까요?"
+  - key: dlg.title
+    japanese: "タイトルに戻りますか？"
+    english: Back to title?
+    korean: "타이틀로 돌아갈까요?"
+  - key: dlg.stage_select
+    japanese: "ステージ選択に戻りますか？"
+    english: Back to stage select?
+    korean: "스테이지 선택으로 돌아갈까요?"

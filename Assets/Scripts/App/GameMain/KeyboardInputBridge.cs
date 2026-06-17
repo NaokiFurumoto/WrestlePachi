@@ -27,6 +27,10 @@ namespace App
             var keyboard = Keyboard.current;
             if (keyboard == null) return;
 
+            // ─── オプション（ポーズ）───────────────────────────────
+            if (keyboard.escapeKey.wasPressedThisFrame)
+                _controller.OnInputOption();
+
             if (_controller.IsGameOver) return;
 
             // ─── ぷよ操作 ─────────────────────────────────────────

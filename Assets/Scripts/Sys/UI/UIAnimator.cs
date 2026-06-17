@@ -28,6 +28,7 @@ namespace GameSys
             Stamp,       // スタンプ      ：バウンスしながら着地するドーン演出
             ColorCycle,  // カラーサイクル：指定した2色の間を循環変化する
             Bob,         // ボブ          ：上下にゆっくり浮遊するループ演出
+            PopIn,       // ポップイン    ：0→等倍にOutBackで飛び出す登場演出
         }
 
         public enum LoopMode
@@ -55,6 +56,9 @@ namespace GameSys
 
         [SerializeField, Tooltip("Start 時に自動再生するか（OFF の場合は PlayAsync() か Play() を呼ぶ）")]
         private bool _playOnAwake = true;
+
+        [SerializeField, Tooltip("Time.timeScale の影響を受けないか（ポーズ中でも動かしたい UI に ON）")]
+        private bool _useUnscaledTime = false;
 
         // ─────────────────────────────────────────
         // Punch（パンチ）
@@ -136,6 +140,13 @@ namespace GameSys
         private float _stampDuration = 0.6f;
 
         // ─────────────────────────────────────────
+        // PopIn（ポップイン）
+        // ─────────────────────────────────────────
+        [Header("── PopIn（View 登場） ──")]
+        [SerializeField, Tooltip("0 → 等倍になるまでの時間（秒）")]
+        private float _popInDuration = 0.35f;
+
+        // ─────────────────────────────────────────
         // Bob（ボブ）
         // ─────────────────────────────────────────
         [Header("── Bob（上下浮遊） ──")]
@@ -203,6 +214,7 @@ namespace GameSys
                 AnimType.Stamp      => StampAsync(ct),
                 AnimType.ColorCycle => ColorCycleAsync(ct),
                 AnimType.Bob        => BobAsync(ct),
+                AnimType.PopIn      => PopInAsync(ct),
                 _                   => UniTask.CompletedTask,
             };
         }
@@ -341,6 +353,16 @@ namespace GameSys
             return PlayAndAwait(ct);
         }
 
+        public UniTask PopInAsync(CancellationToken ct = default)
+        {
+            Initialize(); KillCurrent();
+            transform.localScale = Vector3.zero;
+            _currentTween = transform
+                .DOScale(_defaultScale, _popInDuration / _speed)
+                .SetEase(Ease.OutBack);
+            return PlayAndAwait(ct);
+        }
+
         // ─────────────────────────────────────────
         // ヘルパー
         // ─────────────────────────────────────────
@@ -351,6 +373,7 @@ namespace GameSys
             if (_currentTween == null) return UniTask.CompletedTask;
             var tcs = new UniTaskCompletionSource();
             _currentTween
+                .SetUpdate(_useUnscaledTime)
                 .SetDelay(_delaySeconds)
                 .OnComplete(() => tcs.TrySetResult())
                 .OnKill(() => tcs.TrySetResult())
@@ -443,7 +466,16 @@ namespace GameSys
                         .SetEase(Ease.InOutSine).SetLoops(loops, LoopType.Yoyo).SetDelay(_delaySeconds).Play();
                     break;
                 }
+
+                case AnimType.PopIn:
+                    transform.localScale = Vector3.zero;
+                    _currentTween = transform
+                        .DOScale(_defaultScale, _popInDuration / _speed)
+                        .SetEase(Ease.OutBack).SetDelay(_delaySeconds).Play();
+                    break;
             }
+            // timeScale 非依存フラグを全ケースに一括適用
+            _currentTween?.SetUpdate(_useUnscaledTime);
         }
 
         private void KillCurrent(bool resetState = false)

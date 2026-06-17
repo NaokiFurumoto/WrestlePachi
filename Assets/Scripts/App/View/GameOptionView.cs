@@ -1,8 +1,10 @@
 #nullable enable
+using Cysharp.Threading.Tasks;
 using GameSys;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace App
 {
@@ -20,19 +22,13 @@ namespace App
 
         // ── スタミナ ─────────────────────────────────────────────────────
         [Header("スタミナ")]
-        [SerializeField] private TMP_Text? _staminaValueText;    // 「X / Y」
-        [SerializeField] private TMP_Text? _staminaRecoverText;  // 「次回回復まで X:XX」
+        [SerializeField] private TMP_Text? _staminaCurrentText;  // 現在値のみ
+        [SerializeField] private TMP_Text? _staminaMaxText;      // 最大値のみ
+        [SerializeField] private TMP_Text? _staminaRecoverText;  // 「00:00」の時間部分のみ
 
         // ── 設定 ─────────────────────────────────────────────────────────
         [Header("設定")]
         [SerializeField] private Toggle?   _cutInToggle;
-
-        // ── ボタン ───────────────────────────────────────────────────────
-        [Header("ボタン")]
-        [SerializeField] private Button?   _resumeButton;
-        [SerializeField] private Button?   _retryButton;
-        [SerializeField] private Button?   _titleButton;
-        [SerializeField] private Button?   _stageSelectButton;
 
         // ─────────────────────────────────────────────────────────────────
 
@@ -63,23 +59,31 @@ namespace App
             if (!StaminaManager.isValid) return;
             var stamina = StaminaManager.Instance;
 
-            if (_staminaValueText != null)
-                _staminaValueText.text = $"{stamina.Current} / {stamina.Max}";
+            if (_staminaCurrentText != null)
+                _staminaCurrentText.text = stamina.Current.ToString();
+            if (_staminaMaxText != null)
+                _staminaMaxText.text = stamina.Max.ToString();
 
             // TODO: SaveManager 実装後に実際の回復残り時間を接続
             if (_staminaRecoverText != null)
-                _staminaRecoverText.text = stamina.Current >= stamina.Max
-                    ? "スタミナ満タン"
-                    : "次回回復まで -:--";
+                _staminaRecoverText.text = stamina.Current >= stamina.Max ? "--:--" : "-:--";
         }
 
         // ── ボタンコールバック（Inspector の onClick に登録） ──────────────
         // TODO: ロジックは PauseState / SceneManager 接続後に実装
 
-        public void OnResumeClicked()      { /* TODO: ViewManager.PopViewAsync + TimeManager.Resume() */ }
-        public void OnRetryClicked()       { /* TODO: SceneManager 経由で現ステージ再ロード */ }
-        public void OnTitleClicked()       { /* TODO: SceneManager.Instance.TransitScene("BootScene") */ }
-        public void OnStageSelectClicked() { /* TODO: SceneManager 経由でステージ選択シーンへ */ }
+        public void OnResumeClicked()      => ViewManager.PopView(this);
+        public void OnRetryClicked()       => ConfirmAndTransitAsync(LocalizationKeys.Dialog.RETRY,        () => UnitySceneManager.GetActiveScene().name).Forget();
+        public void OnTitleClicked()       => ConfirmAndTransitAsync(LocalizationKeys.Dialog.TITLE,        () => "BootScene").Forget();
+        public void OnStageSelectClicked() => ConfirmAndTransitAsync(LocalizationKeys.Dialog.STAGE_SELECT, () => "StageSelectScene").Forget();
+
+        private async UniTaskVoid ConfirmAndTransitAsync(string key, System.Func<string> sceneNameGetter)
+        {
+            var yes = await DialogView.ShowAsync(key, destroyCancellationToken);
+            if (!yes) return;
+            if (SceneManager.isValid)
+                SceneManager.Instance.TransitScene(sceneNameGetter());
+        }
 
         // ── スライダーコールバック（Inspector の onValueChanged に登録） ──
         // TODO: SaveManager 実装後に永続化を追加

@@ -177,6 +177,7 @@ namespace App
             ApplyStageConfig(_enemy?.EnemyIndex ?? 0, initBoard: true);
             ChangeState(new PlayingState(_ctx));
             var hud = ViewManager.GetView<GameMainHudView>();
+            if (hud != null) hud.OptionClicked += OnInputOption;
             if (_enemy != null) hud?.SetEnemy(_enemy);
             hud?.SetTime(_remainingTime);
             if (_enemy != null) hud?.SetStage(_enemy.EnemyIndex + 1, _enemy.TotalCount);
@@ -296,5 +297,6 @@ namespace App
         public void OnInputRotateCCW()   { if (AcceptsInput) _contents.PuyoBoard.ActivePair?.RotateCCW(); }
         public void OnInputSoftDrop()    { if (AcceptsInput) _contents.PuyoBoard.ActivePair?.BeginSoftDrop(); }
         public void OnInputSoftDropEnd() { if (AcceptsInput) _contents.PuyoBoard.ActivePair?.EndSoftDrop(); }
+        public void OnInputOption()      { if (_state?.CanPause ?? false) ChangeState(new PauseState(_ctx)); }
     }
 }

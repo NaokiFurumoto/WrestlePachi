@@ -35,12 +35,15 @@ namespace App.Skills
             var board = ctx.Contents.PuyoBoard;
             var ojamaPositions = board.GetOjamaPositions();
 
-            var handle = await ViewManager.PushViewAsync<SkillCutInView>(
-                ViewKeys.SKILL_CUT_IN,
-                new SkillCutInView.SkillCutInViewData { Controller = _controller, ImageSize = ImageSize });
-            var cutInView = handle?.View as SkillCutInView;
-            if (cutInView != null) await cutInView.PlayAttackAsync(ct);
-            await ViewManager.PopViewAsync(handle); // アニメ完了後すぐスライドアウト
+            if (GameSettings.CutInEnabled)
+            {
+                var handle = await ViewManager.PushViewAsync<SkillCutInView>(
+                    ViewKeys.SKILL_CUT_IN,
+                    new SkillCutInView.SkillCutInViewData { Controller = _controller, ImageSize = ImageSize });
+                var cutInView = handle?.View as SkillCutInView;
+                if (cutInView != null) await cutInView.PlayAttackAsync(ct);
+                await ViewManager.PopViewAsync(handle);
+            }
 
             var ojamaSprite = board.ColorSprites[(int)PuyoColor.OJAMA];
             var effect      = GameEffectController.Instance;

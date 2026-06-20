@@ -13,55 +13,83 @@ MonoBehaviour:
   m_Name: LocalizationDatabase
   m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizationDatabase
   entries:
+  - key: common.yes
+    japanese: "\u306F\u3044"
+    english: Yes
+    korean: "\uC608"
+  - key: common.no
+    japanese: "\u3044\u3044\u3048"
+    english: No
+    korean: "\uC544\uB2C8\uC624"
   - key: common.stamina
-    japanese: "スタミナ"
+    japanese: "\u30B9\u30BF\u30DF\u30CA"
     english: Stamina
-    korean: "스태미나"
+    korean: "\uC2A4\uD0DC\uBBF8\uB098"
   - key: common.retry
-    japanese: "リトライ"
+    japanese: "\u30EA\u30C8\u30E9\u30A4"
     english: Retry
-    korean: "재시작"
+    korean: "\uC7AC\uC2DC\uC791"
   - key: common.title
-    japanese: "タイトルへ"
+    japanese: "\u30BF\u30A4\u30C8\u30EB\u3078"
     english: Title
-    korean: "타이틀"
+    korean: "\uD0C0\uC774\uD2C0"
   - key: common.stage_select
-    japanese: "ステージ選択"
+    japanese: "\u30B9\u30C6\u30FC\u30B8\u9078\u629E"
     english: Stage Select
-    korean: "스테이지 선택"
+    korean: "\uC2A4\uD14C\uC774\uC9C0 \uC120\uD0DD"
+  - key: common.next
+    japanese: NEXT
+    english: NEXT
+    korean: "\uB2E4\uC74C"
+  - key: common.round
+    japanese: Round
+    english: Round
+    korean: "\uB77C\uC6B4\uB4DC"
   - key: hud.stage
-    japanese: "ステージ"
+    japanese: "\u30B9\u30C6\u30FC\u30B8"
     english: Stage
-    korean: "스테이지"
+    korean: "\uC2A4\uD14C\uC774\uC9C0"
   - key: hud.timelimit
-    japanese: "制限時間"
+    japanese: "\u5236\u9650\u6642\u9593"
     english: Time
-    korean: "제한 시간"
+    korean: "\uC81C\uD55C \uC2DC\uAC04"
   - key: option.resume
-    japanese: "再開"
+    japanese: "\u518D\u958B"
     english: Resume
-    korean: "계속하기"
+    korean: "\uACC4\uC18D\uD558\uAE30"
   - key: option.recover_timer
-    japanese: "次回回復まで"
+    japanese: "\u6B21\u56DE\u56DE\u5FA9\u307E\u3067"
     english: Next Recovery
-    korean: "다음 회복까지"
+    korean: "\uB2E4\uC74C \uD68C\uBCF5\uAE4C\uC9C0"
   - key: option.skill_cutin
-    japanese: "スキルカットイン"
+    japanese: "\u30B9\u30AD\u30EB\u30AB\u30C3\u30C8\u30A4\u30F3"
     english: Skill Cut-in
-    korean: "스킬 컷인"
+    korean: "\uC2A4\uD0AC \uCEF7\uC778"
   - key: gameclear.next_battle
-    japanese: "次のバトル"
+    japanese: "\u6B21\u306E\u30D0\u30C8\u30EB"
     english: Next Battle
-    korean: "다음 배틀"
+    korean: "\uB2E4\uC74C \uBC30\uD2C0"
+  - key: gameclear.stage
+    japanese: "\u30B9\u30C6\u30FC\u30B8 {0}"
+    english: Stage {0}
+    korean: "\uC2A4\uD14C\uC774\uC9C0 {0}"
+  - key: gameclear.defeated
+    japanese: "{0}\u6483\u7834\uFF01"
+    english: '{0} Defeated!'
+    korean: "{0} \uACA9\uD30C!"
   - key: dlg.retry
-    japanese: "リトライしますか？"
+    japanese: "\u30EA\u30C8\u30E9\u30A4\u3057\u307E\u3059\u304B\uFF1F"
     english: Retry?
-    korean: "재시작할까요?"
+    korean: "\uC7AC\uC2DC\uC791\uD560\uAE4C\uC694?"
   - key: dlg.title
-    japanese: "タイトルに戻りますか？"
+    japanese: "\u30BF\u30A4\u30C8\u30EB\u306B\u623B\u308A\u307E\u3059\u304B\uFF1F"
     english: Back to title?
-    korean: "타이틀로 돌아갈까요?"
+    korean: "\uD0C0\uC774\uD2C0\uB85C \uB3CC\uC544\uAC08\uAE4C\uC694?"
   - key: dlg.stage_select
-    japanese: "ステージ選択に戻りますか？"
+    japanese: "\u30B9\u30C6\u30FC\u30B8\u9078\u629E\u306B\u623B\u308A\u307E\u3059\u304B\uFF1F"
     english: Back to stage select?
-    korean: "스테이지 선택으로 돌아갈까요?"
+    korean: "\uC2A4\uD14C\uC774\uC9C0 \uC120\uD0DD\uC73C\uB85C \uB3CC\uC544\uAC08\uAE4C\uC694?"
+  - key: dlg.confirm
+    japanese: "\u78BA\u8A8D"
+    english: Confirm
+    korean: "\uD655\uC778"

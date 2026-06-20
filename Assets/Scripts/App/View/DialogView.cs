@@ -14,6 +14,11 @@ namespace App
     /// </summary>
     public sealed class DialogView : ViewBase
     {
+        public sealed class DialogViewData : ViewData
+        {
+            public string Key { get; set; } = "";
+        }
+
         [SerializeField] private TMP_Text? _messageText;
 
         private readonly UniTaskCompletionSource<bool> _tcs = new();
@@ -23,34 +28,34 @@ namespace App
         /// <summary>ダイアログを表示して Yes=true / No=false を返す。</summary>
         public static async UniTask<bool> ShowAsync(string key, CancellationToken ct)
         {
-            var handle = await ViewManager.PushViewAsync<DialogView>(ViewKeys.DIALOG);
+            var data   = new DialogViewData { Key = key };
+            var handle = await ViewManager.PushViewAsync<DialogView>(ViewKeys.DIALOG, data);
             if (handle?.View is not DialogView view) return false;
-            view.Setup(key);
             return await view._tcs.Task.AttachExternalCancellation(ct);
+        }
+
+        // ── 初期化（オープンアニメ前にテキストをセット） ─────────────────
+
+        protected override void OnInitialize()
+        {
+            if (Data is not DialogViewData data) return;
+            if (_messageText == null) return;
+            _messageText.text = LocalizationManager.isValid
+                ? LocalizationManager.Instance.GetText(data.Key)
+                : data.Key;
         }
 
         // ── ボタンコールバック（Inspector の onClick に登録） ─────────────
 
-        public void OnYesClicked()
-        {
-            _tcs.TrySetResult(true);
-            ViewManager.PopView(this);
-        }
-
-        public void OnNoClicked()
-        {
-            _tcs.TrySetResult(false);
-            ViewManager.PopView(this);
-        }
+        public void OnYesClicked() => CompleteAsync(true).Forget();
+        public void OnNoClicked()  => CompleteAsync(false).Forget();
 
         // ── 内部 ─────────────────────────────────────────────────────────
 
-        private void Setup(string key)
+        private async UniTask CompleteAsync(bool result)
         {
-            if (_messageText == null) return;
-            _messageText.text = LocalizationManager.isValid
-                ? LocalizationManager.Instance.GetText(key)
-                : key;
+            _tcs.TrySetResult(result);
+            await PopAsync();
         }
 
         protected override void OnRelease()

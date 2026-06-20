@@ -35,10 +35,17 @@ namespace App
         protected override void OnInitialize()
         {
             // 音量スライダー初期値
-            if (_bgmSlider != null && SoundManager.isValid)
-                _bgmSlider.value = SoundManager.Instance.VolumeBGM;
-            if (_seSlider != null && SoundManager.isValid)
-                _seSlider.value = SoundManager.Instance.VolumeSE;
+            if (_bgmSlider != null)
+                _bgmSlider.value = GameSettings.VolumeBGM;
+            if (_seSlider != null)
+                _seSlider.value = GameSettings.VolumeSE;
+
+            // カットイントグル：コードで購読（Inspector接続不要）
+            if (_cutInToggle != null)
+            {
+                _cutInToggle.SetIsOnWithoutNotify(GameSettings.CutInEnabled);
+                _cutInToggle.onValueChanged.AddListener(OnCutInToggleChanged);
+            }
 
             // スタミナ表示
             UpdateStaminaDisplay();
@@ -48,6 +55,8 @@ namespace App
 
         protected override void OnRelease()
         {
+            if (_cutInToggle != null)
+                _cutInToggle.onValueChanged.RemoveListener(OnCutInToggleChanged);
             if (StaminaManager.isValid)
                 StaminaManager.Instance.OnChanged -= OnStaminaChanged;
         }
@@ -90,18 +99,19 @@ namespace App
 
         public void OnBgmVolumeChanged(float value)
         {
-            if (SoundManager.isValid) SoundManager.Instance.SetVolumeBGM(value);
+            GameSettings.VolumeBGM = value;
+            AppSound.SetBGMVolume(value);
         }
 
         public void OnSeVolumeChanged(float value)
         {
-            if (SoundManager.isValid) SoundManager.Instance.SetVolumeSE(value);
+            GameSettings.VolumeSE = value;
         }
 
         // ── トグルコールバック（Inspector の onValueChanged に登録） ──────
         // TODO: SaveManager 実装後に永続化を追加
 
-        public void OnCutInToggleChanged(bool isOn) { /* TODO: カットイン表示フラグを保存して参照させる */ }
+        public void OnCutInToggleChanged(bool isOn) => GameSettings.CutInEnabled = isOn;
     }
 }
 #nullable disable

@@ -12,6 +12,10 @@ namespace App
             public const string RETRY         = "common.retry";
             public const string TITLE         = "common.title";
             public const string STAGE_SELECT  = "common.stage_select";
+            public const string YES           = "common.yes";
+            public const string NO            = "common.no";
+            public const string NEXT          = "common.next";
+            public const string ROUND         = "common.round";
         }
 
         /// <summary>HUD</summary>
@@ -33,11 +37,14 @@ namespace App
         public static class GameClear
         {
             public const string NEXT_BATTLE   = "gameclear.next_battle";
+            public const string STAGE         = "gameclear.stage";
+            public const string DEFEATED      = "gameclear.defeated";
         }
 
         /// <summary>ダイアログ</summary>
         public static class Dialog
         {
+            public const string CONFIRM      = "dlg.confirm";
             public const string RETRY        = "dlg.retry";
             public const string TITLE        = "dlg.title";
             public const string STAGE_SELECT = "dlg.stage_select";

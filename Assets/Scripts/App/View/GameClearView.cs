@@ -68,10 +68,20 @@ namespace App
             if (Data is not GameClearViewData data) return;
 
             if (_stageNumberText != null)
-                _stageNumberText.text = $"ステージ {data.StageNumber}";
+            {
+                var stageFmt = LocalizationManager.isValid
+                    ? LocalizationManager.Instance.GetText(LocalizationKeys.GameClear.STAGE)
+                    : "ステージ {0}";
+                _stageNumberText.text = string.Format(stageFmt, data.StageNumber);
+            }
 
             if (_enemyNameText != null)
-                _enemyNameText.text = $"{data.EnemyName}撃破！";
+            {
+                var defeatedFmt = LocalizationManager.isValid
+                    ? LocalizationManager.Instance.GetText(LocalizationKeys.GameClear.DEFEATED)
+                    : "{0}撃破！";
+                _enemyNameText.text = string.Format(defeatedFmt, data.EnemyName);
+            }
 
             if (_enemyImage != null && data.EnemySprite != null)
             {

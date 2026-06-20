@@ -29,9 +29,10 @@ namespace App.Skills
         {
             _attackTcs = new UniTaskCompletionSource();
             _animator.SetTrigger("Attack");
+            // フォールバックは Realtime で計測し、timeScale=0/低速時でも必ず3秒で抜ける
             await UniTask.WhenAny(
                 _attackTcs.Task,
-                UniTask.Delay(3000, cancellationToken: ct)
+                UniTask.Delay(3000, DelayType.Realtime, cancellationToken: ct)
             );
         }
 

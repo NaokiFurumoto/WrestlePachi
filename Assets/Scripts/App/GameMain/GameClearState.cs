@@ -36,6 +36,7 @@ namespace App
             if (await WaitFlashAndGongsAsync(ct)) return;
             await _ctx.Contents.PuyoBoard.ClearAllPuyosAsync(ct);
 
+            AppSound.PlayClearGame();
             var viewData = new GameClearView.GameClearViewData
             {
                 StageNumber  = (_ctx.Enemy?.EnemyIndex ?? 0) + 1,

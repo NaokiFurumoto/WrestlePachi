@@ -14,6 +14,8 @@ namespace App
         public string  EnemyName   = "";
         public Sprite? EnemySprite;
         [Min(1)] public int EnemyHp = 10;
+        [Tooltip("0=Round表示なし（ラスボス等）、1以上=Round N と表示"), Min(0)]
+        public int RoundNumber = 0;
 
         [Header("ボード")]
         [Tooltip("表示行数（10 or 12）"), Range(10, 12)]

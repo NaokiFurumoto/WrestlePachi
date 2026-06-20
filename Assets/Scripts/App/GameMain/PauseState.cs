@@ -31,6 +31,7 @@ namespace App
 
         private async UniTaskVoid RunAsync(CancellationToken ct)
         {
+            AppSound.PlayOpenWindow();
             var handle = await ViewManager.PushViewAsync<GameOptionView>(ViewKeys.GAME_OPTION);
 
             // GameOptionView が閉じられるまで待機

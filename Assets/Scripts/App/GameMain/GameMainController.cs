@@ -40,6 +40,7 @@ namespace App
         [Header("演出")]
         [SerializeField] private GameEffectController _effectController;
         [SerializeField] private HoldBeamEffect?      _holdBeamEffect;
+        [SerializeField] private ComboView?           _comboViewPrefab;
 
         // ─── 内部状態 ────────────────────────────────────────────
         private Game2DContents              _contents;
@@ -53,6 +54,7 @@ namespace App
         private bool             _isSimulatorMode;
         private float            _remainingTime;
         private int              _lastNotifiedSecond = -1;
+        private ComboView?       _comboView;
 
         // ─── 公開プロパティ ───────────────────────────────────────
         /// <summary>現在入力を受け付けられるか（IAutoPlayTarget / KeyboardInputBridge 用）</summary>
@@ -73,9 +75,12 @@ namespace App
             _ctx.Enemy         = _enemy;
             _ctx.RestartGame   = RestartGame;
 
-            // 敵撃破イベント
+            // 敵イベント
             if (_enemy != null)
+            {
                 _enemy.OnDefeated += OnEnemyDefeated;
+                _enemy.OnDamaged  += OnEnemyDamaged;
+            }
 
             // ストックシステム初期化
             _skillStockSystem = new SkillStockSystem();
@@ -103,6 +108,7 @@ namespace App
             // PuyoBoard イベントを購読
             var board = _contents.PuyoBoard;
             board.OnPairLocked       += OnBoardPairLocked;
+            board.OnChainStep        += OnBoardChainStep;
             board.OnChainCompleted   += OnBoardChainCompleted;
             board.OnNextQueueChanged += OnBoardNextQueueChanged;
             board.OnGameOver         += OnBoardGameOver;
@@ -128,6 +134,10 @@ namespace App
                 board.OnNextQueueChanged += _contents.NextPuyoDisplay.Refresh;
             }
 
+            // コンボ表示（Prefab から生成）
+            if (_comboViewPrefab != null)
+                _comboView = Instantiate(_comboViewPrefab, _contents.EffectRoot);
+
             return UniTask.CompletedTask;
         }
 
@@ -141,6 +151,7 @@ namespace App
 
             var board = _contents.PuyoBoard;
             board.OnPairLocked       -= OnBoardPairLocked;
+            board.OnChainStep        -= OnBoardChainStep;
             board.OnChainCompleted   -= OnBoardChainCompleted;
             board.OnNextQueueChanged -= OnBoardNextQueueChanged;
             board.OnGameOver         -= OnBoardGameOver;
@@ -149,7 +160,10 @@ namespace App
             _contents.PachinkoController.OnPocketEntered -= OnPocketEntered;
 
             if (_enemy != null)
+            {
                 _enemy.OnDefeated -= OnEnemyDefeated;
+                _enemy.OnDamaged  -= OnEnemyDamaged;
+            }
 
             _techSkillManager.OnSkillExecuted -= ScreenEffectController.PlaySkill;
 
@@ -175,12 +189,15 @@ namespace App
         {
             IsGameOver = false;
             ApplyStageConfig(_enemy?.EnemyIndex ?? 0, initBoard: true);
+            AppSound.PlayBGMGame();
             ChangeState(new PlayingState(_ctx));
             var hud = ViewManager.GetView<GameMainHudView>();
             if (hud != null) hud.OptionClicked += OnInputOption;
             if (_enemy != null) hud?.SetEnemy(_enemy);
             hud?.SetTime(_remainingTime);
             if (_enemy != null) hud?.SetStage(_enemy.EnemyIndex + 1, _enemy.TotalCount);
+            hud?.SetRound(_ctx.CurrentStage?.RoundNumber ?? 0);
+            hud?.SetRainbowProbability(_ctx.CurrentStage?.RainbowDenominator ?? _config.RainbowProbabilityDenominator);
         }
 
         // initBoard=true はゲーム開始時のみ。敵切り替え時は false（盤面リセット禁止）
@@ -190,11 +207,12 @@ namespace App
             _ctx.CurrentStage   = stage;
             _remainingTime      = stage?.TimeLimit ?? _config.TimeLimitSeconds;
             _lastNotifiedSecond = -1;
-            var colorCount    = stage?.ColorCount      ?? _config.ColorVariant;
-            var fallSpeed     = stage?.PuyoFallSpeed   ?? 1f;
+            var colorCount    = stage?.ColorCount        ?? _config.ColorVariant;
+            var fallSpeed     = stage?.PuyoFallSpeed     ?? 1f;
             var garbageRows   = stage?.GarbageInitialRows ?? 0;
+            var rowCount      = stage?.RowCount           ?? 12;
             if (initBoard)
-                _contents.PuyoBoard.Initialize(colorCount, garbageRows);
+                _contents.PuyoBoard.Initialize(colorCount, garbageRows, rowCount);
             else
                 _contents.PuyoBoard.SetColorCount(colorCount);
             _contents.PuyoBoard.SetFallSpeedMultiplier(fallSpeed);
@@ -215,6 +233,12 @@ namespace App
         {
             var timeLimit = _ctx.CurrentStage?.TimeLimit ?? _config.TimeLimitSeconds;
             if (IsGameOver || timeLimit <= 0f) return;
+
+            var phase = _state?.Phase;
+            if (phase == GamePhase.Paused       ||
+                phase == GamePhase.SkillExecuting ||
+                phase == GamePhase.EnemyDying   ||
+                phase == GamePhase.GameClear) return;
 
             _remainingTime = Mathf.Max(0f, _remainingTime - Time.deltaTime);
 
@@ -257,14 +281,25 @@ namespace App
         private void OnBoardPairLocked()
             => _state?.OnPairLocked();
 
+        private void OnBoardChainStep(int step, int clearedCount)
+        {
+            if (step >= 2)
+                _comboView?.Show(step, _contents.PuyoBoard.LastChainCentroidWorld);
+        }
+
         private void OnBoardChainCompleted(int chainCount, int clearedCount)
-            => _state?.OnChainCompleted(chainCount, clearedCount);
+        {
+            if (chainCount >= 2) AppSound.PlayChain();
+            _state?.OnChainCompleted(chainCount, clearedCount);
+        }
 
         private void OnBoardNextQueueChanged(IReadOnlyList<PuyoPairColors> _)
             => _state?.OnNextPairSpawned();
 
         private void OnBoardGameOver()
             => _state?.OnBoardGameOver();
+
+        private void OnEnemyDamaged(int damage) => AppSound.PlayDamageHit();
 
         private void OnEnemyDefeated()
         {
@@ -286,6 +321,8 @@ namespace App
             hud?.SetEnemy(_enemy);
             hud?.SetStage(nextIndex + 1, _enemy.TotalCount);
             hud?.SetTime(_remainingTime);
+            hud?.SetRound(_ctx.CurrentStage?.RoundNumber ?? 0);
+            hud?.SetRainbowProbability(_ctx.CurrentStage?.RainbowDenominator ?? _config.RainbowProbabilityDenominator);
             ChangeState(new PlayingState(_ctx));
         }
 

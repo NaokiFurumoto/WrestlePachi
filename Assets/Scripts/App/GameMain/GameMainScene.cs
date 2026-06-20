@@ -37,7 +37,6 @@ namespace App
             // エディタ直接再生時、シーンに配置されていない Manager を自動生成する
             _AutoCreate<SceneFade>("[SceneFade]");
             _AutoCreate<PrefabManager>("[PrefabManager]");
-            _AutoCreate<SoundManager>("[SoundManager]");
             _AutoCreate<AppSound>("[AppSound]");
             _AutoCreate<LocalizationManager>("[LocalizationManager]");
             _AutoCreate<StaminaManager>("[StaminaManager]");

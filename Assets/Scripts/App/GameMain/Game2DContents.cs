@@ -30,6 +30,7 @@ namespace App
         [SerializeField] private TengekiButton       _tengekiButton;
 
 
+
         // ─── プロパティ ───────────────────────────────────────────
         public Camera        MainCamera    => _mainCamera;
         public Light2D       MainLight     => _mainLight;

@@ -50,6 +50,14 @@ namespace App
         [Header("スタミナ")]
         [SerializeField] private TMP_Text? _staminaText;
 
+        // ── ラウンド ─────────────────────────────────────────────────
+        [Header("ラウンド")]
+        [SerializeField] private TMP_Text? _roundText;
+
+        // ── 虹保留確率 ───────────────────────────────────────────────
+        [Header("虹保留確率")]
+        [SerializeField] private TMP_Text? _rainbowProbText;
+
         // ─────────────────────────────────────────────────────────────
 
         protected override void OnInitialize()
@@ -100,7 +108,7 @@ namespace App
                 ? (float)_enemy.CurrentHp / _enemy.MaxHp : 1f;
             SetHpFillImmediate(fill);
             SetEnemyFace(_enemy.FaceSprite);
-            SetEnemyHpText(_enemy.CurrentHp, _enemy.MaxHp);
+            SetEnemyHpText(_enemy.CurrentHp);
         }
 
         private void SetHpFillImmediate(float fill)
@@ -114,7 +122,7 @@ namespace App
         {
             float target = maxHp > 0 ? (float)currentHp / maxHp : 0f;
             AnimateHpFill(target);
-            SetEnemyHpText(currentHp, maxHp);
+            SetEnemyHpText(currentHp);
         }
 
         private void OnEnemyDamaged(int damage)
@@ -125,10 +133,10 @@ if (_damageEffect != null)
                 _enemyAnimator.ShakeAsync(destroyCancellationToken).Forget();
         }
 
-        private void SetEnemyHpText(int currentHp, int maxHp)
+        private void SetEnemyHpText(int currentHp)
         {
             if (_enemyHpText == null) return;
-            _enemyHpText.text = $"{currentHp}/{maxHp}";
+            _enemyHpText.text = currentHp.ToString();
         }
 
         private void AnimateHpFill(float target)
@@ -176,6 +184,24 @@ if (_damageEffect != null)
         {
             if (_staminaText == null) return;
             _staminaText.text = $"{current}/{max}";
+        }
+
+        // ── ラウンド ─────────────────────────────────────────────────
+
+        public void SetRound(int roundNumber)
+        {
+            if (_roundText == null) return;
+            _roundText.gameObject.SetActive(roundNumber > 0);
+            if (roundNumber > 0)
+                _roundText.text = roundNumber.ToString();
+        }
+
+        // ── 虹保留確率 ───────────────────────────────────────────────
+
+        public void SetRainbowProbability(int denominator)
+        {
+            if (_rainbowProbText == null) return;
+            _rainbowProbText.text = denominator > 0 ? $"1/{denominator}" : "なし";
         }
 
     }

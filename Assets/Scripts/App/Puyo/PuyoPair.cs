@@ -1,6 +1,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using GameSys;
 using UnityEngine;
 
 namespace App.Puyo
@@ -117,25 +118,25 @@ namespace App.Puyo
         /// <summary>左に1マス移動する</summary>
         public void MoveLeft()
         {
-            if (!_isLocked) TryMove(-1);
+            if (!_isLocked && TryMove(-1)) AppSound.PlayPuyoMove();
         }
 
         /// <summary>右に1マス移動する</summary>
         public void MoveRight()
         {
-            if (!_isLocked) TryMove(1);
+            if (!_isLocked && TryMove(1)) AppSound.PlayPuyoMove();
         }
 
         /// <summary>時計回りに回転する</summary>
         public void RotateCW()
         {
-            if (!_isLocked) TryRotate(1);
+            if (!_isLocked && TryRotate(1)) AppSound.PlayPuyoRotate();
         }
 
         /// <summary>反時計回りに回転する</summary>
         public void RotateCCW()
         {
-            if (!_isLocked) TryRotate(-1);
+            if (!_isLocked && TryRotate(-1)) AppSound.PlayPuyoRotate();
         }
 
         /// <summary>高速落下を開始する</summary>
@@ -181,15 +182,16 @@ namespace App.Puyo
 
             _mainCell = newMain;
             // ソフトドロップ中はアニメなし（間隔が短すぎるため）
+            if (_isSoftDrop) AppSound.PlayPuyoMove();
             RefreshPositions(_isSoftDrop ? 0f : _fallDuration);
             return true;
         }
 
         /// <summary>
         /// 回転を試みる。壁・床に当たる場合は壁蹴りを試みる。
-        /// dir: 1=時計回り, -1=反時計回り
+        /// dir: 1=時計回り, -1=反時計回り。成功したら true を返す。
         /// </summary>
-        private void TryRotate(int dir)
+        private bool TryRotate(int dir)
         {
             var newRot    = (_rotation + dir + 4) % 4;
             var newSubPos = _mainCell + SUB_OFFSETS[newRot];
@@ -199,7 +201,7 @@ namespace App.Puyo
             {
                 _rotation = newRot;
                 RefreshPositions();
-                return;
+                return true;
             }
 
             // 壁蹴り：サブが壁に入る場合、軸を逆方向にずらす
@@ -214,7 +216,10 @@ namespace App.Puyo
                 _mainCell = kickedMain;
                 _rotation = newRot;
                 RefreshPositions();
+                return true;
             }
+
+            return false;
         }
 
         // ─── 位置更新 ────────────────────────────────────────────

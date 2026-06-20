@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 919802897743053498}
   - component: {fileID: 638743086887324751}
   - component: {fileID: 2297840586410583838}
+  - component: {fileID: 6063934480153960628}
   m_Layer: 0
   m_Name: Ball
   m_TagString: Ball
@@ -156,3 +157,17 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.3
+--- !u!114 &6063934480153960628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7724922605294307563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d30414f7a83934caf294a1096b40aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::App.BallSoundPlayer
+  _minImpulse: 0.5
+  _cooldownSec: 0.06

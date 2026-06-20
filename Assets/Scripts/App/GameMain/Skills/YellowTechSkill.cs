@@ -34,12 +34,15 @@ namespace App.Skills
             var board = ctx.Contents.PuyoBoard;
             var targets = board.GetRandomPuyoPositions(StompCount);
 
-            var handle = await ViewManager.PushViewAsync<SkillCutInView>(
-                ViewKeys.SKILL_CUT_IN,
-                new SkillCutInView.SkillCutInViewData { Controller = _controller, ImageSize = ImageSize });
-            var cutInView = handle?.View as SkillCutInView;
-            if (cutInView != null) await cutInView.PlayAttackAsync(ct);
-            await ViewManager.PopViewAsync(handle); // アニメ完了後すぐスライドアウト
+            if (GameSettings.CutInEnabled)
+            {
+                var handle = await ViewManager.PushViewAsync<SkillCutInView>(
+                    ViewKeys.SKILL_CUT_IN,
+                    new SkillCutInView.SkillCutInViewData { Controller = _controller, ImageSize = ImageSize });
+                var cutInView = handle?.View as SkillCutInView;
+                if (cutInView != null) await cutInView.PlayAttackAsync(ct);
+                await ViewManager.PopViewAsync(handle);
+            }
 
             // ランダム5個をポンポン消去（スタンプ落下 → 着地と同時に消去）
             foreach (var cell in targets)

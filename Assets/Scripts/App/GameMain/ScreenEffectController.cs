@@ -73,6 +73,7 @@ namespace App
             }
 
             Instance = this;
+            transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
 
             _volume.profile = Instantiate(_volume.profile);

@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using GameSys;
 using UnityEngine;
+using App;
 
 namespace App.Skills
 {
@@ -57,16 +58,20 @@ namespace App.Skills
             }
 
             // ── レインボーカットイン ──────────────────────────────────────
-            var cutInHandle = await ViewManager.PushViewAsync<SkillCutInView>(
-                ViewKeys.SKILL_CUT_IN,
-                new SkillCutInView.SkillCutInViewData
-                {
-                    Controller = _controller,
-                    ImageSize  = CutInImageSize,
-                });
-            var cutInView = cutInHandle?.View as SkillCutInView;
-            if (cutInView != null) await cutInView.PlayAttackAsync(ct);
-            await ViewManager.PopViewAsync(cutInHandle);
+            if (GameSettings.CutInEnabled)
+            {
+                var cutInHandle = await ViewManager.PushViewAsync<SkillCutInView>(
+                    ViewKeys.SKILL_CUT_IN,
+                    new SkillCutInView.SkillCutInViewData
+                    {
+                        Controller = _controller,
+                        ImageSize  = CutInImageSize,
+                        CloseStyle = SkillCutInView.CutInCloseStyle.ZoomFade,
+                    });
+                var cutInView = cutInHandle?.View as SkillCutInView;
+                if (cutInView != null) await cutInView.PlayAttackAsync(ct);
+                await ViewManager.PopViewAsync(cutInHandle);
+            }
 
             // ── 全消し ────────────────────────────────────────────────────
             ctx.Enemy?.InstantKill();

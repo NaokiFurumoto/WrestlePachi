@@ -24,7 +24,12 @@ namespace App
         public void Debug_ForceHesoEntry()                                  => OnHesoEntered();
         public void Debug_LaunchBalls(int count)                            => _contents?.BallLauncher?.LaunchAsync(count).Forget();
         public void Debug_ClearAllBalls()                                   => _contents?.BallLauncher?.Debug_ClearAllBalls();
-        public void Debug_ForceChainCompleted(int chainCount, int cleared)  => _state?.OnChainCompleted(chainCount, cleared);
+        public void Debug_ForceChainCompleted(int chainCount, int cleared)
+        {
+            if (chainCount >= 2)
+                _comboView?.Show(chainCount, _contents.PuyoBoard.LastChainCentroidWorld);
+            _state?.OnChainCompleted(chainCount, cleared);
+        }
         public void Debug_ForceGameOver()                                   => _state?.OnBoardGameOver();
         public void Debug_ForceGameClear()                                  => ChangeState(new GameClearState(_ctx));
         public void Debug_InstantKillEnemy()                                => _enemy?.InstantKill();
@@ -59,6 +64,21 @@ namespace App
         public void Debug_StopAutoPlay() => _autoPlayAgent?.Stop();
 
         public void Debug_FillBoard(int rows = 6) => _contents?.PuyoBoard?.Debug_FillBoard(rows);
+
+        public void Debug_ShowCombo(int chainCount)
+        {
+            if (_comboView == null)
+            {
+                UnityEngine.Debug.LogWarning("[Debug] _comboView が null です。_comboViewPrefab のアサインを確認してください。");
+                return;
+            }
+            if (chainCount >= 2) GameSys.AppSound.PlayChain();
+            // デバッグ時は LastChainCentroidWorld が未設定のため盤面中央を使う
+            var boardCenter = _contents?.PuyoBoard != null
+                ? _contents.PuyoBoard.transform.position + new UnityEngine.Vector3(2.5f, 5f)
+                : UnityEngine.Vector3.zero;
+            _comboView.Show(chainCount, boardCenter);
+        }
 
         // ─── エディタ専用フィールド ───────────────────────────────
         private AutoPlayAgent _autoPlayAgent;

@@ -20,6 +20,9 @@ namespace App
         /// <summary>slot0 到達後、消化までの待機時間（秒）。スロット回転演出相当。</summary>
         private const float ActivationDelaySec = 2.0f;
 
+        /// <summary>へそ入賞後、保留玉が画面に出るまでの待機時間（秒）。実機スロット演出相当。</summary>
+        private const float HoldRevealDelaySec = 1.0f;
+
         // ─── 状態 ───────────────────────────────────────────────
         /// <summary>null = 空スロット</summary>
         private readonly HoldType?[] _slots = new HoldType?[MaxHolds];
@@ -83,8 +86,10 @@ namespace App
             }
 
             _slots[index] = holdType;
-            OnHoldAdded?.Invoke(index, holdType);
             OnHoldCountChanged?.Invoke(HoldCount);
+
+            // 表示は遅延後に通知（実機スロット演出相当）
+            RevealHoldAsync(index, holdType).Forget();
 
             // slot0 に配置されたとき、未消化なら消化シーケンス開始
             if (index == 0 && !_isActivating)
@@ -92,6 +97,14 @@ namespace App
         }
 
         // ─── 内部処理 ────────────────────────────────────────────
+
+        private async UniTaskVoid RevealHoldAsync(int index, HoldType holdType)
+        {
+            await UniTask.Delay((int)(HoldRevealDelaySec * 1000), cancellationToken: _ct)
+                .SuppressCancellationThrow();
+            if (!_ct.IsCancellationRequested)
+                OnHoldAdded?.Invoke(index, holdType);
+        }
 
         /// <summary>
         /// slot1（index=0）消化後、残り保留を全て左へ詰める。
@@ -115,32 +128,39 @@ namespace App
         private async UniTaskVoid ActivateSequenceAsync()
         {
             _isActivating = true;
-
-            while (!_ct.IsCancellationRequested)
+            try
             {
-                if (_slots[0] == null) break;
+                while (!_ct.IsCancellationRequested)
+                {
+                    if (_slots[0] == null) break;
 
-                // 保留アニメーション待機（スロット回転相当）
-                await UniTask.Delay(
-                    (int)(ActivationDelaySec * 1000),
-                    cancellationToken: _ct);
+                    // 保留アニメーション待機（スロット回転相当）
+                    // UnscaledDeltaTime: ポーズ中は止まるが HitStop/TimeSlow の影響を受けない
+                    await UniTask.Delay(
+                        (int)(ActivationDelaySec * 1000),
+                        DelayType.UnscaledDeltaTime,
+                        cancellationToken: _ct)
+                        .SuppressCancellationThrow();
 
-                if (_ct.IsCancellationRequested) break;
+                    if (_ct.IsCancellationRequested) break;
 
-                var holdType = _slots[0]!.Value;
-                _slots[0] = null;
+                    var holdType = _slots[0]!.Value;
+                    _slots[0] = null;
 
-                OnHoldConsumed?.Invoke(0);
+                    OnHoldConsumed?.Invoke(0);
 
-                // 消化直後に左詰めする（スキル演出中に新保留が入っても最後尾に入るように）
-                ShiftAllLeft();
+                    // 消化直後に左詰めする（スキル演出中に新保留が入っても最後尾に入るように）
+                    ShiftAllLeft();
 
-                // スキル演出が完了するまで待機してから次の保留へ進む
-                if (OnTechActivated != null)
-                    await OnTechActivated.Invoke(holdType);
+                    // スキル演出が完了するまで待機してから次の保留へ進む
+                    if (OnTechActivated != null)
+                        await OnTechActivated.Invoke(holdType);
+                }
             }
-
-            _isActivating = false;
+            finally
+            {
+                _isActivating = false;
+            }
         }
 
 #if UNITY_EDITOR

@@ -16,6 +16,7 @@ namespace App
 
         private void OnHesoEntered()
         {
+            AppSound.PlayHesoIn();
             ScreenEffectController.PlayHeso();
             if (_isSimulatorMode) return;
             _holdSystem.AddHold(SelectHoldType());
@@ -83,6 +84,7 @@ namespace App
         /// <summary>保留追加時のハンドラ。虹保留ならバイブレーションループを開始する。</summary>
         private void OnHoldSystemAdded(int index, HoldType holdType)
         {
+            AppSound.PlayHoldAdd();
             if (holdType != HoldType.Rainbow) return;
             _ctx.RainbowVibrationCts?.Cancel();
             _ctx.RainbowVibrationCts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);

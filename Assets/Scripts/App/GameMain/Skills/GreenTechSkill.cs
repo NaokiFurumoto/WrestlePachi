@@ -33,12 +33,15 @@ namespace App.Skills
             var board = ctx.Contents.PuyoBoard;
             var origin = board.FindDensest2x2();
 
-            var handle = await ViewManager.PushViewAsync<SkillCutInView>(
-                ViewKeys.SKILL_CUT_IN,
-                new SkillCutInView.SkillCutInViewData { Controller = _controller, ImageSize = ImageSize });
-            var cutInView = handle?.View as SkillCutInView;
-            if (cutInView != null) await cutInView.PlayAttackAsync(ct);
-            await ViewManager.PopViewAsync(handle); // アニメ完了後すぐスライドアウト
+            if (GameSettings.CutInEnabled)
+            {
+                var handle = await ViewManager.PushViewAsync<SkillCutInView>(
+                    ViewKeys.SKILL_CUT_IN,
+                    new SkillCutInView.SkillCutInViewData { Controller = _controller, ImageSize = ImageSize });
+                var cutInView = handle?.View as SkillCutInView;
+                if (cutInView != null) await cutInView.PlayAttackAsync(ct);
+                await ViewManager.PopViewAsync(handle);
+            }
 
             // 回転順（左下→右下→右上→左上）に消去してラリアットの回転感を演出
             var cells = new[]

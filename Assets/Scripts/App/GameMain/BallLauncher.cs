@@ -26,10 +26,15 @@ namespace App
         [SerializeField, Range( 0f, 30f )] private float _angleSpread    = 3f;   // 角度ランダム幅（±度）
         [SerializeField, Range( 0f, 0.3f )] private float _impulseVariance = 0.05f; // 強さランダム幅（±割合）
 
+        [Header( "サウンド" )]
+        [SerializeField, Range( 0f, 1f )] private float _launchSEVolume   = 1f;
+        [SerializeField, Min( 0f )]       private float _launchSECooldown = 1.0f; // 発射SEの最小間隔（秒）
+
         [Header( "管理" )]
         [SerializeField] private Transform _ballRoot;
 
-        private float _lastLaunchTime = float.NegativeInfinity;
+        private float _lastLaunchTime   = float.NegativeInfinity;
+        private float _lastLaunchSETime = float.NegativeInfinity;
         private GameObject _cachedBallPrefab;
 
         /// <summary>
@@ -78,6 +83,12 @@ namespace App
         /// </summary>
         private void _LaunchBall()
         {
+            if (Time.time - _lastLaunchSETime >= _launchSECooldown)
+            {
+                _lastLaunchSETime = Time.time;
+                GameSys.AppSound.PlayBallLaunch( _launchSEVolume );
+            }
+
             var prefab = _ResolveBallPrefab();
             if( prefab == null )
             {

@@ -1,5 +1,6 @@
 #nullable enable
 using System.Threading;
+using GameSys;
 using UnityEngine;
 
 namespace App
@@ -17,6 +18,7 @@ namespace App
 
         public override void OnEnter(CancellationToken ct)
         {
+            AppSound.PlayGameOver();
             // TODO: ゲームオーバー演出・リトライUI表示
         }
 

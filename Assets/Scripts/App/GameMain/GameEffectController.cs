@@ -5,9 +5,7 @@ using App.Effects;
 using App.Puyo;
 using App.Skills;
 using Cysharp.Threading.Tasks;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace App
 {
@@ -19,11 +17,6 @@ namespace App
     public sealed class GameEffectController : MonoBehaviour
     {
         public static GameEffectController? Instance { get; private set; }
-
-        [Header("コンボ表示")]
-        [SerializeField] private TMP_Text? _comboNumberText;
-        [SerializeField] private Image?    _comboImage;
-        [SerializeField] private float     _comboDisplayTime = 1.5f;
 
         [Header("エフェクト配置先")]
         [SerializeField] private Transform? _effectRoot;
@@ -37,8 +30,7 @@ namespace App
         [SerializeField] private TackleEffect?        _tacklePrefab;
         [SerializeField] private OjamaDissolveEffect? _ojamadissolvePrefab;
 
-        private CancellationTokenSource? _comboCts;
-        private PuyoBoard?               _board;
+        private PuyoBoard? _board;
 
         // ── ライフサイクル ────────────────────────────────────────────
 
@@ -49,7 +41,6 @@ namespace App
 
         private void OnDestroy()
         {
-            _comboCts?.Cancel();
             if (Instance == this) Instance = null;
         }
 
@@ -59,7 +50,6 @@ namespace App
         {
             _board                        = board;
             board.OnAboutToClear         += OnAboutToClear;
-            board.OnChainStep            += OnChainStep;
             skillManager.OnSkillExecuted += OnSkillExecuted;
         }
 
@@ -67,7 +57,6 @@ namespace App
         {
             _board                        = null;
             board.OnAboutToClear         -= OnAboutToClear;
-            board.OnChainStep            -= OnChainStep;
             skillManager.OnSkillExecuted -= OnSkillExecuted;
         }
 
@@ -147,41 +136,6 @@ namespace App
                 var worldPos = _board.CellToWorld(cell);
                 var color    = _board.GetColorAt(cell) ?? PuyoColor.RED;
                 PlayBurst(worldPos, color, destroyCancellationToken);
-            }
-        }
-
-        // ── 連鎖ステップ完了 ─────────────────────────────────────────
-
-        private void OnChainStep(int step, int clearedCount)
-        {
-            ShowComboAsync(step, destroyCancellationToken).Forget();
-        }
-
-        private async UniTaskVoid ShowComboAsync(int step, CancellationToken ct)
-        {
-            _comboCts?.Cancel();
-            _comboCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-
-            var show = step >= 2;
-
-            if (_comboNumberText != null)
-            {
-                _comboNumberText.text    = show ? step.ToString() : string.Empty;
-                _comboNumberText.enabled = show;
-            }
-
-            if (_comboImage != null)
-                _comboImage.enabled = show;
-
-            if (show)
-            {
-                await UniTask.Delay(
-                    (int)(_comboDisplayTime * 1000),
-                    cancellationToken: _comboCts.Token
-                ).SuppressCancellationThrow();
-
-                if (_comboNumberText != null) _comboNumberText.enabled = false;
-                if (_comboImage      != null) _comboImage.enabled      = false;
             }
         }
 

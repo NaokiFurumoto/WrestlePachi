@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using GameSys;
 
 namespace App
 {
@@ -30,6 +31,7 @@ namespace App
 
         private async UniTaskVoid RunAsync(CancellationToken ct)
         {
+            AppSound.PlayEnemyDefeat();
             // 演出中に CT がキャンセルされてもゲームクリアへの遷移は必ず行う
             await ScreenEffectController.PlayDefeatImpact(ct).SuppressCancellationThrow();
 

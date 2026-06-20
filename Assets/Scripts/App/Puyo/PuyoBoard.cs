@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using GameSys;
 using UnityEngine;
 using App;
 
@@ -24,13 +25,16 @@ namespace App.Puyo
     {
         // ─── 定数 ───────────────────────────────────────────────
         public const int COLS              = 6;  // 横列数
-        public const int ROWS              = 14; // 内部縦行数（上2段は非表示バッファ）
-        public const int VISIBLE_ROWS      = 12; // 表示縦行数（本家準拠）
+        public const int VISIBLE_ROWS      = 12; // デフォルト表示縦行数（エディタツール用）
         public const int MaxOjamaPerTurn   = 30; // 1ターンに落下できるお邪魔ぷよの最大数（本家準拠）
 
         // ─── Inspector設定 ──────────────────────────────────────
         [Header("グリッド設定")]
         [SerializeField] private float _cellSize = 1f;
+
+        [Header("背景")]
+        [SerializeField] private GameObject? _bg12;
+        [SerializeField] private GameObject? _bg10;
 
         [Header("Prefab参照")]
         [SerializeField] private PuyoPair  _pairPrefab;
@@ -65,6 +69,9 @@ namespace App.Puyo
         public event Action<int, int>? OnChainStep;
 
         // ─── 内部状態 ────────────────────────────────────────────
+        private int                   _rows        = 14; // 内部縦行数（表示行 + 上2段バッファ）
+        private int                   _visibleRows = 12; // 表示縦行数
+
         private PuyoPiece[,]          _grid;       // グリッドデータ本体
         private PuyoPair              _activePair; // 現在落下中のペア
         private Queue<PuyoPairColors> _nextQueue = new();
@@ -88,13 +95,19 @@ namespace App.Puyo
         /// <summary>
         /// ゲーム開始時に呼ぶ。
         /// </summary>
-        public void Initialize(int colorCount = 4, int garbageInitialRows = 0)
+        public void Initialize(int colorCount = 4, int garbageInitialRows = 0, int visibleRows = 12)
         {
+            _visibleRows  = Mathf.Clamp(visibleRows, 10, 12);
+            _rows         = _visibleRows + 2;
             _colorCount   = Mathf.Clamp(colorCount, 2, (int)PuyoColor.OJAMA);
-            _grid         = new PuyoPiece[COLS, ROWS];
+            _grid         = new PuyoPiece[COLS, _rows];
             _pendingOjama = 0;
             _cts          = CancellationTokenSource.CreateLinkedTokenSource(
                               destroyCancellationToken);
+
+            // 背景切り替え
+            if (_bg12 != null) _bg12.SetActive(_visibleRows == 12);
+            if (_bg10 != null) _bg10.SetActive(_visibleRows == 10);
 
             // Inspector 未アサイン時のフォールバック
             if (_pairPrefab  == null) _pairPrefab  = Resources.Load<PuyoPair> ("Prefabs/GameMain/Puyo/PuyoPair");
@@ -115,7 +128,7 @@ namespace App.Puyo
         /// <summary>ゲーム開始時に盤面の下から rows 行をお邪魔ぷよで即時配置する。</summary>
         private void PlaceInitialGarbage(int rows)
         {
-            var clampedRows = Mathf.Clamp(rows, 0, VISIBLE_ROWS - 2); // 上2行は常に空ける
+            var clampedRows = Mathf.Clamp(rows, 0, _visibleRows - 2); // 上2行は常に空ける
             for (var y = 0; y < clampedRows; y++)
             for (var x = 0; x < COLS; x++)
             {
@@ -145,7 +158,7 @@ namespace App.Puyo
         public void ClearAll()
         {
             for (var x = 0; x < COLS; x++)
-            for (var y = 0; y < ROWS; y++)
+            for (var y = 0; y < _rows; y++)
             {
                 if (_grid[x, y] == null) continue;
                 Destroy(_grid[x, y].gameObject);
@@ -161,16 +174,19 @@ namespace App.Puyo
         public Vector3 CellToWorld(Vector2Int cell) =>
             transform.position + new Vector3(cell.x * _cellSize, cell.y * _cellSize);
 
+        /// <summary>直前の連鎖で消えたぷよ群の重心（ワールド座標）。COMBO 表示位置に使う。</summary>
+        public Vector3 LastChainCentroidWorld { get; private set; }
+
         // ─── グリッド操作 ────────────────────────────────────────
 
         /// <summary>
         /// 指定セルが空きかどうかを返す。
-        /// 盤外（左右・下）は false、上空（ROWS以上）は true を返す。
+        /// 盤外（左右・下）は false、上空（_rows以上）は true を返す。
         /// </summary>
         public bool IsEmpty(Vector2Int cell)
         {
             if (cell.x < 0 || cell.x >= COLS || cell.y < 0) return false;
-            if (cell.y >= ROWS) return true; // スポーン時に上空を許容
+            if (cell.y >= _rows) return true; // スポーン時に上空を許容
             return _grid[cell.x, cell.y] == null;
         }
 
@@ -186,6 +202,7 @@ namespace App.Puyo
             Place(sub);
             _activePair = null;
 
+            AppSound.PlayPuyoLand();
             OnPairLocked?.Invoke();
 
             // 連鎖チェックを非同期で実行（完了後に次のペアをスポーン）
@@ -196,7 +213,7 @@ namespace App.Puyo
         private void Place(PuyoPiece piece)
         {
             var cell = piece.Cell;
-            if (cell.y < ROWS)
+            if (cell.y < _rows)
                 _grid[cell.x, cell.y] = piece;
 
             piece.transform.position = CellToWorld(cell);
@@ -223,8 +240,18 @@ namespace App.Puyo
             {
                 chainCount++;
                 clearedCount += targets.Count;
+
+                // 消えるぷよの重心をワールド座標で保存（COMBO 表示位置用）
+                var centroidSum = Vector2.zero;
+                foreach (var p in targets) centroidSum += new Vector2(p.Cell.x, p.Cell.y);
+                var centroidAvg = centroidSum / targets.Count;
+                LastChainCentroidWorld = transform.position
+                    + new Vector3(centroidAvg.x * _cellSize, centroidAvg.y * _cellSize);
+
                 OnAboutToClear?.Invoke(targets.Select(p => p.Cell).ToList());
+                AppSound.PlayPuyoFlash();
                 await UniTask.WhenAll(targets.Select(p => p.FlashMatchedAsync(ct)));
+                AppSound.PlayPuyoClear();
                 await ClearPuyosAsync(targets, ct);
                 await DropFloatingPuyosAsync(ct);
                 await UniTask.Delay(200, cancellationToken: ct);
@@ -254,10 +281,10 @@ namespace App.Puyo
         private bool TryFindChain(out List<PuyoPiece> targets)
         {
             targets = new List<PuyoPiece>();
-            var visited = new bool[COLS, ROWS];
+            var visited = new bool[COLS, _rows];
 
             for (var x = 0; x < COLS; x++)
-            for (var y = 0; y < ROWS; y++)
+            for (var y = 0; y < _rows; y++)
             {
                 var piece = _grid[x, y];
                 if (piece == null || visited[x, y] || piece.Color == PuyoColor.OJAMA) continue;
@@ -276,7 +303,7 @@ namespace App.Puyo
                     foreach (var dir in _dirs)
                     {
                         var next = cell + dir;
-                        if (next.x < 0 || next.x >= COLS || next.y < 0 || next.y >= ROWS) continue;
+                        if (next.x < 0 || next.x >= COLS || next.y < 0 || next.y >= _rows) continue;
                         if (visited[next.x, next.y]) continue;
                         var neighbor = _grid[next.x, next.y];
                         if (neighbor == null || neighbor.Color != piece.Color) continue;
@@ -295,7 +322,7 @@ namespace App.Puyo
                     foreach (var dir in _dirs)
                     {
                         var next = member.Cell + dir;
-                        if (next.x < 0 || next.x >= COLS || next.y < 0 || next.y >= ROWS) continue;
+                        if (next.x < 0 || next.x >= COLS || next.y < 0 || next.y >= _rows) continue;
                         var neighbor = _grid[next.x, next.y];
                         if (neighbor == null || neighbor.Color != PuyoColor.OJAMA) continue;
                         if (targets.Contains(neighbor)) continue; // 重複防止
@@ -329,7 +356,7 @@ namespace App.Puyo
             for (var x = 0; x < COLS; x++)
             {
                 var writeY = 0;
-                for (var readY = 0; readY < ROWS; readY++)
+                for (var readY = 0; readY < _rows; readY++)
                 {
                     if (_grid[x, readY] == null) continue;
                     if (readY != writeY)
@@ -362,7 +389,7 @@ namespace App.Puyo
         /// <summary>列の最上端（積み高さ）を返す。空列なら 0。</summary>
         public int GetColumnTop(int col)
         {
-            for (var y = ROWS - 1; y >= 0; y--)
+            for (var y = _rows - 1; y >= 0; y--)
                 if (_grid[col, y] != null) return y + 1;
             return 0;
         }
@@ -397,7 +424,7 @@ namespace App.Puyo
             for (var i = 0; i < count; i++)
             {
                 var topY = GetColumnTop(col);
-                if (topY >= ROWS) break; // 列が満杯ならそれ以上積まない
+                if (topY >= _rows) break; // 列が満杯ならそれ以上積まない
 
                 var cell  = new Vector2Int(col, topY);
                 var piece = Instantiate(_piecePrefab, transform);
@@ -407,12 +434,13 @@ namespace App.Puyo
 
                 // ボード上端の1マス外から落下開始
                 var landPos = CellToWorld(cell);
-                piece.transform.position = CellToWorld(new Vector2Int(col, ROWS + 1));
+                piece.transform.position = CellToWorld(new Vector2Int(col, _rows + 1));
                 piece.transform.DOMove(landPos, fallDuration).SetEase(Ease.InQuad);
 
                 await UniTask.Delay(Mathf.RoundToInt(fallDuration * 1000) + 30, cancellationToken: ct);
 
                 // 着地演出
+                AppSound.PlayOjamaLand();
                 piece.PlayLandBounce();
             }
         }
@@ -424,7 +452,7 @@ namespace App.Puyo
         {
             var best = -1;
             var bestCount = 0;
-            for (var y = 0; y < ROWS; y++)
+            for (var y = 0; y < _rows; y++)
             {
                 var count = 0;
                 for (var x = 0; x < COLS; x++)
@@ -456,7 +484,7 @@ namespace App.Puyo
             var best = new Vector2Int(-1, -1);
             var bestCount = 0;
             for (var x = 0; x < COLS - 1; x++)
-            for (var y = 0; y < ROWS - 1; y++)
+            for (var y = 0; y < _rows - 1; y++)
             {
                 var count = 0;
                 if (_grid[x,     y    ] != null) count++;
@@ -471,7 +499,7 @@ namespace App.Puyo
         /// <summary>ぷよが存在する最も高い行のインデックスを返す。盤面が空なら -1。</summary>
         public int GetHighestRow()
         {
-            for (var y = ROWS - 1; y >= 0; y--)
+            for (var y = _rows - 1; y >= 0; y--)
                 for (var x = 0; x < COLS; x++)
                     if (_grid[x, y] != null) return y;
             return -1;
@@ -482,7 +510,7 @@ namespace App.Puyo
         {
             var positions = new List<Vector2Int>();
             for (var x = 0; x < COLS; x++)
-            for (var y = 0; y < ROWS; y++)
+            for (var y = 0; y < _rows; y++)
                 if (_grid[x, y] != null && _grid[x, y].Color == PuyoColor.OJAMA)
                     positions.Add(new Vector2Int(x, y));
             return positions;
@@ -491,7 +519,7 @@ namespace App.Puyo
         /// <summary>指定座標のぷよの色を返す。空・範囲外は null。</summary>
         public PuyoColor? GetColorAt(Vector2Int cell)
         {
-            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= ROWS) return null;
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= _rows) return null;
             return _grid[cell.x, cell.y]?.Color;
         }
 
@@ -508,7 +536,7 @@ namespace App.Puyo
         public int GetNonNullCountInCol(int col)
         {
             var count = 0;
-            for (var y = 0; y < ROWS; y++)
+            for (var y = 0; y < _rows; y++)
                 if (_grid[col, y] != null) count++;
             return count;
         }
@@ -518,7 +546,7 @@ namespace App.Puyo
         {
             var count = 0;
             foreach (var c in cells)
-                if (c.x >= 0 && c.x < COLS && c.y >= 0 && c.y < ROWS && _grid[c.x, c.y] != null)
+                if (c.x >= 0 && c.x < COLS && c.y >= 0 && c.y < _rows && _grid[c.x, c.y] != null)
                     count++;
             return count;
         }
@@ -528,7 +556,7 @@ namespace App.Puyo
         {
             var all = new List<Vector2Int>();
             for (var x = 0; x < COLS; x++)
-            for (var y = 0; y < ROWS; y++)
+            for (var y = 0; y < _rows; y++)
                 if (_grid[x, y] != null && _grid[x, y].Color != PuyoColor.OJAMA)
                     all.Add(new Vector2Int(x, y));
             return all.OrderBy(_ => UnityEngine.Random.value).Take(count).ToList();
@@ -539,7 +567,7 @@ namespace App.Puyo
         /// </summary>
         public async UniTask ClearCellBySkillAsync(Vector2Int cell, CancellationToken ct)
         {
-            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= ROWS) return;
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= _rows) return;
             var piece = _grid[cell.x, cell.y];
             if (piece == null) return;
             _grid[cell.x, cell.y] = null;
@@ -561,7 +589,7 @@ namespace App.Puyo
         /// </summary>
         public async UniTask ShakePuyoAsync(Vector2Int cell, float duration, CancellationToken ct)
         {
-            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= ROWS) return;
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= _rows) return;
             var piece = _grid[cell.x, cell.y];
             if (piece == null) return;
 
@@ -575,7 +603,7 @@ namespace App.Puyo
         /// </summary>
         public void RemoveCellInstant(Vector2Int cell)
         {
-            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= ROWS) return;
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= _rows) return;
             var piece = _grid[cell.x, cell.y];
             if (piece == null) return;
             _grid[cell.x, cell.y] = null;
@@ -587,7 +615,7 @@ namespace App.Puyo
         {
             var pieces = new List<PuyoPiece>();
             for (var x = 0; x < COLS; x++)
-            for (var y = 0; y < ROWS; y++)
+            for (var y = 0; y < _rows; y++)
             {
                 if (_grid[x, y] == null) continue;
                 pieces.Add(_grid[x, y]);
@@ -607,7 +635,7 @@ namespace App.Puyo
         /// </summary>
         private void SpawnNextPair()
         {
-            var spawnCell = new Vector2Int(COLS / 2 - 1, ROWS - 1);
+            var spawnCell = new Vector2Int(COLS / 2 - 1, _rows - 1);
 
             // スポーン位置が塞がれていればゲームオーバー
             if (!IsEmpty(spawnCell))
@@ -654,7 +682,7 @@ namespace App.Puyo
         {
             var heights = new int[COLS];
             for (var x = 0; x < COLS; x++)
-                for (var y = ROWS - 1; y >= 0; y--)
+                for (var y = _rows - 1; y >= 0; y--)
                     if (_grid[x, y] != null) { heights[x] = y + 1; break; }
             return heights;
         }

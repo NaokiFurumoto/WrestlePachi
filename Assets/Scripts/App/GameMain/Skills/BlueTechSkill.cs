@@ -33,12 +33,15 @@ namespace App.Skills
         {
             var board = ctx.Contents.PuyoBoard;
 
-            var handle = await ViewManager.PushViewAsync<SkillCutInView>(
-                ViewKeys.SKILL_CUT_IN,
-                new SkillCutInView.SkillCutInViewData { Controller = _controller, ImageSize = ImageSize });
-            var cutInView = handle?.View as SkillCutInView;
-            if (cutInView != null) await cutInView.PlayAttackAsync(ct);
-            await ViewManager.PopViewAsync(handle); // アニメ完了後すぐスライドアウト
+            if (GameSettings.CutInEnabled)
+            {
+                var handle = await ViewManager.PushViewAsync<SkillCutInView>(
+                    ViewKeys.SKILL_CUT_IN,
+                    new SkillCutInView.SkillCutInViewData { Controller = _controller, ImageSize = ImageSize });
+                var cutInView = handle?.View as SkillCutInView;
+                if (cutInView != null) await cutInView.PlayAttackAsync(ct);
+                await ViewManager.PopViewAsync(handle);
+            }
 
             // 最多列を上→下にスイープ消去（各セルの位置から縦スイープ＋爆散を発生させる）
             var targetCol = board.FindDensestColumn();

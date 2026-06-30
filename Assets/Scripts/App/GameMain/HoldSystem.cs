@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -27,6 +28,9 @@ namespace App
         /// <summary>null = 空スロット</summary>
         private readonly HoldType?[] _slots = new HoldType?[MaxHolds];
         private bool _isActivating;
+
+        // RevealHoldAsync の遅延中にシフトが発生した場合に正しい index を伝えるための参照
+        private readonly List<int[]> _pendingRevealIndices = new();
 
         private readonly CancellationToken _ct;
 
@@ -89,7 +93,10 @@ namespace App
             OnHoldCountChanged?.Invoke(HoldCount);
 
             // 表示は遅延後に通知（実機スロット演出相当）
-            RevealHoldAsync(index, holdType).Forget();
+            // indexRef: ShiftAllLeft でシフトが発生した場合に最新インデックスへ更新される
+            var indexRef = new int[] { index };
+            _pendingRevealIndices.Add(indexRef);
+            RevealHoldAsync(indexRef, holdType).Forget();
 
             // slot0 に配置されたとき、未消化なら消化シーケンス開始
             if (index == 0 && !_isActivating)
@@ -98,12 +105,13 @@ namespace App
 
         // ─── 内部処理 ────────────────────────────────────────────
 
-        private async UniTaskVoid RevealHoldAsync(int index, HoldType holdType)
+        private async UniTaskVoid RevealHoldAsync(int[] indexRef, HoldType holdType)
         {
             await UniTask.Delay((int)(HoldRevealDelaySec * 1000), cancellationToken: _ct)
                 .SuppressCancellationThrow();
+            _pendingRevealIndices.Remove(indexRef);
             if (!_ct.IsCancellationRequested)
-                OnHoldAdded?.Invoke(index, holdType);
+                OnHoldAdded?.Invoke(indexRef[0], holdType);
         }
 
         /// <summary>
@@ -116,6 +124,13 @@ namespace App
                 if (_slots[i] != null || _slots[i + 1] == null) continue;
                 _slots[i]     = _slots[i + 1];
                 _slots[i + 1] = null;
+
+                // RevealHoldAsync が遅延中の場合、そのインデックスも同期して更新する
+                foreach (var idxRef in _pendingRevealIndices)
+                {
+                    if (idxRef[0] == i + 1) idxRef[0] = i;
+                }
+
                 OnHoldShifted?.Invoke(i + 1, i);
             }
             OnHoldCountChanged?.Invoke(HoldCount);

@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Threading;
 using App.Skills;
 using Cysharp.Threading.Tasks;
@@ -21,9 +22,13 @@ namespace App
         /// <summary>スキルごとに差し替えるデータ。PushViewAsync に渡す。</summary>
         public class SkillCutInViewData : ViewData
         {
-            public RuntimeAnimatorController? Controller  { get; set; }
-            public Vector2                    ImageSize   { get; set; }
-            public CutInCloseStyle            CloseStyle  { get; set; } = CutInCloseStyle.SlideRight;
+            public RuntimeAnimatorController? Controller      { get; set; }
+            public Vector2                    ImageSize       { get; set; }
+            public CutInCloseStyle            CloseStyle      { get; set; } = CutInCloseStyle.SlideRight;
+            /// <summary>カットインSEと同時または遅延して鳴らす追加SE。null = なし。</summary>
+            public Action?                    ExtraSEOnOpen   { get; set; }
+            /// <summary>追加SEを鳴らすまでの遅延（秒）。0 = 同時。</summary>
+            public float                      ExtraSEDelaySec { get; set; } = 0f;
         }
 
         [Header("スライド対象")]
@@ -70,6 +75,9 @@ namespace App
             if (_chibiContainer == null) return;
 
             AppSound.PlayCutIn();
+            var data = Data as SkillCutInViewData;
+            if (data?.ExtraSEOnOpen != null)
+                FireExtraSEAsync(data.ExtraSEOnOpen, data.ExtraSEDelaySec).Forget();
             // ViewBase.OpenAsync が alpha=0 にリセットするので戻す
             if (_canvasGroup != null) _canvasGroup.alpha = 1f;
 
@@ -83,6 +91,8 @@ namespace App
 
         protected override async UniTask OnCloseAsync()
         {
+            AppSound.FadeCutIn();
+
             var style = (Data as SkillCutInViewData)?.CloseStyle ?? CutInCloseStyle.SlideRight;
 
             if (style == CutInCloseStyle.ZoomFade)
@@ -113,6 +123,15 @@ namespace App
             if (_canvasGroup != null)
                 seq.Join(DOTween.To(() => _canvasGroup.alpha, v => _canvasGroup.alpha = v, 0f, _zoomFadeDuration).SetEase(Ease.InQuad));
             await seq.AsyncWaitForCompletion();
+        }
+
+        private async UniTaskVoid FireExtraSEAsync(Action se, float delaySec)
+        {
+            if (delaySec > 0f)
+                await UniTask.Delay((int)(delaySec * 1000), DelayType.UnscaledDeltaTime,
+                    cancellationToken: destroyCancellationToken).SuppressCancellationThrow();
+            if (!destroyCancellationToken.IsCancellationRequested)
+                se.Invoke();
         }
 
         // ─── 公開API ──────────────────────────────────────────────────

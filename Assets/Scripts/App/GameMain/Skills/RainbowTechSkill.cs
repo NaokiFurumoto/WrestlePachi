@@ -35,6 +35,8 @@ namespace App.Skills
             var handle = await ViewManager.PushViewAsync<SkillRainbowView>(ViewKeys.SKILL_RAINBOW);
             var view   = handle?.View as SkillRainbowView;
 
+            AppSound.PlayRainbowView();
+
             // View が開き切ってから PUSH 待ち状態をセット
             // （PushViewAsync 中に OnInputTengeki が来ても TCS を early-complete させない）
             var tcs = new UniTaskCompletionSource();
@@ -50,6 +52,8 @@ namespace App.Skills
             finally
             {
                 // バイブ停止・状態クリア（タイムアウトでも PUSH でもここを通る）
+                AppSound.StopRainbowView();
+                AppSound.StopRainbowVibration();
                 ctx.RainbowVibrationCts?.Cancel();
                 ctx.RainbowVibrationCts = null;
                 ctx.RainbowInputSource  = null;
@@ -64,9 +68,11 @@ namespace App.Skills
                     ViewKeys.SKILL_CUT_IN,
                     new SkillCutInView.SkillCutInViewData
                     {
-                        Controller = _controller,
-                        ImageSize  = CutInImageSize,
-                        CloseStyle = SkillCutInView.CutInCloseStyle.ZoomFade,
+                        Controller    = _controller,
+                        ImageSize     = CutInImageSize,
+                        CloseStyle    = SkillCutInView.CutInCloseStyle.ZoomFade,
+                        ExtraSEOnOpen = AppSound.PlayRainbowCutIn,
+                        ExtraSEDelaySec = 0f,
                     });
                 var cutInView = cutInHandle?.View as SkillCutInView;
                 if (cutInView != null) await cutInView.PlayAttackAsync(ct);
@@ -74,6 +80,7 @@ namespace App.Skills
             }
 
             // ── 全消し ────────────────────────────────────────────────────
+            AppSound.PlaySkillAllClear();
             ctx.Enemy?.InstantKill();
             await ctx.Contents.PuyoBoard.ClearAllPuyosAsync(ct);
         }

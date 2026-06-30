@@ -51,6 +51,10 @@ namespace App
         public float BallsPerPuyo  = 1f;
         [Tooltip("制限時間（秒, 0=無制限）"), Min(0f)]
         public float TimeLimit     = 180f;
+
+        [Header("敵スキル")]
+        [Tooltip("このステージで発動する敵スキル。空なら無し")]
+        public EnemySkillType[] EnemySkills = Array.Empty<EnemySkillType>();
     }
 
 }

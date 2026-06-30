@@ -53,6 +53,8 @@ namespace App.Skills
             };
             var puyoCount = board.GetNonNullCountInCells(cells);
 
+            AppSound.PlaySkillLariat();
+
             // 2×2 中心にラリアットアニメーション
             var centerWorld = (board.CellToWorld(cells[0]) + board.CellToWorld(cells[2])) * 0.5f;
             GameEffectController.Instance?.PlayLariat(centerWorld, ct);

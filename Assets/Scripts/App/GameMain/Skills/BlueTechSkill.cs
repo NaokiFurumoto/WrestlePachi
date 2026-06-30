@@ -43,6 +43,8 @@ namespace App.Skills
                 await ViewManager.PopViewAsync(handle);
             }
 
+            AppSound.PlaySkillHipDrop();
+
             // 最多列を上→下にスイープ消去（各セルの位置から縦スイープ＋爆散を発生させる）
             var targetCol = board.FindDensestColumn();
             var puyoCount = board.GetNonNullCountInCol(targetCol);

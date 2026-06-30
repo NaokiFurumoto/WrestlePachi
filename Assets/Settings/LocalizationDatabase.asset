@@ -93,3 +93,23 @@ MonoBehaviour:
     japanese: "\u78BA\u8A8D"
     english: Confirm
     korean: "\uD655\uC778"
+  - key: gameover.stage
+    japanese: "\u30B9\u30C6\u30FC\u30B8{0}"
+    english: Stage {0}
+    korean: "\uC2A4\uD14C\uC774\uC9C0 {0}"
+  - key: gameover.defeated
+    japanese: "{0}\u306B\u6557\u5317..."
+    english: Defeated by {0}...
+    korean: "{0}\uC5D0\uAC8C \uD328\uBC30..."
+  - key: gameover.stamina_label
+    japanese: "\u6B8B\u308A\u30B9\u30BF\u30DF\u30CA"
+    english: Remaining Stamina
+    korean: "\uB0A8\uC740 \uC2A4\uD0DC\uBBF8\uB098"
+  - key: gameover.stamina
+    japanese: "{0}/{1}\u500B"
+    english: '{0}/{1}'
+    korean: "{0}/{1}\uAC1C"
+  - key: gameover.recovery_label
+    japanese: "\u30B9\u30BF\u30DF\u30CA\u56DE\u5FA9\u307E\u3067"
+    english: Until Recovery
+    korean: "\uD68C\uBCF5\uAE4C\uC9C0"

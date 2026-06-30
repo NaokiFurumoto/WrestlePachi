@@ -48,6 +48,8 @@ namespace App.Skills
             var ojamaSprite = board.ColorSprites[(int)PuyoColor.OJAMA];
             var effect      = GameEffectController.Instance;
 
+            AppSound.PlaySkillTackle();
+
             // ① タックルを全セル並列で再生し、完了まで待つ
             var tackleTasks = new List<UniTask>();
             foreach (var cell in ojamaPositions)

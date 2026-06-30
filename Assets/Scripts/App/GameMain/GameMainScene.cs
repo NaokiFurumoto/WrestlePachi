@@ -21,7 +21,6 @@ namespace App
         [Header("Controller")]
         [SerializeField] private GameMainController  _controller;
         [SerializeField] private KeyboardInputBridge _keyboardBridge;
-        [SerializeField] private GameOverHUD         _gameOverHUD;
 
         // ─── エディタ直接再生用ブートストラップ ─────────────────
         // SceneManager 経由でシーン遷移しない場合（エディタで直接 Play など）
@@ -70,7 +69,6 @@ namespace App
 
             // 3. コントローラー参照を各コンポーネントに注入
             _keyboardBridge.Initialize(_controller);
-            _gameOverHUD.Initialize(_controller);
         }
 
         protected override ViewBase.ViewData GetResidentViewData(ViewBase view)

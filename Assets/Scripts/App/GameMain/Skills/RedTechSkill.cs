@@ -42,6 +42,8 @@ namespace App.Skills
                 await ViewManager.PopViewAsync(handle);
             }
 
+            AppSound.PlaySkillDropKick();
+
             // 最多行を左→右にスイープ消去（各セルから矢印＋爆散エフェクト発生）
             var targetRow = board.FindDensestRow();
             var puyoCount = board.GetNonNullCountInRow(targetRow);

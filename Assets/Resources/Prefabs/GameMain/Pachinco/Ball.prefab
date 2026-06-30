@@ -169,5 +169,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4d30414f7a83934caf294a1096b40aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::App.BallSoundPlayer
-  _minImpulse: 0.5
+  _minImpulse: 0.3
   _cooldownSec: 0.06
+  _volume: 0.3

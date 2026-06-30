@@ -1,5 +1,6 @@
 #nullable enable
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using GameSys;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ namespace App
 
         protected override async UniTask OnInitialize()
         {
+            DOTween.SetTweensCapacity(600, 150);
             // Manager の Awake が完了するまで1フレーム待つ
             await UniTask.Yield();
             SceneManager.Instance.TransitScene(_nextSceneName);

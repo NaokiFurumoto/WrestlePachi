@@ -12,5 +12,11 @@ namespace App
         public const string GAME_CLEAR    = "Prefabs/Views/GameClearView";
         public const string GAME_OPTION   = "Prefabs/Views/GameOptionView";
         public const string DIALOG        = "Prefabs/Views/DialogView";
+        public const string GAME_OVER          = "Prefabs/Views/GameOverView";
+
+        // ─── StageSelect ──────────────────────────────────────────
+        public const string STAGE_SELECT_NODE  = "Prefabs/Node/StageSelectNode";
+        public const string STAGE_SELECT_VIEW   = "Prefabs/Views/StageSelectView";
+        public const string STAGE_DETAIL       = "Prefabs/Views/StageDetailPanel";
     }
 }

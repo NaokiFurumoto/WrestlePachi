@@ -41,6 +41,16 @@ namespace App
             public const string DEFEATED      = "gameclear.defeated";
         }
 
+        /// <summary>ゲームオーバー画面</summary>
+        public static class GameOver
+        {
+            public const string STAGE          = "gameover.stage";          // 「ステージ{0}」
+            public const string DEFEATED      = "gameover.defeated";      // 「{0}に敗北!!」
+            public const string STAMINA_LABEL  = "gameover.stamina_label";  // 「残りスタミナ」ラベル
+            public const string STAMINA        = "gameover.stamina";        // 「{0}/{1}個」
+            public const string RECOVERY_LABEL = "gameover.recovery_label"; // 「スタミナ回復まで」ラベル
+        }
+
         /// <summary>ダイアログ</summary>
         public static class Dialog
         {

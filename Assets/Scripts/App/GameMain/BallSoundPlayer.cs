@@ -16,14 +16,15 @@ namespace App
         [SerializeField, Min(0f)]       private float _cooldownSec = 0.06f;
         [SerializeField, Range(0f, 1f)] private float _volume      = 0.3f;
 
-        private float _lastPlayTime = float.NegativeInfinity;
+        // 全玉共通のクールダウン。複数玉が同フレームに当たっても重ね再生しない
+        private static float s_lastPlayTime = float.NegativeInfinity;
 
         private void OnCollisionEnter2D(Collision2D col)
         {
             if( col.relativeVelocity.magnitude < _minImpulse ) return;
-            if( Time.time - _lastPlayTime < _cooldownSec ) return;
+            if( Time.time - s_lastPlayTime < _cooldownSec ) return;
 
-            _lastPlayTime = Time.time;
+            s_lastPlayTime = Time.time;
             AppSound.PlayBallNailHit( _volume );
         }
     }

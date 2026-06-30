@@ -1,41 +1,45 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
-using System;
+using UnityEngine.Serialization;
+
 namespace GameSys
 {
     /// <summary>
-    /// UIテキスト用ローカライズ
+    /// UIテキスト用ローカライズ。
+    /// キーのみの場合はそのまま表示。SetFormat() でフォーマット引数を渡すと string.Format を適用する。
     /// </summary>
     [RequireComponent(typeof(TMP_Text))]
     public class LocalizedText : MonoBehaviour
     {
-        [SerializeField]
-        private string key;
+        [SerializeField, FormerlySerializedAs("key")] private string _key = "";
 
-        private TMP_Text textComponent;
+        private TMP_Text?  _text;
+        private object[]?  _args;
 
-        private void Awake()
-        {
-            textComponent = GetComponent<TMP_Text>();
-        }
+        private TMP_Text Text => _text != null ? _text : (_text = GetComponent<TMP_Text>());
 
         private void OnEnable()
-        {
-            UpdateText();
-        }
+            => Refresh();
 
         /// <summary>
-        /// テキスト更新
+        /// フォーマット引数を設定してテキストを更新する。
+        /// 例: SetFormat(stageNumber) → "Stage {0}" → "Stage 1"
         /// </summary>
-        public void UpdateText()
+        public void SetFormat(params object[] args)
         {
-            if (!LocalizationManager.isValid)
-                return;
+            _args = args;
+            Refresh();
+        }
 
-            textComponent.text =
-                LocalizationManager.Instance.GetText(key);
+        /// <summary>現在の言語でテキストを再描画する（言語切り替え時などに外から呼ぶ）。</summary>
+        public void Refresh()
+        {
+            if (!LocalizationManager.isValid) return;
+
+            var raw = LocalizationManager.Instance.GetText(_key);
+            Text.text = (_args != null && _args.Length > 0)
+                ? string.Format(raw, _args)
+                : raw;
         }
     }
 }
-
-

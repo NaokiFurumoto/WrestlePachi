@@ -8,7 +8,6 @@ namespace GameSys
     {
         [Header("BGM")]
         public AudioClip? bgmGame;
-        public AudioClip? bgmTense;
         public AudioClip? bgmClear;
         public AudioClip? bgmGameOver;
 
@@ -41,9 +40,20 @@ namespace GameSys
 
         [Header("SE - スキル・戦闘")]
         public AudioClip? seCutIn;
+        public AudioClip? seRainbowCutIn;
+        public AudioClip? seRainbowVibration;
+        public AudioClip? seRainbowView;
         public AudioClip? seDamageHit;
         public AudioClip? seEnemyDefeat;
         public AudioClip? seBom;
+
+        [Header("SE - スキルエフェクト（カットイン後）")]
+        public AudioClip? seSkillDropKick;
+        public AudioClip? seSkillHipDrop;
+        public AudioClip? seSkillStomping;
+        public AudioClip? seSkillLariat;
+        public AudioClip? seSkillTackle;
+        public AudioClip? seSkillAllClear;
     }
 }
 #nullable disable

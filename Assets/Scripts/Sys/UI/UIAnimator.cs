@@ -29,6 +29,7 @@ namespace GameSys
             ColorCycle,  // カラーサイクル：指定した2色の間を循環変化する
             Bob,         // ボブ          ：上下にゆっくり浮遊するループ演出
             PopIn,       // ポップイン    ：0→等倍にOutBackで飛び出す登場演出
+            Slide,       // スライド      ：左右にゆっくり往復するループ演出（矢印など）
         }
 
         public enum LoopMode
@@ -157,6 +158,16 @@ namespace GameSys
         private float _bobDuration = 0.8f;
 
         // ─────────────────────────────────────────
+        // Slide（スライド）
+        // ─────────────────────────────────────────
+        [Header("── Slide（左右スライド） ──")]
+        [SerializeField, Tooltip("左右の振れ幅（ローカル座標単位）")]
+        private float _slideAmplitude = 8f;
+
+        [SerializeField, Tooltip("1往復（右→左→右）にかかる時間（秒）")]
+        private float _slideDuration = 0.6f;
+
+        // ─────────────────────────────────────────
         // ColorCycle（カラーサイクル）
         // ─────────────────────────────────────────
         [Header("── ColorCycle（色循環） ──")]
@@ -215,6 +226,7 @@ namespace GameSys
                 AnimType.ColorCycle => ColorCycleAsync(ct),
                 AnimType.Bob        => BobAsync(ct),
                 AnimType.PopIn      => PopInAsync(ct),
+                AnimType.Slide      => SlideAsync(ct),
                 _                   => UniTask.CompletedTask,
             };
         }
@@ -227,6 +239,17 @@ namespace GameSys
 
         /// <summary>実行中のアニメーションをその場で停止する（初期状態に戻さない）。</summary>
         public void Pause() => KillCurrent(resetState: false);
+
+        /// <summary>
+        /// 現在の Transform 位置・スケール・カラーをデフォルト値として再設定する。
+        /// 位置をコードで動かした後に Bob などを正しく動かしたい場合に呼ぶ。
+        /// </summary>
+        public void ResetDefaultPosition()
+        {
+            _defaultScale    = transform.localScale;
+            _defaultPosition = transform.localPosition;
+            _defaultColor    = GetCurrentColor();
+        }
 
         /// <summary>Inspector の右クリックから再生中にテストできる。</summary>
         [ContextMenu("▶ テスト再生（再生中のみ有効）")]
@@ -363,6 +386,18 @@ namespace GameSys
             return PlayAndAwait(ct);
         }
 
+        public UniTask SlideAsync(CancellationToken ct = default)
+        {
+            Initialize(); KillCurrent();
+            float half = _slideDuration / _speed * 0.5f;
+            int loops = _loopMode == LoopMode.None ? 2 : -1;
+            _currentTween = transform
+                .DOLocalMoveX(_defaultPosition.x + _slideAmplitude, half)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(loops, LoopType.Yoyo);
+            return PlayAndAwait(ct);
+        }
+
         // ─────────────────────────────────────────
         // ヘルパー
         // ─────────────────────────────────────────
@@ -473,6 +508,16 @@ namespace GameSys
                         .DOScale(_defaultScale, _popInDuration / _speed)
                         .SetEase(Ease.OutBack).SetDelay(_delaySeconds).Play();
                     break;
+
+                case AnimType.Slide:
+                {
+                    float half = _slideDuration / _speed * 0.5f;
+                    int loops = _loopMode == LoopMode.None ? 2 : -1;
+                    _currentTween = transform
+                        .DOLocalMoveX(_defaultPosition.x + _slideAmplitude, half)
+                        .SetEase(Ease.InOutSine).SetLoops(loops, LoopType.Yoyo).SetDelay(_delaySeconds).Play();
+                    break;
+                }
             }
             // timeScale 非依存フラグを全ケースに一括適用
             _currentTween?.SetUpdate(_useUnscaledTime);

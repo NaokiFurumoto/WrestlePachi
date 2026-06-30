@@ -81,6 +81,48 @@ namespace GameSys
                 src.PlayOneShot( src.clip, volume * App.GameSettings.VolumeSE );
         }
 
+        // ループ再生／停止（10秒SE など長い音源を繰り返す場合）
+        private static void PlaySELoop( string key )
+        {
+            if( !isValid ) return;
+            if( Instance._seSources.TryGetValue( key, out var src ) && src.clip != null )
+            {
+                src.loop   = true;
+                src.volume = App.GameSettings.VolumeSE;
+                src.Play();
+            }
+        }
+
+        private static void StopSELoop( string key )
+        {
+            if( !isValid ) return;
+            if( Instance._seSources.TryGetValue( key, out var src ) )
+            {
+                src.Stop();
+                src.loop = false;
+            }
+        }
+
+        // PlayOneShot では Stop() が効かないため、Stop() が必要な SE は Play()/Stop() 方式を使う
+        private static void PlaySEStoppable( string key )
+        {
+            if( !isValid ) return;
+            if( Instance._seSources.TryGetValue( key, out var src ) && src.clip != null )
+            {
+                src.volume = App.GameSettings.VolumeSE;
+                src.Play();
+            }
+        }
+
+        private async UniTaskVoid FadeSEAsync( string key, float duration )
+        {
+            if( !_seSources.TryGetValue( key, out var src ) || !src.isPlaying ) return;
+            var originalVolume = src.volume;
+            await FadeVolumeAsync( src, 0f, duration, destroyCancellationToken );
+            src.Stop();
+            src.volume = originalVolume;
+        }
+
         // ─── BGM ヘルパー ──────────────────────────────────────────────────
         private static void PlayBGM( string key, float fadeOut = 0.5f )
         {
@@ -153,7 +195,6 @@ namespace GameSys
 
         // ─── BGM API ───────────────────────────────────────────────────────
         public static void PlayBGMGame()     => PlayBGM( "bgmGame" );
-        public static void PlayBGMTense()    => PlayBGM( "bgmTense" );
         public static void PlayBGMClear()    => PlayBGM( "bgmClear" );
         public static void PlayBGMGameOver() => PlayBGM( "bgmGameOver" );
 
@@ -198,10 +239,27 @@ namespace GameSys
         public static void PlayHoldAdd()                       => PlaySE( "seHoldAdd" );
 
         // ─── SE API - スキル・戦闘 ──────────────────────────────────────────
-        public static void PlayCutIn()       => PlaySE( "seCutIn" );
+        public static void PlayCutIn()                       => PlaySEStoppable( "seCutIn" );
+        public static void PlayRainbowCutIn()     => PlaySE( "seRainbowCutIn" );
+        public static void PlayRainbowVibration() => PlaySELoop( "seRainbowVibration" );
+        public static void StopRainbowVibration() => StopSELoop( "seRainbowVibration" );
+        public static void PlayRainbowView()      => PlaySELoop( "seRainbowView" );
+        public static void StopRainbowView()      => StopSELoop( "seRainbowView" );
+        public static void FadeCutIn( float duration = 0.3f )
+        {
+            if( isValid ) Instance.FadeSEAsync( "seCutIn", duration ).Forget();
+        }
         public static void PlayDamageHit()   => PlaySE( "seDamageHit" );
         public static void PlayEnemyDefeat() => PlaySE( "seEnemyDefeat" );
         public static void PlayBom()         => PlaySE( "seBom" );
+
+        // ─── SE API - スキルエフェクト（カットイン後） ────────────────────
+        public static void PlaySkillDropKick() => PlaySE( "seSkillDropKick" );
+        public static void PlaySkillHipDrop()  => PlaySE( "seSkillHipDrop" );
+        public static void PlaySkillStomping() => PlaySE( "seSkillStomping" );
+        public static void PlaySkillLariat()   => PlaySE( "seSkillLariat" );
+        public static void PlaySkillTackle()   => PlaySE( "seSkillTackle" );
+        public static void PlaySkillAllClear() => PlaySE( "seSkillAllClear" );
     }
 }
 #nullable disable

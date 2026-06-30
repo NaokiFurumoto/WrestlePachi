@@ -618,7 +618,6 @@ MonoBehaviour:
   _ui: {fileID: 1449186830}
   _controller: {fileID: 100000013}
   _keyboardBridge: {fileID: 1108832078}
-  _gameOverHUD: {fileID: 702950387}
 --- !u!1 &100000011
 GameObject:
   m_ObjectHideFlags: 0
@@ -1149,6 +1148,8 @@ MonoBehaviour:
   _cooldownSeconds: 0.4
   _angleSpread: 5
   _impulseVariance: 0.05
+  _launchSEVolume: 1
+  _launchSECooldown: 1
   _ballRoot: {fileID: 1808271480}
 --- !u!1 &431832039
 GameObject:
@@ -2075,50 +2076,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3fe489c71ae82744b86aea4484a41b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::App.PocketTrigger
---- !u!1 &702950385
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 702950386}
-  - component: {fileID: 702950387}
-  m_Layer: 0
-  m_Name: GameOverHUD
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &702950386
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 702950385}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 989940323}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &702950387
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 702950385}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b325ec1f096df745b9611fd779c02c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::App.GameOverHUD
 --- !u!4 &752852581 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3837910070198958414, guid: 9bdce6d8e8f79034fa1ce014b92ded85, type: 3}
@@ -2633,7 +2590,6 @@ Transform:
   - {fileID: 100000012}
   - {fileID: 1101193738}
   - {fileID: 1108832077}
-  - {fileID: 702950386}
   - {fileID: 755883661}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3181,6 +3137,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1397471363}
   - component: {fileID: 1397471364}
+  - component: {fileID: 1397471365}
   m_Layer: 0
   m_Name: Screen Effect Controller
   m_TagString: Untagged
@@ -3228,14 +3185,27 @@ MonoBehaviour:
   _hesoRise: 0.03
   _hesoFade: 0.1
   _currentIntensity: 0
-  _radialBlurMat: {fileID: 2100000, guid: 46013fdee836ca04485ddcc89c48e47b, type: 2}
-  _radialBlurPeak: 0.1
-  _radialBlurRise: 0.05
-  _radialBlurFade: 2
+  _radialBlur: {fileID: 0}
   _hitStopDuration: 2
   _timeSlowScale: 0.08
   _timeSlowDuration: 2
   _timeSlowRecover: 0.2
+--- !u!114 &1397471365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1397471362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edd3e20ac11d7c14b84b0bd9ee4f80ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::App.RadialBlurController
+  _material: {fileID: 2100000, guid: 46013fdee836ca04485ddcc89c48e47b, type: 2}
+  _peak: 0.25
+  _rise: 0.03
+  _fade: 2
 --- !u!1 &1449186828
 GameObject:
   m_ObjectHideFlags: 0
@@ -12706,6 +12676,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 200000002}
     m_Modifications:
+    - target: {fileID: 1130796170192079179, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: a21b38a738dc68f40864f1a66d85fe5c, type: 2}
+    - target: {fileID: 1130796170192079179, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -3420481776825388746, guid: a21b38a738dc68f40864f1a66d85fe5c, type: 2}
+    - target: {fileID: 1130796170192079179, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3281273115159325480, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -12749,6 +12731,10 @@ PrefabInstance:
     - target: {fileID: 5154216033647135440, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
       propertyPath: m_Name
       value: GameMainHudView
+      objectReference: {fileID: 0}
+    - target: {fileID: 5154216033647135440, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6743613242429975258, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
       propertyPath: _hesoTrigger

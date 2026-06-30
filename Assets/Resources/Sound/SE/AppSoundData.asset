@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cc275a5e7f84ae4ea7631c8a2378a7e, type: 3}
   m_Name: AppSoundData
   m_EditorClassIdentifier: Assembly-CSharp::GameSys.AppSoundData
-  bgmGame: {fileID: 0}
+  bgmGame: {fileID: 8300000, guid: c5b04e7e58010c24c979752d0c895af9, type: 3}
   bgmTense: {fileID: 0}
   bgmClear: {fileID: 0}
   bgmGameOver: {fileID: 0}
@@ -20,7 +20,7 @@ MonoBehaviour:
   seBtnCancel: {fileID: 0}
   seOpenWindow: {fileID: 0}
   seTap: {fileID: 0}
-  seGong: {fileID: 0}
+  seGong: {fileID: 8300000, guid: 40b10970dedd01e44a3407a40a009767, type: 3}
   seGameClear: {fileID: 0}
   seGameOver: {fileID: 0}
   seTimer: {fileID: 0}
@@ -35,7 +35,16 @@ MonoBehaviour:
   seBallLaunch: {fileID: 8300000, guid: eafec8bb4560ff04dbfc4c528af5e123, type: 3}
   seBallNailHit: {fileID: 8300000, guid: 47b2d2af3157b0b4a9a5e0b8706002f7, type: 3}
   seHoldAdd: {fileID: 8300000, guid: 8edc8aa339412e448b0e41cc0bc50e82, type: 3}
-  seCutIn: {fileID: 0}
-  seDamageHit: {fileID: 0}
-  seEnemyDefeat: {fileID: 0}
+  seCutIn: {fileID: 8300000, guid: d4ff55038cfdb674180768ef800c780a, type: 3}
+  seRainbowCutIn: {fileID: 8300000, guid: 65194f1f1e586cb46bcdfb1bce253534, type: 3}
+  seRainbowVibration: {fileID: 8300000, guid: 64424dd3edd1a344b93ec1c624b7244b, type: 3}
+  seRainbowView: {fileID: 8300000, guid: 8b007c086c1b3c744973bbd7b88920af, type: 3}
+  seDamageHit: {fileID: 8300000, guid: 7d93f18eb1c92584bba1bc9f3d8eeeca, type: 3}
+  seEnemyDefeat: {fileID: 8300000, guid: fc9f1e154951ded4abc216f2ca80e8bb, type: 3}
   seBom: {fileID: 0}
+  seSkillDropKick: {fileID: 8300000, guid: a2d31cab4f2a56a4387a295136dea648, type: 3}
+  seSkillHipDrop: {fileID: 8300000, guid: dacd2de5a7473614481c2f35a4187bff, type: 3}
+  seSkillStomping: {fileID: 8300000, guid: 4f436183562450b4ca7b6759a919c856, type: 3}
+  seSkillLariat: {fileID: 8300000, guid: 9bcb5c09d79f19449924880c34656366, type: 3}
+  seSkillTackle: {fileID: 8300000, guid: 8adbc8cefda2dd54d8f7ffb14398748c, type: 3}
+  seSkillAllClear: {fileID: 0}

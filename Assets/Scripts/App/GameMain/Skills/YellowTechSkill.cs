@@ -13,7 +13,8 @@ namespace App.Skills
     /// </summary>
     public sealed class YellowTechSkill : ITechSkill
     {
-        private const int StompCount = 5;
+        private const int StompCountMin = 2;
+        private const int StompCountMax = 5;
         private static readonly Vector2 ImageSize = new Vector2(578f, 834f);
 
         private readonly RuntimeAnimatorController _controller;
@@ -32,7 +33,7 @@ namespace App.Skills
         public async UniTask ExecuteAsync(GameContext ctx, CancellationToken ct)
         {
             var board = ctx.Contents.PuyoBoard;
-            var targets = board.GetRandomPuyoPositions(StompCount);
+            var targets = board.GetRandomPuyoPositions(Random.Range(StompCountMin, StompCountMax + 1));
 
             if (GameSettings.CutInEnabled)
             {
@@ -47,6 +48,7 @@ namespace App.Skills
             // ランダム5個をポンポン消去（スタンプ落下 → 着地と同時に消去）
             foreach (var cell in targets)
             {
+                AppSound.PlaySkillStomping();
                 var worldPos = board.CellToWorld(cell);
                 var color    = board.GetColorAt(cell) ?? PuyoColor.YELLOW;
                 GameEffectController.Instance?.PlayStomp(worldPos, ct);

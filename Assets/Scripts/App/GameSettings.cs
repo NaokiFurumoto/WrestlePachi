@@ -23,7 +23,7 @@ namespace App
 
         public static float VolumeBGM
         {
-            get => PlayerPrefs.GetFloat(KeyVolumeBGM, 1f);
+            get => PlayerPrefs.GetFloat(KeyVolumeBGM, 0.7f);
             set
             {
                 PlayerPrefs.SetFloat(KeyVolumeBGM, Mathf.Clamp01(value));
@@ -40,5 +40,8 @@ namespace App
                 PlayerPrefs.Save();
             }
         }
+
+        /// <summary>StageSelect → GameScene へ選択したステージ番号を渡すセッション一時値。</summary>
+        public static int CurrentStageIndex { get; set; }
     }
 }

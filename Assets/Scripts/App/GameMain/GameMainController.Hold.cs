@@ -89,6 +89,7 @@ namespace App
             _ctx.RainbowVibrationCts?.Cancel();
             _ctx.RainbowVibrationCts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
             var ct = _ctx.RainbowVibrationCts.Token;
+            AppSound.PlayRainbowVibration();
             VibrationLoopAsync(ct).Forget();
             _tengekiButton?.StartShakeAsync(ct).Forget();
         }

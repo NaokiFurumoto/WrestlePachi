@@ -13,8 +13,8 @@ namespace App
         /// <summary>スキルレベル（1始まり）。高いほど発動頻度・強度が上がる</summary>
         public int Level { get; }
 
-        /// <summary>発動の何秒前に予告を出すか</summary>
-        public const float WarnLeadSeconds = 0.5f;
+        /// <summary>発動の何秒前に予告を出すか（気づいてから身構える余裕を持たせる）</summary>
+        public const float WarnLeadSeconds = 1.0f;
 
         private float _elapsed;
         private bool  _warnedThisCycle;

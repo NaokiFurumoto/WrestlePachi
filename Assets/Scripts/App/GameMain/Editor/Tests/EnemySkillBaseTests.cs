@@ -44,21 +44,22 @@ namespace App.Tests
             return ctx;
         }
 
-        // 予告は発動の0.5秒前に1回だけ出る
+        // 予告は発動の1秒前に1回だけ出る（気づいてから身構える余裕を持たせる）
         [Test]
-        public void Warning_FiresOnceHalfSecondBeforeExecute()
+        public void Warning_FiresOnceOneSecondBeforeExecute()
         {
             var warns = 0;
             var ctx   = CountingContext(() => warns++);
             var skill = new CountingSkill(1);
 
-            skill.Tick(9.4f, ctx);
-            Assert.That(warns, Is.EqualTo(0), "0.6秒前はまだ出ない");
+            skill.Tick(8.9f, ctx);
+            Assert.That(warns, Is.EqualTo(0), "1.1秒前はまだ出ない");
             skill.Tick(0.2f, ctx);
-            Assert.That(warns, Is.EqualTo(1), "0.4秒前で出る");
+            Assert.That(warns, Is.EqualTo(1), "0.9秒前で出る");
             skill.Tick(0.2f, ctx);
             Assert.That(warns, Is.EqualTo(1), "同じ周期では2回出ない");
-            skill.Tick(0.3f, ctx);
+            Assert.That(skill.ExecuteCount, Is.EqualTo(0), "予告の時点ではまだ発動しない");
+            skill.Tick(0.8f, ctx);
             Assert.That(skill.ExecuteCount, Is.EqualTo(1));
             skill.Tick(9.6f, ctx);
             Assert.That(warns, Is.EqualTo(2), "次の周期でまた出る");

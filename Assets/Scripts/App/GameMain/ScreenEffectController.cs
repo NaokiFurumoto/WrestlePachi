@@ -37,6 +37,11 @@ namespace App
         [SerializeField] private float _hesoRise       = 0.03f;
         [SerializeField] private float _hesoFade       = 0.18f;
 
+        [Header("敵スキルの予告（画面の縁が赤黒く2回脈打つ）")]
+        [SerializeField] private Color _enemyWarnColor      = new(0.7f, 0.02f, 0.08f);
+        [SerializeField] private float _enemyWarnPeak       = 0.5f;
+        [SerializeField] private float _enemyWarnSmoothness = 0.6f;
+
         [Header("デバッグ確認用（読み取り専用）")]
         [SerializeField] private float _currentIntensity;
 
@@ -52,6 +57,8 @@ namespace App
         private Bloom?               _bloom;
         private ColorAdjustments?    _colorAdj;
         private ChromaticAberration? _chromaticAberration;
+        private Vignette?            _vignette;
+        private Tween?               _vignetteTween;
         private Tween?               _tween;
         private Tween?               _warningTween;
         private Tween?               _chromaTween;
@@ -77,6 +84,7 @@ namespace App
 
             _volume.profile.TryGet(out _colorAdj);
             _volume.profile.TryGet(out _chromaticAberration);
+            _volume.profile.TryGet(out _vignette);
 
             _currentIntensity = _baseIntensity;
             _bloom?.intensity.Override(_baseIntensity);
@@ -87,6 +95,7 @@ namespace App
             _tween?.Kill();
             _warningTween?.Kill();
             _chromaTween?.Kill();
+            _vignetteTween?.Kill();
             if (Instance == this) Instance = null;
         }
 
@@ -122,6 +131,13 @@ namespace App
         /// <summary>タイマー警告の点滅を停止する。</summary>
         public static void StopWarning()
             => Instance?.StopWarningLoop();
+
+        /// <summary>
+        /// 敵スキルの予告：画面の縁を赤黒く「ドクン、ドクン」と2回脈打たせる。
+        /// 盤面はふさがず、画面のどこを見ていても目のはしで気づける。
+        /// </summary>
+        public static void PlayEnemyWarning()
+            => Instance?.PlayEnemyWarningPulse();
 
         /// <summary>ラジアルブラーを一瞬かけてフェードアウトする。</summary>
         public static void PlayRadialBlur(float peakOverride = -1f, float fadeOverride = -1f)
@@ -229,6 +245,27 @@ namespace App
                     v  => _chromaticAberration.intensity.Override(v),
                     0f, _hesoFade
                 ).SetEase(Ease.OutQuad));
+        }
+
+        private void PlayEnemyWarningPulse()
+        {
+            if (_vignette == null) return;
+            _vignetteTween?.Kill();
+            _vignette.color.Override(_enemyWarnColor);
+            _vignette.smoothness.Override(_enemyWarnSmoothness);
+
+            Tween To(float target, float time, Ease ease) => DOTween.To(
+                () => _vignette.intensity.value,
+                v  => _vignette.intensity.Override(v),
+                target, time).SetEase(ease);
+
+            // ドクン（強）→ 少し戻る → ドクン（強）→ ゆっくり消える
+            _vignetteTween = DOTween.Sequence()
+                .Append(To(_enemyWarnPeak,         0.08f, Ease.OutQuad))
+                .Append(To(_enemyWarnPeak * 0.35f, 0.16f, Ease.InQuad))
+                .Append(To(_enemyWarnPeak,         0.08f, Ease.OutQuad))
+                .Append(To(0f,                     0.5f,  Ease.InOutSine))
+                .OnComplete(() => _vignette.intensity.Override(0f));
         }
 
         private void PlayWarningLoop()

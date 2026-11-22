@@ -273,9 +273,9 @@ namespace App
             }, ct);
         }
 
-        /// <summary>敵スキルの予告：HUD の敵の顔の横に技アイコンを出す</summary>
+        /// <summary>敵スキルの予告：画面の縁が脈打ち、敵の顔が怒って、顔の横に技アイコンと技名を出す</summary>
         private void ShowEnemySkillWarning(EnemySkillType type)
-            => ViewManager.GetView<GameMainHudView>()?.ShowSkillWarning(_enemySkillAssetsConfig?.GetIcon(type));
+            => ViewManager.GetView<GameMainHudView>()?.ShowSkillWarning(_enemySkillAssetsConfig?.GetIcon(type), EnemySkillNames.Get(type));
 
         public void RestartGame()
         {

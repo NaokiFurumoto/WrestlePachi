@@ -730,7 +730,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 054ab2c791ff6024dabe8b252ee39be6, type: 3}
   - {fileID: 21300000, guid: 1f5b0e26272a9304b8c45383a2ffe577, type: 3}
   - {fileID: 3604831184227134831, guid: 9413ec73c1602bd4a899c928e80b9a94, type: 3}
-  - {fileID: 1701717834655655658, guid: 5ce6b4934001ac04099d2367b44e71ff, type: 3}
+  - {fileID: 21300000, guid: 9731f87de2df4119914ea649d8900d16, type: 3}
+  _ojamaGlassMaterial: {fileID: 2100000, guid: 689796aa4c144175aa9959d69cb859c8, type: 2}
 --- !u!1 &106538866
 GameObject:
   m_ObjectHideFlags: 0

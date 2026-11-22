@@ -33,6 +33,13 @@ namespace App.EditorTools
                 ctrl.Debug_HitAllRocks();
             if (GUILayout.Button("盤面の爆弾をすぐ爆発させる"))
                 ctrl.Debug_ExplodeAllBombs();
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("お邪魔ぷよを6個降らせる（次のぷよが出るとき）"))
+                    ctrl.Debug_AddOjama(6);
+                if (GUILayout.Button("盤面のお邪魔ぷよを割る"))
+                    ctrl.Debug_ClearAllOjama();
+            }
 
             // 宙に浮いたぷよの検出（ペア操作中＝盤面が落ち着いているときに数える）
             var (now, max) = ctrl.Debug_GetFloatingPuyos();

@@ -71,6 +71,21 @@ namespace App.Puyo
         /// </summary>
         public void SetTint(UnityEngine.Color color) => _renderer.color = color;
 
+        /// <summary>消えるとき、溶けるかわりにガラスが割れて砕ける（お邪魔ぷよ用）</summary>
+        private bool  _shatterOnClear;
+        private float _cellSize = 1f;
+
+        /// <summary>
+        /// お邪魔ぷよをガラス玉にする：ガラスのマテリアルで描き（未設定なら通常描画のまま）、
+        /// 消えるときはガラスが割れて破片が飛び散るようにする。
+        /// </summary>
+        public void MakeGlass(Material? glassMaterial, float cellSize)
+        {
+            if (glassMaterial != null) _renderer.sharedMaterial = glassMaterial;
+            _shatterOnClear = true;
+            _cellSize       = cellSize;
+        }
+
         /// <summary>
         /// お邪魔ぷよ着地時のバウンス演出。
         /// </summary>
@@ -123,7 +138,11 @@ namespace App.Puyo
         /// </summary>
         public async UniTask ClearAsync(CancellationToken ct)
         {
-            if (_dissolveMaterial != null)
+            if (_shatterOnClear)
+            {
+                await ClearWithShatterAsync(ct);
+            }
+            else if (_dissolveMaterial != null)
             {
                 await ClearWithDissolveAsync(ct);
             }
@@ -133,6 +152,18 @@ namespace App.Puyo
             }
 
             Destroy(gameObject);
+        }
+
+        // ── ガラスが割れて砕ける（お邪魔ぷよ） ──────────────────────
+
+        private async UniTask ClearWithShatterAsync(CancellationToken ct)
+        {
+            // 一瞬ピキッと膨らんでから、パリンと割れて破片が飛び散る
+            transform.DOScale(transform.localScale * 1.12f, 0.06f).SetEase(Ease.OutQuad);
+            await UniTask.Delay(60, cancellationToken: ct).SuppressCancellationThrow();
+            GlassShatterEffect.Spawn(transform.position, _cellSize, _renderer, transform.parent);
+            _renderer.enabled = false;
+            await UniTask.Delay(60, cancellationToken: ct).SuppressCancellationThrow();
         }
 
         // ── Dissolve シェーダーで消える ──────────────────────────────

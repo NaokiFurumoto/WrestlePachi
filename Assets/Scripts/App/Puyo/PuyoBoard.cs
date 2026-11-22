@@ -46,6 +46,8 @@ namespace App.Puyo
         /// </summary>
         [Header("スプライト (PuyoColor順に設定)")]
         [SerializeField] private Sprite[] _colorSprites;
+        [Tooltip("お邪魔ぷよをガラス玉に見せるマテリアル（App/OjamaGlass）。未設定なら通常描画")]
+        [SerializeField] private Material? _ojamaGlassMaterial;
 
         // ─── イベント（Observer） ────────────────────────────────
         /// <summary>
@@ -140,8 +142,7 @@ namespace App.Puyo
             for (var x = 0; x < COLS; x++)
             {
                 var cell  = new Vector2Int(x, y);
-                var piece = Instantiate(_piecePrefab, transform);
-                piece.Setup(PuyoColor.OJAMA, _colorSprites[(int)PuyoColor.OJAMA]);
+                var piece = CreateOjamaPiece();
                 piece.Cell                = cell;
                 _grid[cell.x, cell.y]    = piece;
                 piece.transform.position = CellToWorld(cell);
@@ -505,6 +506,15 @@ namespace App.Puyo
         /// </summary>
         public void AddPendingOjama(int count) => _pendingOjama += count;
 
+        /// <summary>お邪魔ぷよを1つ作る：ガラス玉の見た目にし、消えるときはガラスが割れて砕ける</summary>
+        private PuyoPiece CreateOjamaPiece()
+        {
+            var piece = Instantiate(_piecePrefab, transform);
+            piece.Setup(PuyoColor.OJAMA, _colorSprites[(int)PuyoColor.OJAMA]);
+            piece.MakeGlass(_ojamaGlassMaterial, _cellSize);
+            return piece;
+        }
+
         /// <summary>列の最上端（積み高さ）を返す。空列なら 0。</summary>
         public int GetColumnTop(int col)
         {
@@ -546,8 +556,7 @@ namespace App.Puyo
                 if (topY >= _rows) break; // 列が満杯ならそれ以上積まない
 
                 var cell  = new Vector2Int(col, topY);
-                var piece = Instantiate(_piecePrefab, transform);
-                piece.Setup(PuyoColor.OJAMA, _colorSprites[(int)PuyoColor.OJAMA]);
+                var piece = CreateOjamaPiece();
                 piece.Cell             = cell;
                 _grid[cell.x, cell.y] = piece;
 
@@ -1080,6 +1089,23 @@ namespace App.Puyo
             {
                 await ClearPuyosAsync(broken, this.GetCancellationTokenOnDestroy());
                 await DropFloatingPuyosAsync(this.GetCancellationTokenOnDestroy());
+            });
+        }
+
+        /// <summary>デバッグ用：盤面のお邪魔ぷよ（爆弾以外）を、連鎖で消えるときと同じ消え方ですべて消す</summary>
+        public void Debug_ClearAllOjama()
+        {
+            if (_grid == null) return;
+            var targets = new List<PuyoPiece>();
+            foreach (var piece in _grid)
+                if (piece != null && piece.Color == PuyoColor.OJAMA && !piece.TryGetComponent<BombPuyoState>(out _))
+                    targets.Add(piece);
+            if (targets.Count == 0) return;
+            UniTask.Void(async () =>
+            {
+                var ct = this.GetCancellationTokenOnDestroy();
+                await ClearPuyosAsync(targets, ct);
+                await DropFloatingPuyosAsync(ct);
             });
         }
 

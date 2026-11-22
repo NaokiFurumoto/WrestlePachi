@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace App
 {
@@ -11,11 +12,30 @@ namespace App
     public sealed class StageConfig
     {
         [Header("敵")]
-        public string  EnemyName   = "";
-        public Sprite? EnemySprite;
+        [Tooltip("このステージの敵（Assets/Settings/Enemies/ の EnemyData）")]
+        public EnemyData? Enemy;
+        [Tooltip("直前のステージと同じ敵の2戦目か。2戦目は得意技のLv+1＋追加技になり、「Lv.2」と表示される")]
+        public bool IsRematch;
         [Min(1)] public int EnemyHp = 10;
-        [Tooltip("敵レベル。HUDに常に「Lv.N」で表示する。同じ敵（名前・画像）を複数ステージで使い回す際の差別化に使う"), Min(1)]
-        public int EnemyLevel = 1;
+
+        // ─── 移行用の旧フィールド（敵データ移行後に削除する） ───────────
+        [HideInInspector, FormerlySerializedAs("EnemyName")]   public string             LegacyEnemyName   = "";
+        [HideInInspector, FormerlySerializedAs("EnemySprite")] public Sprite?            LegacyEnemySprite;
+        [HideInInspector, FormerlySerializedAs("EnemyLevel")]  public int                LegacyEnemyLevel  = 1;
+        [HideInInspector, FormerlySerializedAs("EnemySkills")] public EnemySkillEntry[]  LegacyEnemySkills = Array.Empty<EnemySkillEntry>();
+
+        // ─── 敵情報の読み取り（敵アセット優先、未設定なら旧フィールド） ──────
+        /// <summary>敵の表示名</summary>
+        public string EnemyName => Enemy != null ? Enemy.DisplayName : LegacyEnemyName;
+
+        /// <summary>敵の顔画像</summary>
+        public Sprite? EnemySprite => Enemy != null ? Enemy.FaceSprite : LegacyEnemySprite;
+
+        /// <summary>HUD・詳細画面に「Lv.N」で表示する敵レベル（2戦目なら2）</summary>
+        public int EnemyLevel => Enemy != null ? (IsRematch ? 2 : 1) : LegacyEnemyLevel;
+
+        /// <summary>このステージで発動する敵スキル（EnemySkillRule で決定）</summary>
+        public EnemySkillEntry[] EnemySkills => Enemy != null ? EnemySkillRule.Resolve(Enemy, IsRematch) : LegacyEnemySkills;
 
         [Header("ボード")]
         [Tooltip("表示行数（10 or 12）"), Range(10, 12)]
@@ -44,9 +64,6 @@ namespace App
         [Tooltip("制限時間（秒, 0=無制限）"), Min(0f)]
         public float TimeLimit     = 180f;
 
-        [Header("敵スキル")]
-        [Tooltip("このステージで発動する敵スキル。空なら無し")]
-        public EnemySkillEntry[] EnemySkills = Array.Empty<EnemySkillEntry>();
     }
 
 }

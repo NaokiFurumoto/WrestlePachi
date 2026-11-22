@@ -5,7 +5,7 @@ using UnityEngine;
 namespace App
 {
     /// <summary>
-    /// StageConfig に設定する敵スキル1件分のデータ。
+    /// EnemyData に設定する敵スキル1件分のデータ。
     /// Level が高いほど発動頻度・数・強度などが上がる（解釈は各スキルクラス側に委ねる）。
     /// </summary>
     [Serializable]

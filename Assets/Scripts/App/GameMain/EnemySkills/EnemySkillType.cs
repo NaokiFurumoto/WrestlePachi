@@ -2,7 +2,7 @@
 namespace App
 {
     /// <summary>
-    /// 敵スキルの種別。StageConfig.EnemySkills に設定してステージごとのギミックを定義する。
+    /// 敵スキルの種別。EnemyData の SignatureSkills / RematchExtraSkills に設定して敵ごとのギミックを定義する。
     /// </summary>
     public enum EnemySkillType
     {

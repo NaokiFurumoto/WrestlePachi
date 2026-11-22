@@ -6,7 +6,7 @@ namespace App.EditorTools
 {
     /// <summary>
     /// EnemySkillEntry（Type + Level）を1行にまとめて表示するカスタムドロワー。
-    /// StageConfig.EnemySkills 配列を Inspector で設定しやすくするために用意した。
+    /// EnemyData の SignatureSkills / RematchExtraSkills 配列を Inspector で設定しやすくするために用意した。
     /// </summary>
     [CustomPropertyDrawer(typeof(EnemySkillEntry))]
     public sealed class EnemySkillEntryDrawer : PropertyDrawer

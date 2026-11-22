@@ -629,6 +629,25 @@ namespace App.Puyo
             Destroy(piece.gameObject);
         }
 
+        /// <summary>指定セルのぷよを返す。範囲外・空なら null。</summary>
+        public PuyoPiece? GetPieceAt(Vector2Int cell)
+        {
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= _rows) return null;
+            return _grid[cell.x, cell.y];
+        }
+
+        /// <summary>
+        /// 演出用：指定セルに expected がまだ残っていれば盤面から外して true を返す。
+        /// 消える動きと破棄は呼び出し側（敵スキルの演出）で行う。
+        /// 連鎖で消えた・落下して別のセルへ移ったなどで残っていなければ何もせず false。
+        /// </summary>
+        public bool DetachPiece(Vector2Int cell, PuyoPiece expected)
+        {
+            if (GetPieceAt(cell) != expected) return false;
+            _grid[cell.x, cell.y] = null;
+            return true;
+        }
+
         /// <summary>空きマス（表示範囲内）をランダムに1つ返す。空きがなければ null。</summary>
         public Vector2Int? GetRandomEmptyCell()
         {

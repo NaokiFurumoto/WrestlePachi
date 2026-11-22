@@ -82,6 +82,7 @@ namespace App
             _ctx.Enemy         = _enemy;
             _ctx.RestartGame   = RestartGame;
             _ctx.ReduceTime    = ReduceRemainingTime;
+            _ctx.ShowEnemySkillWarning = ShowEnemySkillWarning;
 
             // 敵イベント
             if (_enemy != null)
@@ -248,6 +249,10 @@ namespace App
         /// <summary>敵スキル「時計」から呼ばれる。残り時間を減らす（0未満にはならない）</summary>
         private void ReduceRemainingTime(float seconds)
             => _remainingTime = Mathf.Max(0f, _remainingTime - seconds);
+
+        /// <summary>敵スキルの予告：HUD の敵の顔の横に技アイコンを出す</summary>
+        private void ShowEnemySkillWarning(EnemySkillType type)
+            => ViewManager.GetView<GameMainHudView>()?.ShowSkillWarning(_enemySkillAssetsConfig?.GetIcon(type));
 
         public void RestartGame()
         {

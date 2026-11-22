@@ -21,6 +21,9 @@ namespace App
         /// <summary>ダメージを受けたとき発火する（ダメージ量）</summary>
         public event Action<int>? OnDamaged;
 
+        /// <summary>回復したとき発火する（実際に回復した量）</summary>
+        public event Action<int>? OnHealed;
+
         /// <summary>HP が 0 になったとき発火する</summary>
         public event Action? OnDefeated;
 
@@ -84,8 +87,13 @@ namespace App
         public void Heal(int amount)
         {
             if (IsDefeated || amount <= 0) return;
+            var before = CurrentHp;
             CurrentHp = Mathf.Min(MaxHp, CurrentHp + amount);
             OnHpChanged?.Invoke(CurrentHp, MaxHp);
+
+            // 実際に回復した量だけ通知する（HP満タンで0なら通知しない）
+            var healed = CurrentHp - before;
+            if (healed > 0) OnHealed?.Invoke(healed);
         }
 
         /// <summary>

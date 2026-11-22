@@ -13,7 +13,11 @@ namespace App
         /// <summary>スキルレベル（1始まり）。高いほど発動頻度・強度が上がる</summary>
         public int Level { get; }
 
+        /// <summary>発動の何秒前に予告を出すか</summary>
+        public const float WarnLeadSeconds = 0.5f;
+
         private float _elapsed;
+        private bool  _warnedThisCycle;
 
         protected EnemySkillBase(int level)
         {
@@ -23,19 +27,29 @@ namespace App
         /// <summary>ステージ開始時に呼ばれる。経過時間をリセットする</summary>
         public virtual void OnEnter(GameContext ctx)
         {
-            _elapsed = 0f;
+            _elapsed         = 0f;
+            _warnedThisCycle = false;
         }
 
-        /// <summary>毎フレーム呼ばれる。間隔に達したら Execute を発動する</summary>
+        /// <summary>毎フレーム呼ばれる。発動の少し前に予告を出し、間隔に達したら Execute を発動する</summary>
         public void Tick(float deltaTime, GameContext ctx)
         {
             var interval = GetInterval(Level);
             if (interval <= 0f) return;
 
             _elapsed += deltaTime;
+
+            // 予告：1周期に1回だけ、発動の WarnLeadSeconds 秒前を過ぎたら出す
+            if (!_warnedThisCycle && _elapsed >= interval - WarnLeadSeconds)
+            {
+                _warnedThisCycle = true;
+                ctx.ShowEnemySkillWarning?.Invoke(Type);
+            }
+
             if (_elapsed < interval) return;
 
-            _elapsed = 0f;
+            _elapsed         = 0f;
+            _warnedThisCycle = false;
             Execute(ctx);
         }
 
@@ -47,7 +61,8 @@ namespace App
         /// </summary>
         public void TriggerNow(GameContext ctx)
         {
-            _elapsed = 0f;
+            _elapsed         = 0f;
+            _warnedThisCycle = false;
             Execute(ctx);
         }
 

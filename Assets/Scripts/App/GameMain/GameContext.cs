@@ -45,6 +45,12 @@ namespace App
         /// <summary>敵スキル「時計」から残り時間を削るためのコールバック。GameMainController が設定する</summary>
         public Action<float>? ReduceTime { get; set; }
 
+        /// <summary>
+        /// 敵スキルの予告を表示する（技が出る直前に敵の顔の横で技アイコンを出す）。
+        /// GameMainController が HUD の表示処理を登録する。
+        /// </summary>
+        public Action<EnemySkillType>? ShowEnemySkillWarning { get; set; }
+
         private readonly Action<IGameState> _changeState;
 
         public GameContext(

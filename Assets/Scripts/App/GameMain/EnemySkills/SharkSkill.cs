@@ -1,12 +1,13 @@
 #nullable enable
 using System.Threading;
+using App.Effects;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace App
 {
     /// <summary>
-    /// サメ：一定間隔でぷよを自動消去し、消した数に応じて敵のHPを回復する。
+    /// サメ：一定間隔でサメが盤面を横切ってぷよを食べ、食べた数に応じて敵のHPを回復する。
     /// レベルが高いほど間隔が短く、消去数が増える。
     /// 数値バランスは EnemySkillBalanceConfig.Shark で調整する。
     /// </summary>
@@ -15,11 +16,15 @@ namespace App
         public override EnemySkillType Type => EnemySkillType.Shark;
 
         private readonly EnemySkillBalanceConfig.SharkBalance _balance;
+        private readonly Sprite? _openSprite;
+        private readonly Sprite? _closedSprite;
         private CancellationTokenSource? _cts;
 
-        public SharkSkill(int level, EnemySkillBalanceConfig.SharkBalance balance) : base(level)
+        public SharkSkill(int level, EnemySkillAssets assets, EnemySkillBalanceConfig.SharkBalance balance) : base(level)
         {
-            _balance = balance;
+            _balance      = balance;
+            _openSprite   = assets.SharkOpenSprite;
+            _closedSprite = assets.SharkClosedSprite;
         }
 
         public override void OnEnter(GameContext ctx)
@@ -39,17 +44,35 @@ namespace App
             EatAsync(ctx, _cts.Token).Forget();
         }
 
+        /// <summary>
+        /// 食べる数だけサメを1匹ずつ順番に泳がせる。狙うぷよは各サメが泳ぎ出す時点で選び直す
+        /// （前のサメの間に盤面が変わっていても、そのとき盤面にあるぷよを狙う）。
+        /// 1個食べるごとに敵のHPを回復する。
+        /// </summary>
         private async UniTaskVoid EatAsync(GameContext ctx, CancellationToken ct)
         {
-            var board     = ctx.Contents.PuyoBoard;
-            var positions = board.GetRandomPuyoPositions(GetPower(Level));
-            foreach (var cell in positions)
+            var board = ctx.Contents.PuyoBoard;
+            for (var i = 0; i < GetPower(Level); i++)
             {
                 if (ct.IsCancellationRequested) return;
-                await board.ClearCellBySkillAsync(cell, ct);
+                var positions = board.GetRandomPuyoPositions(1);
+                if (positions.Count == 0) return;
+
+                bool ate;
+                if (_openSprite != null && _closedSprite != null)
+                {
+                    ate = await SharkEffect.PlayAsync(board, positions[0], _openSprite, _closedSprite, ct);
+                }
+                else
+                {
+                    // サメの絵が未設定なら、従来どおり吹き飛ばして消す
+                    await board.ClearCellBySkillAsync(positions[0], ct);
+                    ate = true;
+                }
+
+                if (ate && !ct.IsCancellationRequested)
+                    ctx.Enemy?.Heal(_balance.HealPerPuyo);
             }
-            if (!ct.IsCancellationRequested)
-                ctx.Enemy?.Heal(positions.Count * _balance.HealPerPuyo);
         }
 
         public override void OnRelease(GameContext ctx)

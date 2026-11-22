@@ -85,6 +85,7 @@ namespace App
                 _enemy.OnHpChanged -= OnEnemyHpChanged;
                 _enemy.OnEnemySet  -= SetEnemyFace;
                 _enemy.OnDamaged   -= OnEnemyDamaged;
+                _enemy.OnHealed    -= ShowHeal;
             }
             _hpTween?.Kill();
             if (_hpMaterial != null) Destroy(_hpMaterial);
@@ -100,11 +101,13 @@ namespace App
                 _enemy.OnHpChanged -= OnEnemyHpChanged;
                 _enemy.OnEnemySet  -= SetEnemyFace;
                 _enemy.OnDamaged   -= OnEnemyDamaged;
+                _enemy.OnHealed    -= ShowHeal;
             }
             _enemy = enemy;
             _enemy.OnHpChanged += OnEnemyHpChanged;
             _enemy.OnEnemySet  += SetEnemyFace;
             _enemy.OnDamaged   += OnEnemyDamaged;
+            _enemy.OnHealed    += ShowHeal;
 
             float fill = _enemy.MaxHp > 0
                 ? (float)_enemy.CurrentHp / _enemy.MaxHp : 1f;
@@ -152,6 +155,65 @@ if (_damageEffect != null)
                     _hpAnimDuration
                 )
                 .SetEase(Ease.OutCubic);
+        }
+
+        // ── 敵スキルの予告・回復表示 ─────────────────────────────────
+
+        /// <summary>
+        /// 敵スキルの予告：敵の顔の右横で技アイコンをポンと弾ませて出し、少し止めてから縮めて消す。
+        /// Prefab を使わず実行時に Image を生成する。
+        /// </summary>
+        public void ShowSkillWarning(Sprite? icon)
+        {
+            if (icon == null || _enemyFaceImage == null) return;
+
+            var face     = _enemyFaceImage.rectTransform;
+            var faceRect = face.rect;
+            var size     = faceRect.height * 0.8f;
+
+            var go = new GameObject("EnemySkillWarning", typeof(RectTransform), typeof(Image));
+            var rt = (RectTransform)go.transform;
+            rt.SetParent(face.parent, false);
+            rt.SetAsLastSibling();
+            rt.sizeDelta     = new Vector2(size, size);
+            rt.localPosition = face.localPosition
+                             + new Vector3(faceRect.xMax + 8f + size * 0.5f, faceRect.center.y, 0f);
+            rt.localScale    = Vector3.zero;
+
+            var image = go.GetComponent<Image>();
+            image.sprite        = icon;
+            image.raycastTarget = false;
+
+            DOTween.Sequence()
+                .Append(rt.DOScale(1.3f, 0.15f).SetEase(Ease.OutBack))
+                .Append(rt.DOScale(1f, 0.1f).SetEase(Ease.OutQuad))
+                .AppendInterval(0.35f)
+                .Append(rt.DOScale(0f, 0.2f).SetEase(Ease.InBack))
+                .Join(image.DOFade(0f, 0.2f))
+                .OnComplete(() => Destroy(go))
+                .SetLink(go);
+        }
+
+        /// <summary>
+        /// 敵の回復表示：HP の数字を複製して緑の「+N」にし、浮かび上がらせながら消す。
+        /// </summary>
+        public void ShowHeal(int amount)
+        {
+            if (_enemyHpText == null || amount <= 0) return;
+
+            var popup = Instantiate(_enemyHpText, _enemyHpText.transform.parent);
+            popup.name          = "EnemyHealPopup";
+            popup.text          = $"+{amount}";
+            popup.color         = new Color(0.35f, 1f, 0.45f);
+            popup.raycastTarget = false;
+
+            var rt    = popup.rectTransform;
+            var start = rt.anchoredPosition;
+            DOTween.Sequence()
+                .Append(rt.DOAnchorPos(start + new Vector2(0f, 60f), 0.7f).SetEase(Ease.OutCubic))
+                .Insert(0.4f, popup.DOFade(0f, 0.3f))
+                .OnComplete(() => Destroy(popup.gameObject))
+                .SetLink(popup.gameObject);
         }
 
         // ── 敵顔画像 ─────────────────────────────────────────────────

@@ -36,6 +36,48 @@ namespace App.Tests
             Assert.That(skill.SecondsUntilNext, Is.EqualTo(10f).Within(0.001f));
         }
 
+        /// <summary>予告の回数を数える GameContext を作る（盤面などは使わないので null）</summary>
+        private static GameContext CountingContext(System.Action onWarn)
+        {
+            var ctx = new GameContext(null!, null, null!, _ => { });
+            ctx.ShowEnemySkillWarning = _ => onWarn();
+            return ctx;
+        }
+
+        // 予告は発動の0.5秒前に1回だけ出る
+        [Test]
+        public void Warning_FiresOnceHalfSecondBeforeExecute()
+        {
+            var warns = 0;
+            var ctx   = CountingContext(() => warns++);
+            var skill = new CountingSkill(1);
+
+            skill.Tick(9.4f, ctx);
+            Assert.That(warns, Is.EqualTo(0), "0.6秒前はまだ出ない");
+            skill.Tick(0.2f, ctx);
+            Assert.That(warns, Is.EqualTo(1), "0.4秒前で出る");
+            skill.Tick(0.2f, ctx);
+            Assert.That(warns, Is.EqualTo(1), "同じ周期では2回出ない");
+            skill.Tick(0.3f, ctx);
+            Assert.That(skill.ExecuteCount, Is.EqualTo(1));
+            skill.Tick(9.6f, ctx);
+            Assert.That(warns, Is.EqualTo(2), "次の周期でまた出る");
+        }
+
+        // デバッグの「今すぐ発動」の後も、次の周期で予告が出る
+        [Test]
+        public void Warning_FiresAgainAfterTriggerNow()
+        {
+            var warns = 0;
+            var ctx   = CountingContext(() => warns++);
+            var skill = new CountingSkill(1);
+
+            skill.Tick(9.6f, ctx);
+            skill.TriggerNow(ctx);
+            skill.Tick(9.6f, ctx);
+            Assert.That(warns, Is.EqualTo(2));
+        }
+
         [Test]
         public void Level_IsReadableFromOutside()
             => Assert.That(((IEnemySkill)new CountingSkill(2)).Level, Is.EqualTo(2));

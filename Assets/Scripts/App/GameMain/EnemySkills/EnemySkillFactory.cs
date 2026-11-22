@@ -13,7 +13,7 @@ namespace App
         {
             return type switch
             {
-                EnemySkillType.Shark          => new SharkSkill(level, balance.Shark),
+                EnemySkillType.Shark          => new SharkSkill(level, assets, balance.Shark),
                 EnemySkillType.FireTile       => new FireTileSkill(level, assets, balance.FireTile),
                 EnemySkillType.GarbageDrop    => new GarbageDropSkill(level, balance.GarbageDrop),
                 EnemySkillType.Rock           => new RockSkill(level, assets, balance.Rock),

@@ -46,6 +46,8 @@ namespace App
                     case EnemyPassiveSkillBase passive:
                         _passiveSkills.Add(passive);
                         passive.OnEnter(ctx);
+                        // 常に効いている技は、付いた時点で1回だけ予告を出す
+                        ctx.ShowEnemySkillWarning?.Invoke(passive.Type);
                         break;
                 }
             }
@@ -85,11 +87,13 @@ namespace App
                 case EnemySkillBase periodic:
                     _periodicSkills.Add(periodic);
                     periodic.OnEnter(_ctx);
+                    _ctx.ShowEnemySkillWarning?.Invoke(periodic.Type);
                     periodic.TriggerNow(_ctx);
                     break;
                 case EnemyPassiveSkillBase passive:
                     _passiveSkills.Add(passive);
                     passive.OnEnter(_ctx);
+                    _ctx.ShowEnemySkillWarning?.Invoke(passive.Type);
                     break;
             }
         }

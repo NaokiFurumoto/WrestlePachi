@@ -13,7 +13,13 @@ namespace App
     public sealed class EnemySkillAssets : ScriptableObject
     {
         [Header("盤面演出：岩")]
-        [Tooltip("1回目のヒットで差し替えるスプライト")]
+        [Tooltip("上から落ちてくる岩（砕けたときの破片にも使う）")]
+        [SerializeField] private Sprite? _rockFallSprite;
+        [Tooltip("ぷよにかぶせる岩の殻（中央がくり抜かれていて、ぷよの色が見える）")]
+        [SerializeField] private Sprite? _rockShellSprite;
+        [Tooltip("1回巻き込まれた後のヒビ入りの殻（普通の殻と同じ位置・大きさ）")]
+        [SerializeField] private Sprite? _rockShellCrackSprite;
+        [Tooltip("殻の絵がないときに、1回目のヒットで差し替えるぷよのスプライト（旧仕様）")]
         [FormerlySerializedAs("_pineappleHitSprite")]
         [SerializeField] private Sprite? _rockHitSprite;
 
@@ -38,7 +44,10 @@ namespace App
         [Header("UI：スキルアイコン（ステージ詳細画面のバッジ用・10種）")]
         [SerializeField] private SkillIconEntry[] _skillIcons = System.Array.Empty<SkillIconEntry>();
 
-        public Sprite? RockHitSprite  => _rockHitSprite;
+        public Sprite? RockFallSprite       => _rockFallSprite;
+        public Sprite? RockShellSprite      => _rockShellSprite;
+        public Sprite? RockShellCrackSprite => _rockShellCrackSprite;
+        public Sprite? RockHitSprite        => _rockHitSprite;
         public Sprite? BombPuyoSprite => _bombPuyoSprite;
         public Sprite? FireTileSprite => _fireTileSprite;
         public Sprite? FireBallSprite => _fireBallSprite;

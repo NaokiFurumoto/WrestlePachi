@@ -253,8 +253,13 @@ namespace App.Puyo
             while (TryFindChain(out var targets))
             {
                 // 岩耐久チェック：耐久が残っているものは今回は消さず、見た目だけ変えて盤面に残す
-                targets = ApplyRockDurability(targets);
-                if (targets.Count == 0) break; // 全員が耐久ヒットのみだった（無限ループ防止）
+                targets = ApplyRockDurability(targets, out var hitRocks);
+                if (targets.Count == 0)
+                {
+                    // 全員が耐久ヒットのみだった（無限ループ防止）。ヒビだけ入れて終わる
+                    foreach (var rock in hitRocks) rock.PlayHitEffect(_cellSize, transform);
+                    break;
+                }
 
                 chainCount++;
                 clearedCount += targets.Count;
@@ -270,6 +275,10 @@ namespace App.Puyo
                 AppSound.PlayPuyoFlash();
                 await UniTask.WhenAll(targets.Select(p => p.FlashMatchedAsync(ct)));
                 AppSound.PlayPuyoClear();
+                // 岩：耐えた岩はヒビが入り、耐久が尽きた岩は殻が砕ける（どちらも消える瞬間に合わせる）
+                foreach (var rock in hitRocks) rock.PlayHitEffect(_cellSize, transform);
+                foreach (var p in targets)
+                    if (p.TryGetComponent<RockPuyoState>(out var broken)) broken.PlayBreakEffect(_cellSize, transform);
                 await ClearPuyosAsync(targets, ct);
                 await DropFloatingPuyosAsync(ct);
                 await UniTask.Delay(200, cancellationToken: ct);
@@ -432,15 +441,20 @@ namespace App.Puyo
 
         /// <summary>
         /// 消去対象から岩ぷよ（耐久が残っているもの）を取り除く。
-        /// 取り除かれたぷよは実際には消さず、耐久を1減らして見た目を変えるだけに留める。
+        /// 取り除かれたぷよは実際には消さず、耐久を1減らすだけに留める（見た目の変化は hitRocks で呼び出し側が出す）。
         /// </summary>
-        private List<PuyoPiece> ApplyRockDurability(List<PuyoPiece> targets)
+        private List<PuyoPiece> ApplyRockDurability(List<PuyoPiece> targets, out List<RockPuyoState> hitRocks)
         {
             var result = new List<PuyoPiece>(targets.Count);
+            hitRocks = new List<RockPuyoState>();
             foreach (var piece in targets)
             {
                 var rock = piece.GetComponent<RockPuyoState>();
-                if (rock != null && rock.OnHit()) continue; // まだ耐久が残っている → 消去対象から除外
+                if (rock != null && rock.OnHit())
+                {
+                    hitRocks.Add(rock); // まだ耐久が残っている → 消去対象から除外
+                    continue;
+                }
                 result.Add(piece);
             }
             return result;
@@ -719,18 +733,20 @@ namespace App.Puyo
         /// 敵スキル「岩」用：既存ぷよを岩化し、耐久値を付与する。
         /// 既に岩化済み・お邪魔ぷよ・セルが空の場合は何もせず false を返す。
         /// </summary>
-        public bool ConvertToRock(Vector2Int cell, int durability, Sprite? hitSprite)
+        public bool ConvertToRock(Vector2Int cell, int durability, RockVisuals visuals)
         {
-            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= _rows) return false;
-            var piece = _grid[cell.x, cell.y];
-            if (piece == null || piece.Color == PuyoColor.OJAMA) return false;
-            if (piece.GetComponent<RockPuyoState>() != null) return false;
-
-            var state = piece.gameObject.AddComponent<RockPuyoState>();
-            state.Initialize(durability, hitSprite);
-            // 岩になったことが一目でわかるよう灰色に染める（ヒット後はスプライト or さらに暗い灰色に変わる）
-            piece.SetTint(FallbackSkillVisuals.Rock);
+            if (!CanBecomeRock(cell)) return false;
+            var state = _grid[cell.x, cell.y]!.gameObject.AddComponent<RockPuyoState>();
+            // 殻の絵があれば岩の殻をかぶせ、なければ灰色に染める
+            state.Initialize(durability, visuals);
             return true;
+        }
+
+        /// <summary>そのマスのぷよを岩にできるか（ぷよがあり、お邪魔でも岩でもない）</summary>
+        public bool CanBecomeRock(Vector2Int cell)
+        {
+            var piece = GetPieceAt(cell);
+            return piece != null && piece.Color != PuyoColor.OJAMA && piece.GetComponent<RockPuyoState>() == null;
         }
 
         /// <summary>
@@ -1030,6 +1046,7 @@ namespace App.Puyo
         public int Debug_CountFloatingPuyos()
         {
             var count = 0;
+            if (_grid == null) return count; // 盤面の準備前
             for (var x = 0; x < COLS; x++)
             for (var y = 1; y < _rows; y++)
                 if (_grid[x, y] != null && _grid[x, y - 1] == null) count++;

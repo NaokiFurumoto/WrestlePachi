@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57803a51c5b047e46948390e0c463ec9, type: 3}
   m_Name: EnemySkillAssets
   m_EditorClassIdentifier: Assembly-CSharp::App.EnemySkillAssets
+  _rockFallSprite: {fileID: 21300000, guid: 04f124b5d64742ef94c586cc8d3ce313, type: 3}
+  _rockShellSprite: {fileID: 21300000, guid: 0bed93aadadd45a6bf6b01bf36184fc5, type: 3}
+  _rockShellCrackSprite: {fileID: 21300000, guid: b3e2b474f2d749af99f464303d57b5c4, type: 3}
   _pineappleHitSprite: {fileID: 0}
   _bombPuyoSprite: {fileID: 0}
   _fireTileSprite: {fileID: 21300000, guid: 6ef39137d9d266043bc01790f60480db, type: 3}

@@ -66,6 +66,12 @@ namespace App.Puyo
         public void SetSprite(Sprite sprite) => _renderer.sprite = sprite;
 
         /// <summary>
+        /// 本体の色を変える（敵スキルの仮表示用：爆弾は赤、岩は灰色など）。
+        /// 点滅などの演出は開始時の色を覚えて最後に戻すので、ここで設定した色は演出後も残る。
+        /// </summary>
+        public void SetTint(UnityEngine.Color color) => _renderer.color = color;
+
+        /// <summary>
         /// お邪魔ぷよ着地時のバウンス演出。
         /// </summary>
         public void PlayLandBounce()

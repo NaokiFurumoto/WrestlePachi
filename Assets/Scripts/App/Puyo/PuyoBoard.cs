@@ -94,6 +94,9 @@ namespace App.Puyo
         private readonly HashSet<Vector2Int> _fireTiles = new();
         private readonly Dictionary<Vector2Int, GameObject> _fireTileMarkers = new();
 
+        /// <summary>炎マスのマーカーをぷよの描画順からいくつ奥に置くか（盤面背景20 ＜ マーカー30 ＜ 発光45 ＜ ぷよ50）</summary>
+        private const int FireTileMarkerOrderOffset = 20;
+
         // ─── 初期化 ──────────────────────────────────────────────
 
         /// <summary>
@@ -650,6 +653,8 @@ namespace App.Puyo
 
             var state = piece.gameObject.AddComponent<RockPuyoState>();
             state.Initialize(durability, hitSprite);
+            // 岩になったことが一目でわかるよう灰色に染める（ヒット後はスプライト or さらに暗い灰色に変わる）
+            piece.SetTint(FallbackSkillVisuals.Rock);
             return true;
         }
 
@@ -665,7 +670,16 @@ namespace App.Puyo
             var cell = cellOpt.Value;
 
             var piece = Instantiate(_piecePrefab, transform);
-            piece.Setup(PuyoColor.OJAMA, bombSprite!);
+            if (bombSprite != null)
+            {
+                piece.Setup(PuyoColor.OJAMA, bombSprite);
+            }
+            else
+            {
+                // 爆弾の画像が未設定なら、お邪魔ぷよを赤く染めて仮表示する
+                piece.Setup(PuyoColor.OJAMA, _colorSprites[(int)PuyoColor.OJAMA]);
+                piece.SetTint(FallbackSkillVisuals.Bomb);
+            }
             piece.Cell                = cell;
             _grid[cell.x, cell.y]    = piece;
             piece.transform.position = CellToWorld(cell);
@@ -691,19 +705,32 @@ namespace App.Puyo
 
         /// <summary>
         /// 敵スキル「炎」用：指定セルを炎マスに指定する（ぷよの有無は問わない）。
-        /// sprite を渡すと、ぷよの背面に表示用マーカーを生成する（省略時は当たり判定のみ）。
+        /// ぷよの背面に表示用マーカーを生成する。sprite 未指定時は半透明オレンジの四角で仮表示する。
         /// </summary>
         public void AddFireTile(Vector2Int cell, Sprite? sprite = null)
         {
             _fireTiles.Add(cell);
-            if (sprite == null || _fireTileMarkers.ContainsKey(cell)) return;
+            if (_fireTileMarkers.ContainsKey(cell)) return;
 
             var marker = new GameObject("FireTileMarker");
             marker.transform.SetParent(transform);
             marker.transform.position = CellToWorld(cell);
             var renderer = marker.AddComponent<SpriteRenderer>();
-            renderer.sprite       = sprite;
-            renderer.sortingOrder = -1; // ぷよより奥に表示（要Inspectorでのソート調整）
+            // ぷよと同じソーティングレイヤーに置き、盤面背景より手前・ぷよ（とその発光）より奥に描く
+            var pieceRenderer = _piecePrefab.GetComponent<SpriteRenderer>();
+            renderer.sortingLayerID = pieceRenderer.sortingLayerID;
+            renderer.sortingOrder   = pieceRenderer.sortingOrder - FireTileMarkerOrderOffset;
+            if (sprite != null)
+            {
+                renderer.sprite = sprite;
+            }
+            else
+            {
+                renderer.sprite = FallbackSkillVisuals.SquareSprite;
+                renderer.color  = FallbackSkillVisuals.FireTile;
+                // 四角は1ワールド単位なので、マスより少し小さく合わせる
+                marker.transform.localScale = Vector3.one * (_cellSize * 0.95f);
+            }
             _fireTileMarkers[cell] = marker;
         }
 

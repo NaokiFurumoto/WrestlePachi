@@ -35,9 +35,11 @@ namespace App.Puyo
             _durabilityRemaining--;
             if (_durabilityRemaining <= 0) return false;
 
-            if (!_hasHitOnce && _hitSprite != null)
+            if (!_hasHitOnce)
             {
-                _piece?.SetSprite(_hitSprite);
+                // ヒット後の画像があれば差し替え、未設定ならさらに暗い灰色にしてヒットしたことを示す
+                if (_hitSprite != null) _piece?.SetSprite(_hitSprite);
+                else                    _piece?.SetTint(FallbackSkillVisuals.RockHit);
                 _hasHitOnce = true;
             }
             return true;

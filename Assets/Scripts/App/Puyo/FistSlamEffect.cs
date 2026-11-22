@@ -14,7 +14,7 @@ namespace App.Puyo
     public static class FistSlamEffect
     {
         /// <summary>拳の大きさ（ぷよ何個分か）・振り下ろす時間・当たってから消えるまでの時間（秒）</summary>
-        private const float FistSizeInCells = 1.6f;
+        private const float FistSizeInCells = 2.1f;
         private const float SlamTime        = 0.16f;
         private const float RecoverTime     = 0.25f;
         /// <summary>ぷよより何段手前に描くか</summary>
@@ -40,7 +40,9 @@ namespace App.Puyo
                 // 盤面の上の外から振り下ろす
                 var topY = board.CellToWorld(new Vector2Int(0, board.VisibleRows - 1)).y + cellSize * 2.5f;
                 go.transform.position = new Vector3(target.x, topY, target.z);
-                go.transform.DOMove(target + Vector3.up * (cellSize * 0.3f), SlamTime).SetEase(Ease.InQuad).SetLink(go);
+                // 絵のいちばん下（こぶしの先）が、列のいちばん上のぷよの頭に当たる位置まで振り下ろす
+                var hitPos = target + Vector3.up * (-cellSize * 0.4f - sprite.bounds.min.y * scale);
+                go.transform.DOMove(hitPos, SlamTime).SetEase(Ease.InQuad).SetLink(go);
                 await UniTask.Delay(Mathf.RoundToInt(SlamTime * 1000), cancellationToken: ct);
 
                 // 当たった：つぶれて跳ね上がり、薄くなって消える

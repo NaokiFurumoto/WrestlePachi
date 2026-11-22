@@ -520,28 +520,57 @@ namespace App.Puyo
         private Sprite? _columnOjamaFist;
         private Sprite? _columnOjamaMark;
 
+        /// <summary>ペアが出てくる列（左から3列目）。ここのいちばん上が埋まるとゲームオーバー</summary>
+        public const int SpawnColumn = COLS / 2 - 1;
+
+        /// <summary>お邪魔落下で積んだあとも空けておく段数（ふつうの列／ペアが出てくる列）</summary>
+        private const int ColumnOjamaFreeRows      = 2;
+        private const int ColumnOjamaFreeRowsSpawn = 3;
+
         /// <summary>
-        /// 狙う列を選ぶ：いちばん高く積まれた列（満杯の列は除く）。同じ高さが並んだら random01 でどれか1つ。
+        /// 高さ height の列 col に、お邪魔落下で積める数。
+        /// 予告されたら即ゲームオーバー、にならないよう、上2段（ペアが出てくる列は上3段）を残す。
+        /// </summary>
+        public static int ColumnOjamaCapacity(int height, int col, int visibleRows)
+        {
+            var free = col == SpawnColumn ? ColumnOjamaFreeRowsSpawn : ColumnOjamaFreeRows;
+            return Mathf.Max(0, visibleRows - free - height);
+        }
+
+        /// <summary>
+        /// 狙う列を選ぶ：1個以上積める列のうち、いちばん高く積まれた列。同じ高さが並んだら random01 でどれか1つ。
         /// 狙える列がなければ -1。
         /// </summary>
-        public static int PickTallestColumn(IReadOnlyList<int> heights, int maxRows, float random01)
+        public static int PickTallestColumn(IReadOnlyList<int> heights, IReadOnlyList<int> capacities, float random01)
         {
             var best = -1;
             for (var i = 0; i < heights.Count; i++)
-                if (heights[i] < maxRows && (best < 0 || heights[i] > heights[best])) best = i;
+                if (capacities[i] > 0 && (best < 0 || heights[i] > heights[best])) best = i;
             if (best < 0) return -1;
             var ties = new List<int>();
             for (var i = 0; i < heights.Count; i++)
-                if (heights[i] == heights[best]) ties.Add(i);
+                if (capacities[i] > 0 && heights[i] == heights[best]) ties.Add(i);
             return ties[Mathf.Clamp((int)(random01 * ties.Count), 0, ties.Count - 1)];
+        }
+
+        /// <summary>今の盤面で列 col に、あと何個お邪魔落下で積めるか（すでに予告済みの分を差し引く）</summary>
+        private int RemainingColumnOjamaCapacity(int col)
+        {
+            var capacity = ColumnOjamaCapacity(GetColumnTop(col), col, _visibleRows);
+            return Mathf.Max(0, capacity - (_columnOjama.TryGetValue(col, out var pending) ? pending : 0));
         }
 
         /// <summary>今の盤面でお邪魔落下が狙う列（狙えなければ -1）</summary>
         public int PickTallestColumn()
         {
-            var heights = new int[COLS];
-            for (var x = 0; x < COLS; x++) heights[x] = GetColumnTop(x);
-            return PickTallestColumn(heights, _visibleRows, UnityEngine.Random.value);
+            var heights    = new int[COLS];
+            var capacities = new int[COLS];
+            for (var x = 0; x < COLS; x++)
+            {
+                heights[x]    = GetColumnTop(x);
+                capacities[x] = RemainingColumnOjamaCapacity(x);
+            }
+            return PickTallestColumn(heights, capacities, UnityEngine.Random.value);
         }
 
         /// <summary>
@@ -550,7 +579,9 @@ namespace App.Puyo
         /// </summary>
         public void AnnounceColumnOjama(int col, int count, Sprite? mark, Sprite? fist)
         {
-            if (col < 0 || col >= COLS || count <= 0) return;
+            if (col < 0 || col >= COLS) return;
+            count = Mathf.Min(count, RemainingColumnOjamaCapacity(col)); // 上の段を残せる数まで
+            if (count <= 0) return;
             _columnOjama[col] = _columnOjama.TryGetValue(col, out var n) ? n + count : count;
             _columnOjamaMark  = mark;
             _columnOjamaFist  = fist;
@@ -569,7 +600,9 @@ namespace App.Puyo
                 var surfaceY = Mathf.Min(GetColumnTop(col), _visibleRows - 1);
                 var sprite   = _columnOjamaFist != null ? _columnOjamaFist : _columnOjamaMark;
                 await FistSlamEffect.SlamAsync(this, CellToWorld(new Vector2Int(col, surfaceY)), sprite, ct);
-                await DropOjamaColumnAsync(col, count, 0, ct);
+                // 予告のあとにペアを積まれて高くなっていたら、上の段を残せる数まで減らす（0なら叩くだけ）
+                var dropCount = Mathf.Min(count, ColumnOjamaCapacity(GetColumnTop(col), col, _visibleRows));
+                if (dropCount > 0) await DropOjamaColumnAsync(col, dropCount, 0, ct);
             }
         }
 
@@ -1055,7 +1088,7 @@ namespace App.Puyo
         /// </summary>
         private void SpawnNextPair()
         {
-            var spawnCell = new Vector2Int(COLS / 2 - 1, _rows - 1);
+            var spawnCell = new Vector2Int(SpawnColumn, _rows - 1);
 
             // スポーン位置が塞がれていればゲームオーバー
             if (!IsEmpty(spawnCell))

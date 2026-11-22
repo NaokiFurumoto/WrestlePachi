@@ -21,6 +21,15 @@ namespace App.Tests
             Assert.That(FallbackSkillVisuals.SquareSprite, Is.SameAs(sprite));
         }
 
+        // 岩のヒット後：専用画像があれば灰色の乗算を外して画像本来の色で見せ、なければ暗い灰色にする
+        [Test]
+        public void RockHitTint_WithSprite_IsWhite_WithoutSprite_IsRockHit()
+        {
+            var sprite = FallbackSkillVisuals.SquareSprite;
+            Assert.That(RockPuyoState.HitTintFor(sprite), Is.EqualTo(Color.white));
+            Assert.That(RockPuyoState.HitTintFor(null), Is.EqualTo(FallbackSkillVisuals.RockHit));
+        }
+
         // 炎マスは半透明、爆弾・岩は不透明
         [Test]
         public void Colors_FireIsTranslucent_OthersOpaque()

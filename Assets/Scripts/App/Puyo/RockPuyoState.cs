@@ -37,13 +37,20 @@ namespace App.Puyo
 
             if (!_hasHitOnce)
             {
-                // ヒット後の画像があれば差し替え、未設定ならさらに暗い灰色にしてヒットしたことを示す
+                // ヒット後の画像があれば差し替えて本来の色で見せ、未設定ならさらに暗い灰色にしてヒットしたことを示す
                 if (_hitSprite != null) _piece?.SetSprite(_hitSprite);
-                else                    _piece?.SetTint(FallbackSkillVisuals.RockHit);
+                _piece?.SetTint(HitTintFor(_hitSprite));
                 _hasHitOnce = true;
             }
             return true;
         }
+
+        /// <summary>
+        /// 1回目のヒット後に本体へかける色。
+        /// 専用画像があるなら岩化時の灰色の乗算を外し（白）、なければ暗い灰色にする。
+        /// </summary>
+        public static Color HitTintFor(Sprite? hitSprite)
+            => hitSprite != null ? Color.white : FallbackSkillVisuals.RockHit;
     }
 }
 #nullable disable

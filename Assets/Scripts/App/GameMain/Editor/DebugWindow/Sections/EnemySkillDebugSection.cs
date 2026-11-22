@@ -24,6 +24,11 @@ namespace App.EditorTools
         private int _typeIndex;
         private int _level = 1;
 
+        // 録画（技を出すと同時にゲーム画面を連続保存して、動きをコマ送りで確認する）
+        private bool  _recordOnTrigger = true;
+        private float _recordSeconds   = 3f;
+        private const int RecordFps    = 20;
+
         public void OnGUI(GameMainController ctrl)
         {
             var manager = ctrl.Debug_EnemySkills;
@@ -36,10 +41,36 @@ namespace App.EditorTools
             DrawActiveSkills(manager);
             EditorGUILayout.Space(8);
             DrawAddSkill(manager);
+            EditorGUILayout.Space(8);
+            DrawRecording();
+        }
+
+        // ─── 録画 ─────────────────────────────────────────────────
+        private void DrawRecording()
+        {
+            EditorGUILayout.LabelField("録画（技を出した前後をコマ送りで確認）", EditorStyles.boldLabel);
+            _recordOnTrigger = EditorGUILayout.Toggle("技を出すと同時に録画", _recordOnTrigger);
+            _recordSeconds   = EditorGUILayout.Slider("録画する秒数", _recordSeconds, 1f, 8f);
+
+            using (new EditorGUI.DisabledScope(DebugFrameRecorder.IsRecording))
+            {
+                if (GUILayout.Button(DebugFrameRecorder.IsRecording ? "録画中…" : "録画だけ開始", GUILayout.Height(22)))
+                    DebugFrameRecorder.Begin(_recordSeconds, RecordFps, "manual");
+            }
+
+            if (!string.IsNullOrEmpty(DebugFrameRecorder.LastFolder))
+                EditorGUILayout.LabelField("最後の保存先", DebugFrameRecorder.LastFolder, EditorStyles.miniLabel);
+        }
+
+        /// <summary>設定がオンなら、技を出す直前に録画を始める</summary>
+        private void RecordIfEnabled(EnemySkillType type)
+        {
+            if (_recordOnTrigger)
+                DebugFrameRecorder.Begin(_recordSeconds, RecordFps, type.ToString());
         }
 
         // ─── 発動中の技 ───────────────────────────────────────────
-        private static void DrawActiveSkills(EnemySkillManager manager)
+        private void DrawActiveSkills(EnemySkillManager manager)
         {
             EditorGUILayout.LabelField("発動中の技", EditorStyles.boldLabel);
 
@@ -62,7 +93,10 @@ namespace App.EditorTools
                     {
                         EditorGUILayout.LabelField($"次の発動まで {periodic.SecondsUntilNext:0.0}秒", GUILayout.Width(130));
                         if (GUILayout.Button("今すぐ発動", GUILayout.Width(80)))
+                        {
+                            RecordIfEnabled(periodic.Type);
                             manager.Debug_TriggerNow(periodic);
+                        }
                     }
                     else
                     {
@@ -93,7 +127,10 @@ namespace App.EditorTools
             var prev = GUI.backgroundColor;
             GUI.backgroundColor = new Color(1f, 0.8f, 0.3f);
             if (GUILayout.Button("追加して発動", GUILayout.Height(28)))
+            {
+                RecordIfEnabled(AllTypes[_typeIndex]);
                 manager.Debug_AddAndTrigger(AllTypes[_typeIndex], _level);
+            }
             GUI.backgroundColor = prev;
         }
     }

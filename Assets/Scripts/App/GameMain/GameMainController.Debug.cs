@@ -33,6 +33,7 @@ namespace App
         public void Debug_ForceGameOver()                                   => _state?.OnBoardGameOver();
         public void Debug_ForceGameClear()                                  => ChangeState(new GameClearState(_ctx));
         public void Debug_InstantKillEnemy()                                => _enemy?.InstantKill();
+        public void Debug_SetEnemyHp(int? maxHp, int currentHp)             => _enemy?.Debug_SetHp(maxHp, currentHp);
 
         public (int index, int total, int hp, int maxHp) Debug_GetEnemyInfo()
         {

@@ -15,12 +15,31 @@ namespace App.EditorTools
         private int _chainCount   = 3;
         private int _clearedCount = 12;
 
+        // デバッグ中に敵がすぐ倒れて確認が途切れないよう、体力を多めにする（エディタ再起動後も設定を覚える）
+        private const string BigHpPrefKey = "WP_Debug_BigEnemyHp";
+        private const int    BigMaxHp     = 9999;
+        private const int    BigStartHp   = 5000; // 満タンだと回復演出が見えないので半分から始める
+
         public void OnGUI(GameMainController ctrl)
         {
             // ─── 敵の状態 ─────────────────────────────────────────
             EditorGUILayout.LabelField("敵の状態", EditorStyles.boldLabel);
             var (idx, total, hp, maxHp) = ctrl.Debug_GetEnemyInfo();
             EditorGUILayout.LabelField($"  ステージ: {idx + 1} / {total}　HP: {hp} / {maxHp}");
+
+            var bigHp    = EditorPrefs.GetBool(BigHpPrefKey, true);
+            var newBigHp = EditorGUILayout.ToggleLeft($"敵の体力を多めにする（最大{BigMaxHp}・{BigStartHp}から開始）", bigHp);
+            if (newBigHp != bigHp)
+            {
+                EditorPrefs.SetBool(BigHpPrefKey, newBigHp);
+                if (newBigHp) ctrl.Debug_SetEnemyHp(BigMaxHp, BigStartHp);
+                else          ctrl.Debug_SetEnemyHp(null, int.MaxValue); // 元の体力（満タン）に戻す
+            }
+            else if (bigHp && idx >= 0 && maxHp != BigMaxHp)
+            {
+                // 再生開始直後など、まだ上書きしていなければ自動で上書きする
+                ctrl.Debug_SetEnemyHp(BigMaxHp, BigStartHp);
+            }
 
             var prev2 = GUI.backgroundColor;
             GUI.backgroundColor = new Color(1f, 0.8f, 0.3f);

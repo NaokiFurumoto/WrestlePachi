@@ -202,16 +202,24 @@ if (_damageEffect != null)
             if (_enemyHpText == null || amount <= 0) return;
 
             var popup = Instantiate(_enemyHpText, _enemyHpText.transform.parent);
-            popup.name          = "EnemyHealPopup";
-            popup.text          = $"+{amount}";
-            popup.color         = new Color(0.35f, 1f, 0.45f);
-            popup.raycastTarget = false;
+            popup.name                 = "EnemyHealPopup";
+            popup.text                 = $"+{amount}";
+            popup.raycastTarget        = false;
+            popup.enableVertexGradient = false;
+            popup.color                = Color.white;
+            // HP の数字はフォントのマテリアル側で色が付いているので、複製側だけ明るい緑に塗り替える
+            popup.fontMaterial.SetColor(ShaderUtilities.ID_FaceColor, new Color(0.45f, 1f, 0.45f));
 
+            // HP の数字に重ならないよう少し上から出し、ポンと弾んでから浮かび上がって消える
             var rt    = popup.rectTransform;
-            var start = rt.anchoredPosition;
+            var start = rt.anchoredPosition + new Vector2(0f, 45f);
+            rt.anchoredPosition = start;
+            rt.localScale       = Vector3.one * 0.5f;
             DOTween.Sequence()
-                .Append(rt.DOAnchorPos(start + new Vector2(0f, 60f), 0.7f).SetEase(Ease.OutCubic))
-                .Insert(0.4f, popup.DOFade(0f, 0.3f))
+                .Append(rt.DOScale(1.9f, 0.12f).SetEase(Ease.OutBack))
+                .Append(rt.DOScale(1.5f, 0.08f))
+                .Join(rt.DOAnchorPos(start + new Vector2(0f, 70f), 0.8f).SetEase(Ease.OutCubic))
+                .Insert(0.55f, popup.DOFade(0f, 0.3f))
                 .OnComplete(() => Destroy(popup.gameObject))
                 .SetLink(popup.gameObject);
         }

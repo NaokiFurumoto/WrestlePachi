@@ -33,8 +33,26 @@ namespace App
         /// <summary>現在HP</summary>
         public int CurrentHp { get; private set; }
 
-        /// <summary>最大HP</summary>
-        public int MaxHp => CurrentStage?.EnemyHp ?? 0;
+        /// <summary>最大HP（デバッグで体力を上書きしている場合はその値）</summary>
+        public int MaxHp => _debugMaxHp ?? CurrentStage?.EnemyHp ?? 0;
+
+        /// <summary>デバッグ用の体力上書き（エディタのデバッグウィンドウからのみ設定する）</summary>
+        private int? _debugMaxHp;
+        private int? _debugStartHp;
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// デバッグ用：敵の体力を上書きする。ステージが変わっても、最大 maxHp・開始時 currentHp のまま続く。
+        /// maxHp を null にすると元の体力（満タン）に戻す。
+        /// </summary>
+        public void Debug_SetHp(int? maxHp, int currentHp)
+        {
+            _debugMaxHp   = maxHp;
+            _debugStartHp = maxHp.HasValue ? currentHp : null;
+            CurrentHp     = Mathf.Clamp(currentHp, 1, MaxHp);
+            OnHpChanged?.Invoke(CurrentHp, MaxHp);
+        }
+#endif
 
         /// <summary>現在の敵名</summary>
         public string EnemyName => CurrentStage?.EnemyName ?? string.Empty;
@@ -118,7 +136,7 @@ namespace App
 
         private void ResetHp()
         {
-            CurrentHp = CurrentStage?.EnemyHp ?? 0;
+            CurrentHp = Mathf.Min(_debugStartHp ?? MaxHp, MaxHp);
         }
     }
 }

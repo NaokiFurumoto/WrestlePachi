@@ -69,6 +69,13 @@ namespace App
 
         public void Debug_FillBoard(int rows = 6) => _contents?.PuyoBoard?.Debug_FillBoard(rows);
 
+        /// <summary>宙に浮いているぷよの数（今・これまでの最大）</summary>
+        public (int now, int max) Debug_GetFloatingPuyos()
+        {
+            var board = _contents?.PuyoBoard;
+            return board == null ? (0, 0) : (board.Debug_CountFloatingPuyos(), board.Debug_MaxFloatingSeen);
+        }
+
         public void Debug_ShowCombo(int chainCount)
         {
             if (_comboView == null)

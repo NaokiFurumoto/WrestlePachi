@@ -28,6 +28,10 @@ namespace App.EditorTools
             if (GUILayout.Button($"ぷよをランダム配置（下 {_fillRows} 行）", GUILayout.Height(32)))
                 ctrl.Debug_FillBoard(_fillRows);
             GUI.backgroundColor = prev;
+
+            // 宙に浮いたぷよの検出（ペア操作中＝盤面が落ち着いているときに数える）
+            var (now, max) = ctrl.Debug_GetFloatingPuyos();
+            EditorGUILayout.LabelField($"浮いているぷよ：今 {now} 個／これまでの最大 {max} 個");
         }
     }
 }

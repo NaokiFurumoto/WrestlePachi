@@ -113,6 +113,8 @@ namespace App.Effects
                 detached = board.DetachPiece(cell, target);
                 if (detached)
                 {
+                    // 食べたぷよの上に乗っていたぷよを落とす（サメが泳ぎ去るのは待たない）
+                    board.DropFloatingAfterSkillAsync(ct).Forget();
                     var mouthPos = chompPos + mouthOffset;
                     target.transform.DOMove(mouthPos, GulpTime).SetEase(Ease.InQuad).SetLink(target.gameObject);
                     target.transform.DOScale(0f, GulpTime).SetEase(Ease.InQuad).SetLink(target.gameObject);

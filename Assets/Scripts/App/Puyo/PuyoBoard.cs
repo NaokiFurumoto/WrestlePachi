@@ -240,6 +240,9 @@ namespace App.Puyo
         /// </summary>
         private async UniTaskVoid ProcessChainAsync(CancellationToken ct)
         {
+            // 着地したペアの片方が段差で浮いていたら、まず下まで落とす（ちぎり）
+            await DropFloatingPuyosAsync(ct);
+
             // 敵スキル「炎」：炎マス上に置かれたぷよを連鎖判定より先に焼き消し、上に乗っていたぷよを落とす
             if (await BurnFireTilePiecesAsync(ct) > 0)
                 await DropFloatingPuyosAsync(ct);
@@ -773,6 +776,8 @@ namespace App.Puyo
                 center + Vector2Int.left, center + Vector2Int.right,
             };
             await UniTask.WhenAll(cells.Select(c => ClearCellBySkillAsync(c, ct)));
+            // 爆発で消えたマスの上のぷよを落とす
+            await DropFloatingPuyosAsync(ct);
         }
 
         /// <summary>
@@ -1019,6 +1024,26 @@ namespace App.Puyo
                 _grid[cell.x, cell.y]      = piece;
                 piece.transform.position   = CellToWorld(cell);
             }
+        }
+
+        /// <summary>デバッグ用：宙に浮いている（すぐ下が空いている）ぷよの数を返す。</summary>
+        public int Debug_CountFloatingPuyos()
+        {
+            var count = 0;
+            for (var x = 0; x < COLS; x++)
+            for (var y = 1; y < _rows; y++)
+                if (_grid[x, y] != null && _grid[x, y - 1] == null) count++;
+            return count;
+        }
+
+        /// <summary>デバッグ用：これまでに観測した浮いているぷよの最大数（自動プレイ中の取りこぼし確認用）</summary>
+        public int Debug_MaxFloatingSeen { get; private set; }
+
+        private void LateUpdate()
+        {
+            // 連鎖処理中は一時的に浮くことがあるので、ペアが操作中（＝盤面が落ち着いている）ときだけ数える
+            if (_activePair != null)
+                Debug_MaxFloatingSeen = Mathf.Max(Debug_MaxFloatingSeen, Debug_CountFloatingPuyos());
         }
 
 #endif

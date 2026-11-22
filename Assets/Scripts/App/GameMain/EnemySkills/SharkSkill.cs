@@ -65,8 +65,9 @@ namespace App
                 }
                 else
                 {
-                    // サメの絵が未設定なら、従来どおり吹き飛ばして消す
+                    // サメの絵が未設定なら、従来どおり吹き飛ばして消し、上のぷよを落とす
                     await board.ClearCellBySkillAsync(positions[0], ct);
+                    await board.DropFloatingAfterSkillAsync(ct);
                     ate = true;
                 }
 

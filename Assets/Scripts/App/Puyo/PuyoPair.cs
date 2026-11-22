@@ -147,6 +147,20 @@ namespace App.Puyo
         public int Debug_MainCol => _mainCell.x;
 #endif
 
+        /// <summary>
+        /// 上側のぷよの表示位置（横並びのときは2個の真ん中）。演出をペアの頭上に出すときに使う。
+        /// </summary>
+        public Vector3 TopPosition
+        {
+            get
+            {
+                var a = _main.transform.position;
+                var b = _sub.transform.position;
+                if (Mathf.Abs(a.y - b.y) < 0.01f) return (a + b) * 0.5f;
+                return a.y > b.y ? a : b;
+            }
+        }
+
         /// <summary>高速落下を終了する</summary>
         public void EndSoftDrop()    => _isSoftDrop = false;
 

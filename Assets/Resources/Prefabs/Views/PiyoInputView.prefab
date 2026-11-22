@@ -273,6 +273,8 @@ MonoBehaviour:
   _btnRotateCW: {fileID: 6737826967113962341}
   _btnRotateCCW: {fileID: 2571103167402654606}
   _btnSoftDrop: {fileID: 1501234817760783780}
+  _confusedLeftArrow: {fileID: 21300000, guid: dc526e96333f47da95a7fc5e1c57be0f, type: 3}
+  _confusedRightArrow: {fileID: 21300000, guid: 523ee5a11c394b7bab8849d3a9b52d03, type: 3}
 --- !u!1 &2081976782388493511
 GameObject:
   m_ObjectHideFlags: 0

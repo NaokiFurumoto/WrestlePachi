@@ -376,6 +376,9 @@ namespace App
 
         // ─── 入力公開メソッド（IAutoPlayTarget / PuyoInputView から呼ぶ）────
 
+        /// <summary>敵スキル「混乱」で左右の操作が逆になっているか（操作ボタンの見た目を切り替えるのに使う）</summary>
+        public bool IsInputReversed => _ctx != null && _ctx.IsInputReversed;
+
         // 敵スキル「混乱」中は左右が反転する
         public void OnInputMoveLeft()
         {

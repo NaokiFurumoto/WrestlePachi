@@ -19,7 +19,7 @@ namespace App
                 EnemySkillType.Rock           => new RockSkill(level, assets, balance.Rock),
                 EnemySkillType.TimeBomb       => new TimeBombSkill(level, assets, balance.TimeBomb),
                 EnemySkillType.SkillSeal      => new SkillSealSkill(level, balance.SkillSeal),
-                EnemySkillType.Confusion      => new ConfusionSkill(level, balance.Confusion),
+                EnemySkillType.Confusion      => new ConfusionSkill(level, assets, balance.Confusion),
                 EnemySkillType.BlackHoldBoost => new BlackHoldBoostSkill(level, balance.BlackHoldBoost),
                 EnemySkillType.BlackHoldPower => new BlackHoldPowerSkill(level, balance.BlackHoldPower),
                 EnemySkillType.Clock          => new ClockSkill(level, balance.Clock),

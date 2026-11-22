@@ -41,7 +41,15 @@ namespace App
             }
         }
 
-        /// <summary>StageSelect → GameScene へ選択したステージ番号を渡すセッション一時値。</summary>
-        public static int CurrentStageIndex { get; set; }
+        /// <summary>CurrentStageIndex が未設定であることを表す値。</summary>
+        public const int StageNotSelected = -1;
+
+        /// <summary>
+        /// StageSelect → GameScene へ選択したステージ番号を渡すセッション一時値（0始まり）。
+        /// StageNotSelected のとき（GameScene をエディタで直接再生した場合など）は
+        /// EnemyController の Inspector 値が使われる。
+        /// 「次のステージへ」で進んだときも更新し、リトライ時にそのステージから始まるようにする。
+        /// </summary>
+        public static int CurrentStageIndex { get; set; } = StageNotSelected;
     }
 }

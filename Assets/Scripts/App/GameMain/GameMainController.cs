@@ -202,6 +202,7 @@ namespace App
         public void StartGame()
         {
             IsGameOver = false;
+            ApplySelectedStageToEnemy();
             ApplyStageConfig(_enemy?.EnemyIndex ?? 0, initBoard: true);
             _enemySkillManager.Initialize(_ctx, _ctx.CurrentStage?.EnemySkills ?? Array.Empty<EnemySkillEntry>());
             AppSound.PlayBGMGame();
@@ -213,6 +214,17 @@ namespace App
             if (_enemy != null) hud?.SetStage(_enemy.EnemyIndex + 1, _enemy.TotalCount);
             hud?.SetEnemyLevel(_ctx.CurrentStage?.EnemyLevel ?? 1);
             hud?.SetRainbowProbability(_ctx.CurrentStage?.RainbowDenominator ?? _config.RainbowProbabilityDenominator);
+        }
+
+        // ステージ選択画面で選んだステージ番号を敵に反映する。
+        // 未選択（GameScene を直接再生した場合など）は EnemyController の Inspector 値をそのまま使う
+        private void ApplySelectedStageToEnemy()
+        {
+            if (_enemy == null) return;
+            var index = GameSettings.CurrentStageIndex;
+            if (index == GameSettings.StageNotSelected) index = _enemy.EnemyIndex;
+            var lastIndex = Mathf.Max(0, _enemy.TotalCount - 1);
+            _enemy.SetEnemy(Mathf.Clamp(index, 0, lastIndex));
         }
 
         // initBoard=true はゲーム開始時のみ。敵切り替え時は false（盤面リセット禁止）
@@ -343,6 +355,8 @@ namespace App
         {
             if (_enemy == null) return;
             _enemySkillManager.Release();
+            // リトライ（シーン再読み込み）で今のステージから始まるよう、選択中ステージも進める
+            GameSettings.CurrentStageIndex = nextIndex;
             _enemy.SetEnemy(nextIndex);
             ApplyStageConfig(nextIndex, initBoard: true);
             _enemySkillManager.Initialize(_ctx, _ctx.CurrentStage?.EnemySkills ?? Array.Empty<EnemySkillEntry>());

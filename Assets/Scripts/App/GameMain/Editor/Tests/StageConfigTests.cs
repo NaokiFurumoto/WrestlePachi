@@ -14,7 +14,7 @@ namespace App.Tests
     {
         // 敵を入れ忘れたステージでも例外を出さず、安全な既定値を返す
         [Test]
-        public void NoEnemyNoLegacy_ReturnsSafeDefaults()
+        public void NoEnemy_ReturnsSafeDefaults()
         {
             var s = new StageConfig();
             Assert.That(s.EnemyName, Is.EqualTo(""));
@@ -24,18 +24,11 @@ namespace App.Tests
         }
 
         [Test]
-        public void NoEnemy_FallsBackToLegacy()
-        {
-            var s = new StageConfig { LegacyEnemyName = "クロマスク", LegacyEnemyLevel = 1 };
-            Assert.That(s.EnemyName, Is.EqualTo("クロマスク"));
-        }
-
-        [Test]
         public void WithEnemy_Rematch_UsesRuleAndLevel2()
         {
             var enemy = ScriptableObject.CreateInstance<EnemyData>();
             enemy.Configure("アニマスク", null, new[] { E(Clock, 1) }, new[] { E(GarbageDrop, 1) });
-            var s = new StageConfig { Enemy = enemy, IsRematch = true, LegacyEnemyName = "古い名前" };
+            var s = new StageConfig { Enemy = enemy, IsRematch = true };
             Assert.That(s.EnemyName, Is.EqualTo("アニマスク"));
             Assert.That(s.EnemyLevel, Is.EqualTo(2));
             Assert.That(s.EnemySkills, Is.EqualTo(new[] { E(Clock, 2), E(GarbageDrop, 1) }));

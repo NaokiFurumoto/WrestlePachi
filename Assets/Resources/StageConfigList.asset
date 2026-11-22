@@ -16,10 +16,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: e350b2a1974e60a4d977a3ab9cc46298, type: 2}
     IsRematch: 0
     EnemyHp: 20
-    LegacyEnemyName: "\u3078\u306A\u3061\u3087\u3053\u30DE\u30B9\u30AF"
-    LegacyEnemySprite: {fileID: 9179305393461085373, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -35,10 +31,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: e350b2a1974e60a4d977a3ab9cc46298, type: 2}
     IsRematch: 1
     EnemyHp: 30
-    LegacyEnemyName: "\u3078\u306A\u3061\u3087\u3053\u30DE\u30B9\u30AF"
-    LegacyEnemySprite: {fileID: 9179305393461085373, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -54,10 +46,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 1096da9b7bfad974585231fc102803b0, type: 2}
     IsRematch: 0
     EnemyHp: 40
-    LegacyEnemyName: "\u30AF\u30ED\u30DE\u30B9\u30AF"
-    LegacyEnemySprite: {fileID: 2265719180881648205, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -73,10 +61,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 1096da9b7bfad974585231fc102803b0, type: 2}
     IsRematch: 1
     EnemyHp: 50
-    LegacyEnemyName: "\u30AF\u30ED\u30DE\u30B9\u30AF"
-    LegacyEnemySprite: {fileID: 2265719180881648205, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -92,10 +76,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 53beaf05e61f4f04ea56c64a979c9d41, type: 2}
     IsRematch: 0
     EnemyHp: 65
-    LegacyEnemyName: "\u30A2\u30CB\u30DE\u30B9\u30AF"
-    LegacyEnemySprite: {fileID: -1792255549776868007, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -111,10 +91,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 53beaf05e61f4f04ea56c64a979c9d41, type: 2}
     IsRematch: 1
     EnemyHp: 82
-    LegacyEnemyName: "\u30A2\u30CB\u30DE\u30B9\u30AF"
-    LegacyEnemySprite: {fileID: -1792255549776868007, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -130,10 +106,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 960894f83381c9446b0032f1eb126bf7, type: 2}
     IsRematch: 0
     EnemyHp: 100
-    LegacyEnemyName: "\u30C7\u30D3\u30EB\u30DE\u30B9\u30AF"
-    LegacyEnemySprite: {fileID: -1121209177372791691, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 0
@@ -149,10 +121,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 960894f83381c9446b0032f1eb126bf7, type: 2}
     IsRematch: 1
     EnemyHp: 125
-    LegacyEnemyName: "\u30C7\u30D3\u30EB\u30DE\u30B9\u30AF"
-    LegacyEnemySprite: {fileID: -1121209177372791691, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 0
@@ -168,10 +136,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 3dbca7a75b75efb45846c7b09835e7ca, type: 2}
     IsRematch: 0
     EnemyHp: 150
-    LegacyEnemyName: "\u30D1\u30A4\u30F3\u30DE\u30B9\u30AF"
-    LegacyEnemySprite: {fileID: -7668465329654340997, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 0
@@ -187,10 +151,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 3dbca7a75b75efb45846c7b09835e7ca, type: 2}
     IsRematch: 1
     EnemyHp: 182
-    LegacyEnemyName: "\u30D1\u30A4\u30F3\u30DE\u30B9\u30AF"
-    LegacyEnemySprite: {fileID: -7668465329654340997, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -206,10 +166,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 8a63b5b959559534e995e418d50592b5, type: 2}
     IsRematch: 0
     EnemyHp: 195
-    LegacyEnemyName: "\u30DE\u30C3\u30CF\u30AD\u30E9\u30FC"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 0
@@ -225,10 +181,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 1ae1369cce71dff4aa2b2496a6b04f5a, type: 2}
     IsRematch: 0
     EnemyHp: 225
-    LegacyEnemyName: "\u30B9\u30B3\u30FC\u30D4\u30AA\u30F3X"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 0
@@ -244,10 +196,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 1ae1369cce71dff4aa2b2496a6b04f5a, type: 2}
     IsRematch: 1
     EnemyHp: 265
-    LegacyEnemyName: "\u30B9\u30B3\u30FC\u30D4\u30AA\u30F3X"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -263,10 +211,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: fc977c4f7b74e9c428162d3a21b011fb, type: 2}
     IsRematch: 0
     EnemyHp: 305
-    LegacyEnemyName: "\u30B5\u30F3\u30C0\u30FC\u30DC\u30EB\u30C8"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -282,10 +226,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: fc977c4f7b74e9c428162d3a21b011fb, type: 2}
     IsRematch: 1
     EnemyHp: 350
-    LegacyEnemyName: "\u30B5\u30F3\u30C0\u30FC\u30DC\u30EB\u30C8"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -301,10 +241,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 14800b4587993df4fba3d254c406af4e, type: 2}
     IsRematch: 0
     EnemyHp: 385
-    LegacyEnemyName: "\u30C7\u30B9\u30C9\u30E9\u30A4\u30D0\u30FC"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -320,10 +256,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: c5c9f3f4f7b0e6e4c9df6f09cd23ff34, type: 2}
     IsRematch: 0
     EnemyHp: 430
-    LegacyEnemyName: "\u30D0\u30B8\u30EA\u30B9\u30AF\u738B"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -339,10 +271,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: c5c9f3f4f7b0e6e4c9df6f09cd23ff34, type: 2}
     IsRematch: 1
     EnemyHp: 492
-    LegacyEnemyName: "\u30D0\u30B8\u30EA\u30B9\u30AF\u738B"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -358,10 +286,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 33ef9861050bca140ab9060c3815ebec, type: 2}
     IsRematch: 0
     EnemyHp: 555
-    LegacyEnemyName: "\u7ADC\u795E\u30D3\u30C3\u30B0\u30D0\u30F3"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 1
@@ -377,10 +301,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 33ef9861050bca140ab9060c3815ebec, type: 2}
     IsRematch: 1
     EnemyHp: 628
-    LegacyEnemyName: "\u7ADC\u795E\u30D3\u30C3\u30B0\u30D0\u30F3"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 1
@@ -396,10 +316,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 50521abd6b227454e9e4ff4de2ff32dc, type: 2}
     IsRematch: 0
     EnemyHp: 685
-    LegacyEnemyName: "\u9AB8\u9AA8\u4EEE\u9762\u30B0\u30EA\u30E0"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -415,10 +331,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 58cbdaafd7b775d4c9a2dc60a6200119, type: 2}
     IsRematch: 0
     EnemyHp: 748
-    LegacyEnemyName: "\u30C7\u30B9\u30C8\u30E9\u30AF\u30BF\u30FC\u5C71\u7530"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 1
@@ -434,10 +346,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 58cbdaafd7b775d4c9a2dc60a6200119, type: 2}
     IsRematch: 1
     EnemyHp: 825
-    LegacyEnemyName: "\u30C7\u30B9\u30C8\u30E9\u30AF\u30BF\u30FC\u5C71\u7530"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -453,10 +361,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: b9c726ed017befc49952f8e1b8f5bfd1, type: 2}
     IsRematch: 0
     EnemyHp: 900
-    LegacyEnemyName: "\u30D6\u30E9\u30C3\u30C7\u30A3\u30B4\u30EA\u30E9"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -472,10 +376,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: b9c726ed017befc49952f8e1b8f5bfd1, type: 2}
     IsRematch: 1
     EnemyHp: 980
-    LegacyEnemyName: "\u30D6\u30E9\u30C3\u30C7\u30A3\u30B4\u30EA\u30E9"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -491,10 +391,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 8a72172c3039d854a931c9ec99026c18, type: 2}
     IsRematch: 0
     EnemyHp: 1035
-    LegacyEnemyName: "\u30AB\u30AA\u30B9\u30A8\u30F3\u30DA\u30E9\u30FC"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -510,10 +406,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 852611cf7e7faae44bd11ba9d0831de7, type: 2}
     IsRematch: 0
     EnemyHp: 1085
-    LegacyEnemyName: "\u8D85\u795E\u30B4\u30B8\u30D5\u30A1\u30A4\u30BF\u30FC"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -529,10 +421,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 852611cf7e7faae44bd11ba9d0831de7, type: 2}
     IsRematch: 1
     EnemyHp: 1150
-    LegacyEnemyName: "\u8D85\u795E\u30B4\u30B8\u30D5\u30A1\u30A4\u30BF\u30FC"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -548,10 +436,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 7e2d229f4edcaaa4c85724fd1a4956cf, type: 2}
     IsRematch: 0
     EnemyHp: 1200
-    LegacyEnemyName: "\u9B54\u738B\u30D7\u30EA\u30F3\u30B9\u30C0\u30FC\u30AF"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -567,10 +451,6 @@ MonoBehaviour:
   - Enemy: {fileID: 11400000, guid: 3193e7714d930694ab57a27c0cc48023, type: 2}
     IsRematch: 0
     EnemyHp: 1250
-    LegacyEnemyName: "\u7D76\u5BFE\u738B\u8005\u30B4\u30C3\u30C9\u30AD\u30F3\u30B0"
-    LegacyEnemySprite: {fileID: 0}
-    LegacyEnemyLevel: 1
-    LegacyEnemySkills: []
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2

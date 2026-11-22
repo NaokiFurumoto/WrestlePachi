@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace App
 {
@@ -18,24 +17,18 @@ namespace App
         public bool IsRematch;
         [Min(1)] public int EnemyHp = 10;
 
-        // ─── 移行用の旧フィールド（敵データ移行後に削除する） ───────────
-        [HideInInspector, FormerlySerializedAs("EnemyName")]   public string             LegacyEnemyName   = "";
-        [HideInInspector, FormerlySerializedAs("EnemySprite")] public Sprite?            LegacyEnemySprite;
-        [HideInInspector, FormerlySerializedAs("EnemyLevel")]  public int                LegacyEnemyLevel  = 1;
-        [HideInInspector, FormerlySerializedAs("EnemySkills")] public EnemySkillEntry[]  LegacyEnemySkills = Array.Empty<EnemySkillEntry>();
+        // ─── 敵情報の読み取り（敵が未設定のステージでも例外を出さない） ──────
+        /// <summary>敵の表示名（敵未設定なら空文字）</summary>
+        public string EnemyName => Enemy != null ? Enemy.DisplayName : "";
 
-        // ─── 敵情報の読み取り（敵アセット優先、未設定なら旧フィールド） ──────
-        /// <summary>敵の表示名</summary>
-        public string EnemyName => Enemy != null ? Enemy.DisplayName : LegacyEnemyName;
-
-        /// <summary>敵の顔画像</summary>
-        public Sprite? EnemySprite => Enemy != null ? Enemy.FaceSprite : LegacyEnemySprite;
+        /// <summary>敵の顔画像（敵未設定なら null）</summary>
+        public Sprite? EnemySprite => Enemy != null ? Enemy.FaceSprite : null;
 
         /// <summary>HUD・詳細画面に「Lv.N」で表示する敵レベル（2戦目なら2）</summary>
-        public int EnemyLevel => Enemy != null ? (IsRematch ? 2 : 1) : LegacyEnemyLevel;
+        public int EnemyLevel => IsRematch ? 2 : 1;
 
-        /// <summary>このステージで発動する敵スキル（EnemySkillRule で決定）</summary>
-        public EnemySkillEntry[] EnemySkills => Enemy != null ? EnemySkillRule.Resolve(Enemy, IsRematch) : LegacyEnemySkills;
+        /// <summary>このステージで発動する敵スキル（EnemySkillRule で決定。敵未設定なら空）</summary>
+        public EnemySkillEntry[] EnemySkills => EnemySkillRule.Resolve(Enemy, IsRematch);
 
         [Header("ボード")]
         [Tooltip("表示行数（10 or 12）"), Range(10, 12)]

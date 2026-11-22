@@ -29,20 +29,27 @@ namespace App
         [SerializeField] private Image?    _enemyImage;
         [SerializeField] private TMP_Text? _stageNameText;
         [SerializeField] private TMP_Text? _enemyNameText;
+        [SerializeField] private TMP_Text? _enemyLevelText;
         [SerializeField] private TMP_Text? _hpText;
         [SerializeField] private TMP_Text? _timeLimitText;
 
-        [Header("初期ゴミ行数（0なら非表示）")]
+        [Header("初期ゴミ行数（0なら枠ごと非表示）")]
         [SerializeField] private GameObject? _garbageRowsGroup;
         [SerializeField] private TMP_Text?   _garbageRowsText;
 
         [Header("スタミナ")]
-        [SerializeField] private TMP_Text? _staminaText;
+        [SerializeField] private TMP_Text?  _staminaText;
+        [SerializeField] private Transform? _staminaHeartContainer;
+        [SerializeField] private Image?     _staminaHeartTemplate;
+        [SerializeField] private Sprite?    _heartFullSprite;
+        [SerializeField] private Sprite?    _heartEmptySprite;
 
         [Header("ボタン")]
-        [SerializeField] private Button? _btnChallenge;
-        [SerializeField] private Button? _btnClose;
-        [SerializeField] private Button? _btnSkillDetail;
+        [SerializeField] private Button?   _btnChallenge;
+        [SerializeField] private Sprite?   _challengeDisabledSprite;
+        [SerializeField] private Button?   _btnClose;
+        [SerializeField] private Button?   _btnSkillDetail;
+        [SerializeField] private TMP_Text? _skillToggleArrow;
 
         [Header("スキル詳細グループ（タップで開閉・ScrollView）")]
         [SerializeField] private GameObject? _skillDetailGroup;
@@ -68,20 +75,22 @@ namespace App
             if (_enemyNameText != null)
                 _enemyNameText.text = config.EnemyName;
 
+            if (_enemyLevelText != null)
+                _enemyLevelText.text = $"Lv.{config.EnemyLevel}";
+
             if (_hpText != null)
                 _hpText.text = config.EnemyHp.ToString();
 
             if (_timeLimitText != null)
-                _timeLimitText.text = $"{config.TimeLimit:0}s";
+                _timeLimitText.text = $"{config.TimeLimit:0}{UnitSuffix("秒")}";
 
-            // 初期ゴミ行数は 0 なら行ごと非表示
+            // 初期ゴミ行数は 0 なら枠ごと非表示
             var hasGarbage = config.GarbageInitialRows > 0;
             _garbageRowsGroup?.SetActive(hasGarbage);
             if (_garbageRowsText != null && hasGarbage)
-                _garbageRowsText.text = $"{config.GarbageInitialRows}行";
+                _garbageRowsText.text = $"{config.GarbageInitialRows}{UnitSuffix("行")}";
 
-            if (_staminaText != null && StaminaManager.isValid)
-                _staminaText.text = $"{StaminaManager.Instance.Current}/{StaminaManager.Instance.Max}";
+            SetupStamina();
 
             // スキル詳細ボタン：スキルがなければ非活性
             var hasSkills = config.EnemySkills is { Length: > 0 };
@@ -99,12 +108,42 @@ namespace App
 
             if (_btnChallenge != null)
             {
-                _btnChallenge.interactable = StaminaManager.isValid && StaminaManager.Instance.Current >= 1;
+                var canChallenge = StaminaManager.isValid && StaminaManager.Instance.Current >= 1;
+                _btnChallenge.interactable = canChallenge;
+                if (!canChallenge && _challengeDisabledSprite != null && _btnChallenge.image != null)
+                    _btnChallenge.image.sprite = _challengeDisabledSprite;
                 _btnChallenge.onClick.AddListener(OnChallengeClicked);
             }
 
             if (_btnClose != null)
                 _btnClose.onClick.AddListener(OnCloseClicked);
+        }
+
+        /// <summary>数値の後ろに付ける単位（「秒」「行」）を小さめに表示するリッチテキスト。</summary>
+        private static string UnitSuffix(string unit) => $"<size=50%>{unit}</size>";
+
+        // ─── スタミナ表示 ───────────────────────────────────────────
+
+        /// <summary>最大値の数だけハートを並べ、現在値ぶんを赤、残りを黒で表示する。</summary>
+        private void SetupStamina()
+        {
+            if (!StaminaManager.isValid) return;
+
+            var current = StaminaManager.Instance.Current;
+            var max     = StaminaManager.Instance.Max;
+
+            if (_staminaText != null)
+                _staminaText.text = $"{current}<size=60%> / </size>{max}";
+
+            if (_staminaHeartContainer == null || _staminaHeartTemplate == null) return;
+
+            _staminaHeartTemplate.gameObject.SetActive(false);
+            for (var i = 0; i < max; i++)
+            {
+                var heart = Instantiate(_staminaHeartTemplate, _staminaHeartContainer);
+                heart.sprite = i < current ? _heartFullSprite : _heartEmptySprite;
+                heart.gameObject.SetActive(true);
+            }
         }
 
         // ─── スキル一覧ノード生成 ───────────────────────────────────
@@ -176,7 +215,10 @@ namespace App
         public void OnSkillDetailClicked()
         {
             if (_skillDetailGroup == null) return;
-            _skillDetailGroup.SetActive(!_skillDetailGroup.activeSelf);
+            var isOpen = !_skillDetailGroup.activeSelf;
+            _skillDetailGroup.SetActive(isOpen);
+            if (_skillToggleArrow != null)
+                _skillToggleArrow.text = isOpen ? "▲" : "▼";
         }
 
         public void OnChallengeClicked()

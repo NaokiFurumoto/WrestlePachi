@@ -1053,6 +1053,30 @@ namespace App.Puyo
             return count;
         }
 
+        /// <summary>
+        /// デバッグ用：盤面の岩すべてに、連鎖で1回巻き込まれたのと同じダメージを与える
+        /// （耐えた岩はヒビが入り、耐久が尽きた岩は砕けて消える）。見た目の確認用
+        /// </summary>
+        public void Debug_HitAllRocks()
+        {
+            if (_grid == null) return;
+            var broken = new List<PuyoPiece>();
+            for (var x = 0; x < COLS; x++)
+            for (var y = 0; y < _rows; y++)
+            {
+                var piece = _grid[x, y];
+                if (piece == null || !piece.TryGetComponent<RockPuyoState>(out var rock)) continue;
+                if (rock.OnHit()) rock.PlayHitEffect(_cellSize, transform);
+                else { rock.PlayBreakEffect(_cellSize, transform); broken.Add(piece); }
+            }
+            if (broken.Count == 0) return;
+            UniTask.Void(async () =>
+            {
+                await ClearPuyosAsync(broken, this.GetCancellationTokenOnDestroy());
+                await DropFloatingPuyosAsync(this.GetCancellationTokenOnDestroy());
+            });
+        }
+
         /// <summary>デバッグ用：これまでに観測した浮いているぷよの最大数（自動プレイ中の取りこぼし確認用）</summary>
         public int Debug_MaxFloatingSeen { get; private set; }
 

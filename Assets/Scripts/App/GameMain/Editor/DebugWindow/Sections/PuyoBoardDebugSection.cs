@@ -29,6 +29,9 @@ namespace App.EditorTools
                 ctrl.Debug_FillBoard(_fillRows);
             GUI.backgroundColor = prev;
 
+            if (GUILayout.Button("盤面の岩に1回ヒットさせる（ヒビ・砕ける見た目の確認）"))
+                ctrl.Debug_HitAllRocks();
+
             // 宙に浮いたぷよの検出（ペア操作中＝盤面が落ち着いているときに数える）
             var (now, max) = ctrl.Debug_GetFloatingPuyos();
             EditorGUILayout.LabelField($"浮いているぷよ：今 {now} 個／これまでの最大 {max} 個");

@@ -11,7 +11,7 @@ namespace App
         public abstract EnemySkillType Type { get; }
 
         /// <summary>スキルレベル（1始まり）。高いほど効果範囲・強度が上がる</summary>
-        protected int Level { get; }
+        public int Level { get; }
 
         protected EnemyPassiveSkillBase(int level)
         {

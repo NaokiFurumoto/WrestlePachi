@@ -11,7 +11,7 @@ namespace App
         public abstract EnemySkillType Type { get; }
 
         /// <summary>スキルレベル（1始まり）。高いほど発動頻度・強度が上がる</summary>
-        protected int Level { get; }
+        public int Level { get; }
 
         private float _elapsed;
 
@@ -35,6 +35,18 @@ namespace App
             _elapsed += deltaTime;
             if (_elapsed < interval) return;
 
+            _elapsed = 0f;
+            Execute(ctx);
+        }
+
+        /// <summary>次の発動までの残り秒数（デバッグ表示用）</summary>
+        public float SecondsUntilNext => System.Math.Max(0f, GetInterval(Level) - _elapsed);
+
+        /// <summary>
+        /// 間隔を待たずに今すぐ発動し、タイマーを0から数え直す（デバッグウィンドウ用）。
+        /// </summary>
+        public void TriggerNow(GameContext ctx)
+        {
             _elapsed = 0f;
             Execute(ctx);
         }

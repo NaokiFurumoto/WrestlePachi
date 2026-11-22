@@ -59,6 +59,69 @@ namespace App
                 skill.Tick(deltaTime, _ctx);
         }
 
+#if UNITY_EDITOR
+        // ─── デバッグウィンドウ用（エディタ専用） ────────────────────
+
+        /// <summary>発動中の全スキル（周期発動型 → 常時効果型の順）</summary>
+        public IReadOnlyList<IEnemySkill> Debug_Skills
+        {
+            get
+            {
+                var list = new List<IEnemySkill>(_periodicSkills);
+                list.AddRange(_passiveSkills);
+                return list;
+            }
+        }
+
+        /// <summary>
+        /// 技をその場で追加する。周期発動型は追加と同時に1回発動し、常時効果型は追加時点で効果が始まる。
+        /// ステージ開始前（Initialize 前）は何もしない。
+        /// </summary>
+        public void Debug_AddAndTrigger(EnemySkillType type, int level)
+        {
+            if (_ctx == null) return;
+            switch (EnemySkillFactory.Create(type, level, _assets, _balance))
+            {
+                case EnemySkillBase periodic:
+                    _periodicSkills.Add(periodic);
+                    periodic.OnEnter(_ctx);
+                    periodic.TriggerNow(_ctx);
+                    break;
+                case EnemyPassiveSkillBase passive:
+                    _passiveSkills.Add(passive);
+                    passive.OnEnter(_ctx);
+                    break;
+            }
+        }
+
+        /// <summary>周期発動型の技を今すぐ発動する</summary>
+        public void Debug_TriggerNow(EnemySkillBase skill)
+        {
+            if (_ctx != null) skill.TriggerNow(_ctx);
+        }
+
+        /// <summary>技を1つ外す（通常の終了時と同じ後始末をする）</summary>
+        public void Debug_Remove(IEnemySkill skill)
+        {
+            if (_ctx == null) return;
+            switch (skill)
+            {
+                case EnemySkillBase periodic when _periodicSkills.Remove(periodic):
+                    periodic.OnRelease(_ctx);
+                    break;
+                case EnemyPassiveSkillBase passive when _passiveSkills.Remove(passive):
+                    passive.OnRelease(_ctx);
+                    break;
+            }
+        }
+
+        /// <summary>全ての技を外す。ステージは続くので、その後も Debug_AddAndTrigger で追加できる</summary>
+        public void Debug_RemoveAll()
+        {
+            foreach (var skill in Debug_Skills) Debug_Remove(skill);
+        }
+#endif
+
         /// <summary>全スキルを解除する。ステージ終了・敵切替時に呼ぶ</summary>
         public void Release()
         {

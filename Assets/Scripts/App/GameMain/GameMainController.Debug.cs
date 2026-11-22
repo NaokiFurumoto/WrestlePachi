@@ -40,6 +40,9 @@ namespace App
             return (_enemy.EnemyIndex, _enemy.TotalCount, _enemy.CurrentHp, _enemy.MaxHp);
         }
 
+        /// <summary>敵スキルの管理（デバッグウィンドウの「敵スキル」欄から使う）</summary>
+        public EnemySkillManager Debug_EnemySkills => _enemySkillManager;
+
         // ─── GameModeConfig ───────────────────────────────────────
         public void Debug_SetBlackProbability(float value)           => _config?.Debug_SetBlackHoldProbability(value);
         public void Debug_SetBallsPerPuyo(float value)               => _config?.Debug_SetBallsPerPuyo(value);

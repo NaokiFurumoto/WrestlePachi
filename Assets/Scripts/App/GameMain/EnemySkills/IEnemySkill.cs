@@ -9,6 +9,9 @@ namespace App
     public interface IEnemySkill
     {
         EnemySkillType Type { get; }
+
+        /// <summary>スキルレベル（1始まり）</summary>
+        int Level { get; }
     }
 }
 #nullable disable

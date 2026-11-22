@@ -160,26 +160,11 @@ namespace App
                 var node = go.GetComponent<SkillEntryNode>();
                 if (node == null) continue;
 
-                var title = $"{GetSkillName(skill.Type)}（Lv.{skill.Level}）";
+                var title = $"{EnemySkillNames.Get(skill.Type)}（Lv.{skill.Level}）";
                 var icon  = _skillAssets?.GetIcon(skill.Type);
                 node.Setup(icon, title, GetSkillColor(skill.Type), GetSkillDescription(skill.Type));
             }
         }
-
-        private static string GetSkillName(EnemySkillType skill) => skill switch
-        {
-            EnemySkillType.Shark          => "サメ",
-            EnemySkillType.FireTile       => "炎",
-            EnemySkillType.GarbageDrop    => "お邪魔落下",
-            EnemySkillType.Rock           => "岩",
-            EnemySkillType.TimeBomb       => "時限爆弾",
-            EnemySkillType.SkillSeal      => "スキル封印",
-            EnemySkillType.Confusion      => "混乱",
-            EnemySkillType.BlackHoldBoost => "黒保留強化",
-            EnemySkillType.BlackHoldPower => "黒保留威力",
-            EnemySkillType.Clock          => "時計",
-            _                             => skill.ToString(),
-        };
 
         private static string GetSkillDescription(EnemySkillType skill) => skill switch
         {

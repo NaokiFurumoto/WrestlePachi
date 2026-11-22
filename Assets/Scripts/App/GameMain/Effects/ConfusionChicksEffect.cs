@@ -16,11 +16,12 @@ namespace App.Effects
     {
         private const int ChickCount = 3;
         /// <summary>ヒヨコの大きさ（ぷよ何個分か）</summary>
-        private const float ChickSizeInCells = 0.7f;
+        /// <summary>（絵には星や羽ばたきの線も入っていて、体は幅の6割ほど）</summary>
+        private const float ChickSizeInCells = 1.0f;
         /// <summary>輪の中心を、ペアの上のぷよの中心から何マス上に置くか</summary>
-        public const float HeightAbovePairInCells = 0.95f;
+        public const float HeightAbovePairInCells = 1.1f;
         /// <summary>輪の横・縦の半径（ぷよ何個分か）。縦を短くして、頭の上を回る楕円にする</summary>
-        private const float OrbitRadiusXInCells = 0.85f;
+        private const float OrbitRadiusXInCells = 1.0f;
         private const float OrbitRadiusYInCells = 0.2f;
         /// <summary>1周にかかる秒数</summary>
         private const float OrbitPeriodSec = 1.1f;

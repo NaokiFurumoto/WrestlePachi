@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81a3db787c9638948b212df32b6c062b, type: 3}
+  m_Name: Enemy_DestructorYamada
+  m_EditorClassIdentifier: Assembly-CSharp::App.EnemyData
+  _displayName: "\u30C7\u30B9\u30C8\u30E9\u30AF\u30BF\u30FC\u5C71\u7530"
+  _faceSprite: {fileID: 0}
+  _signatureSkills:
+  - Type: 2
+    Level: 2
+  - Type: 3
+    Level: 1
+  _rematchExtraSkills:
+  - Type: 9
+    Level: 2

@@ -37,12 +37,23 @@ namespace App
         private float _lastLaunchSETime = float.NegativeInfinity;
         private GameObject _cachedBallPrefab;
 
+#if UNITY_EDITOR
+        /// <summary>
+        /// デバッグ用：連鎖などで自動的に玉を出さない（敵スキルの確認中に保留の技が割り込まないように）。
+        /// WP Debug の「パチンコ玉を止める」で切り替える。デバッグの「玉を発射」ボタンからは出せる。
+        /// </summary>
+        public static bool Debug_SuppressAutoLaunch;
+#endif
+
         /// <summary>
         /// 連鎖数に応じて複数の球を順番に発射する。
         /// ゲームステート遷移に影響されないよう自身の CT を使う。
         /// </summary>
-        public async UniTaskVoid LaunchAsync(int count)
+        public async UniTaskVoid LaunchAsync(int count, bool debugForce = false)
         {
+#if UNITY_EDITOR
+            if (Debug_SuppressAutoLaunch && !debugForce) return;
+#endif
             for (var i = 0; i < count && enabled; i++)
             {
                 _LaunchBall();

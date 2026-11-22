@@ -20,8 +20,21 @@ namespace App.EditorTools
         private const int    BigMaxHp     = 9999;
         private const int    BigStartHp   = 5000; // 満タンだと回復演出が見えないので半分から始める
 
+        // 敵スキルの確認中に保留の技が割り込まないよう、連鎖で自動的にパチンコ玉を出さない（エディタ再起動後も覚える）
+        private const string StopBallsPrefKey = "WP_Debug_StopPachinkoBalls";
+
+        [InitializeOnLoadMethod]
+        private static void ApplyStopBallsSetting()
+            => BallLauncher.Debug_SuppressAutoLaunch = EditorPrefs.GetBool(StopBallsPrefKey, true);
+
         public void OnGUI(GameMainController ctrl)
         {
+            var stopBalls    = EditorPrefs.GetBool(StopBallsPrefKey, true);
+            var newStopBalls = EditorGUILayout.ToggleLeft("パチンコ玉を止める（連鎖しても玉が出ず、保留・技が発動しない）", stopBalls);
+            if (newStopBalls != stopBalls) EditorPrefs.SetBool(StopBallsPrefKey, newStopBalls);
+            BallLauncher.Debug_SuppressAutoLaunch = newStopBalls;
+            EditorGUILayout.Space(4);
+
             // ─── 敵の状態 ─────────────────────────────────────────
             EditorGUILayout.LabelField("敵の状態", EditorStyles.boldLabel);
             var (idx, total, hp, maxHp) = ctrl.Debug_GetEnemyInfo();

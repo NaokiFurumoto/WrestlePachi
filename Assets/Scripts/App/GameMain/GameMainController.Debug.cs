@@ -22,7 +22,7 @@ namespace App
         // ─── ゲーム操作 ───────────────────────────────────────────
         public void Debug_AddHold(HoldType type)                            => _holdSystem?.AddHold(type);
         public void Debug_ForceHesoEntry()                                  => OnHesoEntered();
-        public void Debug_LaunchBalls(int count)                            => _contents?.BallLauncher?.LaunchAsync(count).Forget();
+        public void Debug_LaunchBalls(int count)                            => _contents?.BallLauncher?.LaunchAsync(count, debugForce: true).Forget();
         public void Debug_ClearAllBalls()                                   => _contents?.BallLauncher?.Debug_ClearAllBalls();
         public void Debug_ForceChainCompleted(int chainCount, int cleared)
         {

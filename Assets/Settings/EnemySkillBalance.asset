@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 005cf3bc331acbd44b0535374a0e3943, type: 3}
+  m_Name: EnemySkillBalance
+  m_EditorClassIdentifier: Assembly-CSharp::App.EnemySkillBalanceConfig
+  Shark:
+    BaseIntervalSec: 12
+    IntervalStepSec: 1
+    MinIntervalSec: 4
+    BaseCount: 2
+    HealPerPuyo: 3
+  FireTile:
+    BaseTileCount: 1
+  GarbageDrop:
+    BaseIntervalSec: 20
+    IntervalStepSec: 2
+    MinIntervalSec: 5
+    BaseCount: 1
+  Pineapple:
+    BaseIntervalSec: 15
+    IntervalStepSec: 1.5
+    MinIntervalSec: 5
+    BaseDurability: 2
+  TimeBomb:
+    BaseIntervalSec: 18
+    IntervalStepSec: 2
+    MinIntervalSec: 6
+    FuseSeconds: 8
+  SkillSeal:
+    SealOrder: 000000000100000002000000030000000400000005000000
+  Confusion:
+    BaseIntervalSec: 15
+    BaseDurationSec: 5
+    DurationStepSec: 1
+  BlackHoldBoost:
+    BaseDenominator: 20
+    DenominatorStep: 2
+    MinDenominator: 4
+  BlackHoldPower:
+    BaseOjamaCount: 6
+    OjamaCountStep: 2
+  Clock:
+    BaseIntervalSec: 15
+    IntervalStepSec: 1
+    MinIntervalSec: 5
+    BaseReduceSeconds: 5
+    ReduceSecondsPerLevel: 1

@@ -1,0 +1,580 @@
+fileFormatVersion: 2
+guid: 072dd21256fe5ec418ae414b49eb63dd
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 839874298585907866
+    second: StageDetailUI-export_0
+  - first:
+      213: 666432782099648425
+    second: StageDetailUI-export_1
+  - first:
+      213: 8325971230240077411
+    second: StageDetailUI-export_2
+  - first:
+      213: 6647192422701906532
+    second: StageDetailUI-export_3
+  - first:
+      213: 4415343133456882270
+    second: StageDetailUI-export_4
+  - first:
+      213: -6620189629341194208
+    second: StageDetailUI-export_5
+  - first:
+      213: 943427413673152153
+    second: StageDetailUI-export_6
+  - first:
+      213: -2390570955881288889
+    second: StageDetailUI-export_7
+  - first:
+      213: -7163129919691874404
+    second: StageDetailUI-export_8
+  - first:
+      213: 3555756138301731954
+    second: StageDetailUI-export_9
+  - first:
+      213: -8999327889423255775
+    second: StageDetailUI-export_10
+  - first:
+      213: 718675419365433083
+    second: StageDetailUI-export_11
+  - first:
+      213: 9096943448679992819
+    second: StageDetailUI-export_12
+  - first:
+      213: 1021944557837187317
+    second: StageDetailUI-export_13
+  - first:
+      213: -4349373507682437021
+    second: StageDetailUI-export_14
+  - first:
+      213: -2394614186787213078
+    second: StageDetailUI-export_15
+  - first:
+      213: 4740713744520055178
+    second: StageDetailUI-export_16
+  - first:
+      213: -4528634104873742599
+    second: StageDetailUI-export_17
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: StageDetailUI-export_0
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 941
+        width: 110
+        height: 117
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9281378935d7ab00800000000000000
+      internalID: 839874298585907866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_1
+      rect:
+        serializedVersion: 2
+        x: 145
+        y: 956
+        width: 345
+        height: 89
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9af89bb9515af3900800000000000000
+      internalID: 666432782099648425
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_2
+      rect:
+        serializedVersion: 2
+        x: 516
+        y: 943
+        width: 201
+        height: 138
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 23, y: 25, z: 22, w: 25}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 366f49498bacb8370800000000000000
+      internalID: 8325971230240077411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_4
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 459
+        width: 587
+        height: 456
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5a5827bf23764d30800000000000000
+      internalID: 4415343133456882270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_5
+      rect:
+        serializedVersion: 2
+        x: 632
+        y: 812
+        width: 338
+        height: 104
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 028a46d7b9c5024a0800000000000000
+      internalID: -6620189629341194208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_6
+      rect:
+        serializedVersion: 2
+        x: 631
+        y: 752
+        width: 337
+        height: 42
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 99e8a57fb3ab71d00800000000000000
+      internalID: 943427413673152153
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_7
+      rect:
+        serializedVersion: 2
+        x: 643
+        y: 600
+        width: 345
+        height: 133
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74b6454a16cf2ded0800000000000000
+      internalID: -2390570955881288889
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_8
+      rect:
+        serializedVersion: 2
+        x: 633
+        y: 479
+        width: 336
+        height: 97
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c9f1bc83a43779c90800000000000000
+      internalID: -7163129919691874404
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_9
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 352
+        width: 631
+        height: 72
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 274b36b5e55985130800000000000000
+      internalID: 3555756138301731954
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_10
+      rect:
+        serializedVersion: 2
+        x: 654
+        y: 319
+        width: 75
+        height: 71
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12739ad07f6fb1380800000000000000
+      internalID: -8999327889423255775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_12
+      rect:
+        serializedVersion: 2
+        x: 774
+        y: 318
+        width: 65
+        height: 75
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3fd43607ed5de3e70800000000000000
+      internalID: 9096943448679992819
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_13
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 150
+        width: 619
+        height: 200
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 35, y: 29, z: 34, w: 27}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5f8770e292dae2e00800000000000000
+      internalID: 1021944557837187317
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_14
+      rect:
+        serializedVersion: 2
+        x: 647
+        y: 227
+        width: 56
+        height: 52
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 368f717b6dbe3a3c0800000000000000
+      internalID: -4349373507682437021
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_15
+      rect:
+        serializedVersion: 2
+        x: 718
+        y: 228
+        width: 53
+        height: 51
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae0ff66951f94ced0800000000000000
+      internalID: -2394614186787213078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_16
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 2
+        width: 349
+        height: 129
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a890ee388066ac140800000000000000
+      internalID: 4740713744520055178
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: StageDetailUI-export_17
+      rect:
+        serializedVersion: 2
+        x: 382
+        y: 0
+        width: 349
+        height: 129
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fe084d764f0721c0800000000000000
+      internalID: -4528634104873742599
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: b3da50b6713222344bbfd722f3b1b6b4
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      StageDetailUI-export_0: 839874298585907866
+      StageDetailUI-export_1: 666432782099648425
+      StageDetailUI-export_10: -8999327889423255775
+      StageDetailUI-export_11: 718675419365433083
+      StageDetailUI-export_12: 9096943448679992819
+      StageDetailUI-export_13: 1021944557837187317
+      StageDetailUI-export_14: -4349373507682437021
+      StageDetailUI-export_15: -2394614186787213078
+      StageDetailUI-export_16: 4740713744520055178
+      StageDetailUI-export_17: -4528634104873742599
+      StageDetailUI-export_2: 8325971230240077411
+      StageDetailUI-export_3: 6647192422701906532
+      StageDetailUI-export_4: 4415343133456882270
+      StageDetailUI-export_5: -6620189629341194208
+      StageDetailUI-export_6: 943427413673152153
+      StageDetailUI-export_7: -2390570955881288889
+      StageDetailUI-export_8: -7163129919691874404
+      StageDetailUI-export_9: 3555756138301731954
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

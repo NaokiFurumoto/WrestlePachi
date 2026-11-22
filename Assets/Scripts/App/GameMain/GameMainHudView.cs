@@ -5,6 +5,7 @@ using DG.Tweening;
 using GameSys;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace App
@@ -50,9 +51,10 @@ namespace App
         [Header("スタミナ")]
         [SerializeField] private TMP_Text? _staminaText;
 
-        // ── ラウンド ─────────────────────────────────────────────────
-        [Header("ラウンド")]
-        [SerializeField] private TMP_Text? _roundText;
+        // ── 敵レベル ─────────────────────────────────────────────────
+        [Header("敵レベル")]
+        [FormerlySerializedAs("_roundText")]
+        [SerializeField] private TMP_Text? _levelText;
 
         // ── 虹保留確率 ───────────────────────────────────────────────
         [Header("虹保留確率")]
@@ -186,14 +188,13 @@ if (_damageEffect != null)
             _staminaText.text = $"{current}/{max}";
         }
 
-        // ── ラウンド ─────────────────────────────────────────────────
+        // ── 敵レベル ─────────────────────────────────────────────────
 
-        public void SetRound(int roundNumber)
+        /// <summary>敵レベルを常に「Lv.N」形式で表示する（同じ敵を複数ステージで使い回す想定）</summary>
+        public void SetEnemyLevel(int level)
         {
-            if (_roundText == null) return;
-            _roundText.gameObject.SetActive(roundNumber > 0);
-            if (roundNumber > 0)
-                _roundText.text = roundNumber.ToString();
+            if (_levelText == null) return;
+            _levelText.text = $"{level}";
         }
 
         // ── 虹保留確率 ───────────────────────────────────────────────

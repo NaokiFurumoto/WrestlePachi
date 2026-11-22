@@ -16,7 +16,7 @@ MonoBehaviour:
   - EnemyName: "\u3078\u306A\u3061\u3087\u3053\u30DE\u30B9\u30AF"
     EnemySprite: {fileID: 9179305393461085373, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     EnemyHp: 2500
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -26,15 +26,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 0
     RainbowDenominator: 20
-    BlackHoldDenominator: 0
-    BlackPuyoCount: 0
     PuyoFallSpeed: 1
     BallsPerPuyo: 1.3
     TimeLimit: 240
+    EnemySkills: []
   - EnemyName: "\u3078\u306A\u3061\u3087\u3053\u30DE\u30B9\u30AF"
     EnemySprite: {fileID: 9179305393461085373, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     EnemyHp: 30
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -44,15 +43,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 0
     RainbowDenominator: 20
-    BlackHoldDenominator: 0
-    BlackPuyoCount: 0
     PuyoFallSpeed: 1
     BallsPerPuyo: 1.25
     TimeLimit: 235
+    EnemySkills: []
   - EnemyName: "\u30AF\u30ED\u30DE\u30B9\u30AF"
     EnemySprite: {fileID: 2265719180881648205, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     EnemyHp: 40
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -62,15 +60,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 0
     RainbowDenominator: 30
-    BlackHoldDenominator: 0
-    BlackPuyoCount: 0
     PuyoFallSpeed: 1
     BallsPerPuyo: 1.2
     TimeLimit: 230
+    EnemySkills: []
   - EnemyName: "\u30AF\u30ED\u30DE\u30B9\u30AF"
     EnemySprite: {fileID: 2265719180881648205, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     EnemyHp: 50
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -80,15 +77,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 0
     RainbowDenominator: 28
-    BlackHoldDenominator: 0
-    BlackPuyoCount: 0
     PuyoFallSpeed: 1
     BallsPerPuyo: 1.17
     TimeLimit: 225
+    EnemySkills: []
   - EnemyName: "\u30A2\u30CB\u30DE\u30B9\u30AF"
     EnemySprite: {fileID: -1792255549776868007, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     EnemyHp: 65
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -98,15 +94,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 0
     RainbowDenominator: 40
-    BlackHoldDenominator: 0
-    BlackPuyoCount: 0
     PuyoFallSpeed: 1
     BallsPerPuyo: 1.13
     TimeLimit: 220
+    EnemySkills: []
   - EnemyName: "\u30A2\u30CB\u30DE\u30B9\u30AF"
     EnemySprite: {fileID: -1792255549776868007, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     EnemyHp: 82
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 4
     GarbageInitialRows: 0
@@ -116,15 +111,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 0
     RainbowDenominator: 40
-    BlackHoldDenominator: 0
-    BlackPuyoCount: 0
     PuyoFallSpeed: 1.05
     BallsPerPuyo: 1.09
     TimeLimit: 215
+    EnemySkills: []
   - EnemyName: "\u30C7\u30D3\u30EB\u30DE\u30B9\u30AF"
     EnemySprite: {fileID: -1121209177372791691, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     EnemyHp: 100
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 0
@@ -134,15 +128,14 @@ MonoBehaviour:
     WeightBlue: 5
     WeightPurple: 1
     RainbowDenominator: 50
-    BlackHoldDenominator: 10
-    BlackPuyoCount: 2
     PuyoFallSpeed: 1.05
     BallsPerPuyo: 1.05
     TimeLimit: 210
+    EnemySkills: []
   - EnemyName: "\u30C7\u30D3\u30EB\u30DE\u30B9\u30AF"
     EnemySprite: {fileID: -1121209177372791691, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     EnemyHp: 125
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 0
@@ -152,15 +145,14 @@ MonoBehaviour:
     WeightBlue: 5
     WeightPurple: 1
     RainbowDenominator: 50
-    BlackHoldDenominator: 10
-    BlackPuyoCount: 2
     PuyoFallSpeed: 1.1
     BallsPerPuyo: 1.01
     TimeLimit: 205
+    EnemySkills: []
   - EnemyName: "\u30D1\u30A4\u30F3\u30DE\u30B9\u30AF"
     EnemySprite: {fileID: -7668465329654340997, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     EnemyHp: 150
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 0
@@ -170,15 +162,14 @@ MonoBehaviour:
     WeightBlue: 5
     WeightPurple: 1
     RainbowDenominator: 60
-    BlackHoldDenominator: 10
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.1
     BallsPerPuyo: 0.97
     TimeLimit: 200
+    EnemySkills: []
   - EnemyName: "\u30D1\u30A4\u30F3\u30DE\u30B9\u30AF"
     EnemySprite: {fileID: -7668465329654340997, guid: a22078d23e431a54a8c9b078b9f1d1ae, type: 3}
     EnemyHp: 182
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -188,15 +179,14 @@ MonoBehaviour:
     WeightBlue: 5
     WeightPurple: 1
     RainbowDenominator: 60
-    BlackHoldDenominator: 10
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.1
     BallsPerPuyo: 0.93
     TimeLimit: 195
+    EnemySkills: []
   - EnemyName: "\u30DE\u30C3\u30CF\u30AD\u30E9\u30FC"
     EnemySprite: {fileID: 0}
     EnemyHp: 195
-    RoundNumber: 0
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 0
@@ -206,15 +196,14 @@ MonoBehaviour:
     WeightBlue: 2
     WeightPurple: 1
     RainbowDenominator: 40
-    BlackHoldDenominator: 42
-    BlackPuyoCount: 1
     PuyoFallSpeed: 1.3
     BallsPerPuyo: 0.9
     TimeLimit: 188
+    EnemySkills: []
   - EnemyName: "\u30B9\u30B3\u30FC\u30D4\u30AA\u30F3X"
     EnemySprite: {fileID: 0}
     EnemyHp: 225
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 0
@@ -224,15 +213,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 43
-    BlackHoldDenominator: 40
-    BlackPuyoCount: 1
     PuyoFallSpeed: 1.15
     BallsPerPuyo: 0.87
     TimeLimit: 189
+    EnemySkills: []
   - EnemyName: "\u30B9\u30B3\u30FC\u30D4\u30AA\u30F3X"
     EnemySprite: {fileID: 0}
     EnemyHp: 265
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -242,15 +230,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 43
-    BlackHoldDenominator: 35
-    BlackPuyoCount: 2
     PuyoFallSpeed: 1.15
     BallsPerPuyo: 0.84
     TimeLimit: 186
+    EnemySkills: []
   - EnemyName: "\u30B5\u30F3\u30C0\u30FC\u30DC\u30EB\u30C8"
     EnemySprite: {fileID: 0}
     EnemyHp: 305
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -260,15 +247,14 @@ MonoBehaviour:
     WeightBlue: 2
     WeightPurple: 1
     RainbowDenominator: 47
-    BlackHoldDenominator: 32
-    BlackPuyoCount: 2
     PuyoFallSpeed: 1.2
     BallsPerPuyo: 0.81
     TimeLimit: 183
+    EnemySkills: []
   - EnemyName: "\u30B5\u30F3\u30C0\u30FC\u30DC\u30EB\u30C8"
     EnemySprite: {fileID: 0}
     EnemyHp: 350
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -278,15 +264,14 @@ MonoBehaviour:
     WeightBlue: 2
     WeightPurple: 1
     RainbowDenominator: 47
-    BlackHoldDenominator: 28
-    BlackPuyoCount: 2
     PuyoFallSpeed: 1.2
     BallsPerPuyo: 0.78
     TimeLimit: 180
+    EnemySkills: []
   - EnemyName: "\u30C7\u30B9\u30C9\u30E9\u30A4\u30D0\u30FC"
     EnemySprite: {fileID: 0}
     EnemyHp: 385
-    RoundNumber: 0
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -296,15 +281,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 52
-    BlackHoldDenominator: 26
-    BlackPuyoCount: 2
     PuyoFallSpeed: 1.25
     BallsPerPuyo: 0.76
     TimeLimit: 177
+    EnemySkills: []
   - EnemyName: "\u30D0\u30B8\u30EA\u30B9\u30AF\u738B"
     EnemySprite: {fileID: 0}
     EnemyHp: 430
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -314,15 +298,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 3
     RainbowDenominator: 56
-    BlackHoldDenominator: 30
-    BlackPuyoCount: 2
     PuyoFallSpeed: 1.2
     BallsPerPuyo: 0.74
     TimeLimit: 174
+    EnemySkills: []
   - EnemyName: "\u30D0\u30B8\u30EA\u30B9\u30AF\u738B"
     EnemySprite: {fileID: 0}
     EnemyHp: 492
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 12
     ColorCount: 5
     GarbageInitialRows: 1
@@ -332,15 +315,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 3
     RainbowDenominator: 56
-    BlackHoldDenominator: 26
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.2
     BallsPerPuyo: 0.72
     TimeLimit: 171
+    EnemySkills: []
   - EnemyName: "\u7ADC\u795E\u30D3\u30C3\u30B0\u30D0\u30F3"
     EnemySprite: {fileID: 0}
     EnemyHp: 555
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 1
@@ -350,15 +332,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 60
-    BlackHoldDenominator: 28
-    BlackPuyoCount: 2
     PuyoFallSpeed: 1.25
     BallsPerPuyo: 0.7
     TimeLimit: 168
+    EnemySkills: []
   - EnemyName: "\u7ADC\u795E\u30D3\u30C3\u30B0\u30D0\u30F3"
     EnemySprite: {fileID: 0}
     EnemyHp: 628
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 1
@@ -368,15 +349,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 60
-    BlackHoldDenominator: 24
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.25
     BallsPerPuyo: 0.68
     TimeLimit: 165
+    EnemySkills: []
   - EnemyName: "\u9AB8\u9AA8\u4EEE\u9762\u30B0\u30EA\u30E0"
     EnemySprite: {fileID: 0}
     EnemyHp: 685
-    RoundNumber: 0
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -386,15 +366,14 @@ MonoBehaviour:
     WeightBlue: 3
     WeightPurple: 1
     RainbowDenominator: 67
-    BlackHoldDenominator: 22
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.3
     BallsPerPuyo: 0.66
     TimeLimit: 162
+    EnemySkills: []
   - EnemyName: "\u30C7\u30B9\u30C8\u30E9\u30AF\u30BF\u30FC\u5C71\u7530"
     EnemySprite: {fileID: 0}
     EnemyHp: 748
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 1
@@ -404,15 +383,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 70
-    BlackHoldDenominator: 25
-    BlackPuyoCount: 2
     PuyoFallSpeed: 1.3
     BallsPerPuyo: 0.64
     TimeLimit: 159
+    EnemySkills: []
   - EnemyName: "\u30C7\u30B9\u30C8\u30E9\u30AF\u30BF\u30FC\u5C71\u7530"
     EnemySprite: {fileID: 0}
     EnemyHp: 825
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -422,15 +400,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 70
-    BlackHoldDenominator: 22
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.3
     BallsPerPuyo: 0.62
     TimeLimit: 156
+    EnemySkills: []
   - EnemyName: "\u30D6\u30E9\u30C3\u30C7\u30A3\u30B4\u30EA\u30E9"
     EnemySprite: {fileID: 0}
     EnemyHp: 900
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -440,15 +417,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 75
-    BlackHoldDenominator: 20
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.35
     BallsPerPuyo: 0.6
     TimeLimit: 153
+    EnemySkills: []
   - EnemyName: "\u30D6\u30E9\u30C3\u30C7\u30A3\u30B4\u30EA\u30E9"
     EnemySprite: {fileID: 0}
     EnemyHp: 980
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -458,15 +434,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 75
-    BlackHoldDenominator: 18
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.35
     BallsPerPuyo: 0.58
     TimeLimit: 150
+    EnemySkills: []
   - EnemyName: "\u30AB\u30AA\u30B9\u30A8\u30F3\u30DA\u30E9\u30FC"
     EnemySprite: {fileID: 0}
     EnemyHp: 1035
-    RoundNumber: 0
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -476,15 +451,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 82
-    BlackHoldDenominator: 18
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.4
     BallsPerPuyo: 0.56
     TimeLimit: 147
+    EnemySkills: []
   - EnemyName: "\u8D85\u795E\u30B4\u30B8\u30D5\u30A1\u30A4\u30BF\u30FC"
     EnemySprite: {fileID: 0}
     EnemyHp: 1085
-    RoundNumber: 1
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -494,15 +468,14 @@ MonoBehaviour:
     WeightBlue: 2
     WeightPurple: 2
     RainbowDenominator: 88
-    BlackHoldDenominator: 20
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.4
     BallsPerPuyo: 0.54
     TimeLimit: 144
+    EnemySkills: []
   - EnemyName: "\u8D85\u795E\u30B4\u30B8\u30D5\u30A1\u30A4\u30BF\u30FC"
     EnemySprite: {fileID: 0}
     EnemyHp: 1150
-    RoundNumber: 2
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -512,15 +485,14 @@ MonoBehaviour:
     WeightBlue: 2
     WeightPurple: 2
     RainbowDenominator: 88
-    BlackHoldDenominator: 18
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.45
     BallsPerPuyo: 0.52
     TimeLimit: 141
+    EnemySkills: []
   - EnemyName: "\u9B54\u738B\u30D7\u30EA\u30F3\u30B9\u30C0\u30FC\u30AF"
     EnemySprite: {fileID: 0}
     EnemyHp: 1200
-    RoundNumber: 0
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -530,15 +502,14 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 4
     RainbowDenominator: 95
-    BlackHoldDenominator: 15
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.5
     BallsPerPuyo: 0.51
     TimeLimit: 138
+    EnemySkills: []
   - EnemyName: "\u7D76\u5BFE\u738B\u8005\u30B4\u30C3\u30C9\u30AD\u30F3\u30B0"
     EnemySprite: {fileID: 0}
     EnemyHp: 1250
-    RoundNumber: 0
+    EnemyLevel: 1
     RowCount: 10
     ColorCount: 5
     GarbageInitialRows: 2
@@ -548,8 +519,7 @@ MonoBehaviour:
     WeightBlue: 1
     WeightPurple: 1
     RainbowDenominator: 99
-    BlackHoldDenominator: 12
-    BlackPuyoCount: 3
     PuyoFallSpeed: 1.5
     BallsPerPuyo: 0.5
     TimeLimit: 135
+    EnemySkills: []

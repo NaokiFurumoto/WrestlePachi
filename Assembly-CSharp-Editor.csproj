@@ -43,13 +43,31 @@
     <UnityVersion>6000.3.13f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Analyzer Include="C:\Users\naoki\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.2.1\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Users\naoki\.vscode\extensions\visualstudiotoolsforunity.vstuc-1.3.2\Analyzers\Microsoft.Unity.Analyzers.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.13f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.13f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.13f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\StageConfigPopulatorEditor.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\DebugWindow\Sections\BallLauncherDebugSection.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\DebugWindow\Sections\HoldDebugSection.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\DebugWindow\WrestlePachiDebugWindow.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\SkillIconEntryDrawer.cs" />
+    <Compile Include="Assets\Scripts\Editor\ScreenEffectControllerEditor.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\PachinkoSimulatorWindow.cs" />
     <Compile Include="Assets\Scripts\Sys\Tools\Editor\Editor_CachePrefabWindow.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\DebugWindow\Sections\PuyoBoardDebugSection.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\DebugWindow\Sections\AutoPlaySection.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\PuyoBoardAutoAlignMenuItem.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\DebugWindow\Sections\GameModeConfigDebugSection.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\DebugWindow\Sections\GameFlowDebugSection.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\DebugWindow\IDebugSection.cs" />
+    <Compile Include="Assets\Scripts\Editor\UIAnimatorEditor.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\EnemySkillEntryDrawer.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\DebugWindow\Sections\ComboDebugSection.cs" />
+    <Compile Include="Assets\Scripts\Editor\DamageEffectEditor.cs" />
+    <Compile Include="Assets\Scripts\App\GameMain\Editor\TengekiGlowControllerEditor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

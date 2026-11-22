@@ -17,7 +17,9 @@ namespace App.Skills
 
         public UniTask ExecuteAsync(GameContext ctx, CancellationToken ct)
         {
-            ctx.Contents.PuyoBoard.AddPendingOjama(ctx.Config.OjamaCountPerBlackTech);
+            // 敵スキル「黒保留威力」が発動中ならそちらを優先する
+            var count = ctx.BlackHoldOjamaCountOverride ?? ctx.Config.OjamaCountPerBlackTech;
+            ctx.Contents.PuyoBoard.AddPendingOjama(count);
             return UniTask.CompletedTask;
         }
     }

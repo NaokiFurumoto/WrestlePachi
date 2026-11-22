@@ -130,7 +130,8 @@ namespace App
             if (denom > 0 && Random.Range(0, denom) == 0)
                 return HoldType.Rainbow;
 
-            var blackDenom = stage?.BlackHoldDenominator ?? (int)(1f / Mathf.Max(_config.BlackHoldProbability, 0.0001f));
+            // 敵スキル「黒保留強化」が発動中ならそちらを優先する
+            var blackDenom = _ctx.BlackHoldDenominatorOverride ?? (int)(1f / Mathf.Max(_config.BlackHoldProbability, 0.0001f));
             if (blackDenom > 0 && Random.Range(0, blackDenom) == 0)
                 return HoldType.Black;
 

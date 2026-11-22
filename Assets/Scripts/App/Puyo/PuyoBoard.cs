@@ -90,6 +90,10 @@ namespace App.Puyo
         private float _fallSpeedMultiplier = 1f; // 落下速度倍率（ステージで変わる）
         private CancellationTokenSource _cts;
 
+        // 敵スキル「炎」用：炎マスに指定されたセル集合と、その背面表示マーカー
+        private readonly HashSet<Vector2Int> _fireTiles = new();
+        private readonly Dictionary<Vector2Int, GameObject> _fireTileMarkers = new();
+
         // ─── 初期化 ──────────────────────────────────────────────
 
         /// <summary>
@@ -233,11 +237,18 @@ namespace App.Puyo
         /// </summary>
         private async UniTaskVoid ProcessChainAsync(CancellationToken ct)
         {
+            // 敵スキル「炎」：炎マス上に置かれたぷよを連鎖判定より先に焼き消す
+            await BurnFireTilePiecesAsync(ct);
+
             var chainCount   = 0;
             var clearedCount = 0;
 
             while (TryFindChain(out var targets))
             {
+                // 岩耐久チェック：耐久が残っているものは今回は消さず、見た目だけ変えて盤面に残す
+                targets = ApplyRockDurability(targets);
+                if (targets.Count == 0) break; // 全員が耐久ヒットのみだった（無限ループ防止）
+
                 chainCount++;
                 clearedCount += targets.Count;
 
@@ -343,6 +354,37 @@ namespace App.Puyo
                 _grid[piece.Cell.x, piece.Cell.y] = null;
 
             await UniTask.WhenAll(targets.Select(p => ((IClearable)p).ClearAsync(ct)));
+        }
+
+        /// <summary>
+        /// 敵スキル「炎」用：炎マス上に乗っているぷよを連鎖判定前に焼き消す。
+        /// </summary>
+        private async UniTask BurnFireTilePiecesAsync(CancellationToken ct)
+        {
+            if (_fireTiles.Count == 0) return;
+
+            var burning = _fireTiles.Where(cell =>
+                cell.x >= 0 && cell.x < COLS && cell.y >= 0 && cell.y < _rows && _grid[cell.x, cell.y] != null
+            ).ToList();
+            if (burning.Count == 0) return;
+
+            await UniTask.WhenAll(burning.Select(cell => ClearCellBySkillAsync(cell, ct)));
+        }
+
+        /// <summary>
+        /// 消去対象から岩ぷよ（耐久が残っているもの）を取り除く。
+        /// 取り除かれたぷよは実際には消さず、耐久を1減らして見た目を変えるだけに留める。
+        /// </summary>
+        private List<PuyoPiece> ApplyRockDurability(List<PuyoPiece> targets)
+        {
+            var result = new List<PuyoPiece>(targets.Count);
+            foreach (var piece in targets)
+            {
+                var rock = piece.GetComponent<RockPuyoState>();
+                if (rock != null && rock.OnHit()) continue; // まだ耐久が残っている → 消去対象から除外
+                result.Add(piece);
+            }
+            return result;
         }
 
         /// <summary>
@@ -583,6 +625,107 @@ namespace App.Puyo
             await UniTask.Delay(Mathf.RoundToInt(duration * 1000), cancellationToken: ct);
             Destroy(piece.gameObject);
         }
+
+        /// <summary>空きマス（表示範囲内）をランダムに1つ返す。空きがなければ null。</summary>
+        public Vector2Int? GetRandomEmptyCell()
+        {
+            var empties = new List<Vector2Int>();
+            for (var x = 0; x < COLS; x++)
+            for (var y = 0; y < _visibleRows; y++)
+                if (_grid[x, y] == null) empties.Add(new Vector2Int(x, y));
+            if (empties.Count == 0) return null;
+            return empties[UnityEngine.Random.Range(0, empties.Count)];
+        }
+
+        /// <summary>
+        /// 敵スキル「岩」用：既存ぷよを岩化し、耐久値を付与する。
+        /// 既に岩化済み・お邪魔ぷよ・セルが空の場合は何もせず false を返す。
+        /// </summary>
+        public bool ConvertToRock(Vector2Int cell, int durability, Sprite? hitSprite)
+        {
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= _rows) return false;
+            var piece = _grid[cell.x, cell.y];
+            if (piece == null || piece.Color == PuyoColor.OJAMA) return false;
+            if (piece.GetComponent<RockPuyoState>() != null) return false;
+
+            var state = piece.gameObject.AddComponent<RockPuyoState>();
+            state.Initialize(durability, hitSprite);
+            return true;
+        }
+
+        /// <summary>
+        /// 敵スキル「時限爆弾」用：盤面の空きマスに爆弾ぷよを設置する。
+        /// お邪魔ぷよと同じ扱い（PuyoColor.OJAMA）にすることで、通常消去に隣接すればそのまま巻き込まれて解除される。
+        /// 空きマスがなければ何もせず null を返す。
+        /// </summary>
+        public Vector2Int? PlaceBomb(Sprite? bombSprite, float fuseSeconds)
+        {
+            var cellOpt = GetRandomEmptyCell();
+            if (cellOpt == null) return null;
+            var cell = cellOpt.Value;
+
+            var piece = Instantiate(_piecePrefab, transform);
+            piece.Setup(PuyoColor.OJAMA, bombSprite!);
+            piece.Cell                = cell;
+            _grid[cell.x, cell.y]    = piece;
+            piece.transform.position = CellToWorld(cell);
+
+            var bomb = piece.gameObject.AddComponent<BombPuyoState>();
+            bomb.Initialize(this, fuseSeconds, _cts.Token);
+
+            return cell;
+        }
+
+        /// <summary>
+        /// 敵スキル「時限爆弾」用：指定セルを中心に上下左右+自身の最大5マスをスキル消去する（爆発）。
+        /// </summary>
+        public async UniTask ExplodeAroundAsync(Vector2Int center, CancellationToken ct)
+        {
+            var cells = new[]
+            {
+                center, center + Vector2Int.up, center + Vector2Int.down,
+                center + Vector2Int.left, center + Vector2Int.right,
+            };
+            await UniTask.WhenAll(cells.Select(c => ClearCellBySkillAsync(c, ct)));
+        }
+
+        /// <summary>
+        /// 敵スキル「炎」用：指定セルを炎マスに指定する（ぷよの有無は問わない）。
+        /// sprite を渡すと、ぷよの背面に表示用マーカーを生成する（省略時は当たり判定のみ）。
+        /// </summary>
+        public void AddFireTile(Vector2Int cell, Sprite? sprite = null)
+        {
+            _fireTiles.Add(cell);
+            if (sprite == null || _fireTileMarkers.ContainsKey(cell)) return;
+
+            var marker = new GameObject("FireTileMarker");
+            marker.transform.SetParent(transform);
+            marker.transform.position = CellToWorld(cell);
+            var renderer = marker.AddComponent<SpriteRenderer>();
+            renderer.sprite       = sprite;
+            renderer.sortingOrder = -1; // ぷよより奥に表示（要Inspectorでのソート調整）
+            _fireTileMarkers[cell] = marker;
+        }
+
+        /// <summary>指定セルの炎マス指定を解除する（表示マーカーも破棄する）。</summary>
+        public void RemoveFireTile(Vector2Int cell)
+        {
+            _fireTiles.Remove(cell);
+            if (!_fireTileMarkers.TryGetValue(cell, out var marker)) return;
+            Destroy(marker);
+            _fireTileMarkers.Remove(cell);
+        }
+
+        /// <summary>全ての炎マス指定を解除する（表示マーカーも破棄する）。</summary>
+        public void ClearFireTiles()
+        {
+            _fireTiles.Clear();
+            foreach (var marker in _fireTileMarkers.Values) Destroy(marker);
+            _fireTileMarkers.Clear();
+        }
+
+        /// <summary>指定セルが炎マスかどうかを返す。</summary>
+        public bool IsFireTile(Vector2Int cell) => _fireTiles.Contains(cell);
 
         /// <summary>
         /// 指定セルのぷよを震わせる（被弾演出）。

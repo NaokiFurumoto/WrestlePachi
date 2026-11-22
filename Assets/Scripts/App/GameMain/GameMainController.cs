@@ -42,6 +42,12 @@ namespace App
         [SerializeField] private HoldBeamEffect?      _holdBeamEffect;
         [SerializeField] private ComboView?           _comboViewPrefab;
 
+        [Header("敵スキル")]
+        [Tooltip("敵スキル用アセット設定（未アサイン時は全スプライト無しで動作する）")]
+        [SerializeField] private EnemySkillAssets? _enemySkillAssetsConfig;
+        [Tooltip("敵スキルの数値バランス設定（未アサイン時はデフォルト値で動作する）")]
+        [SerializeField] private EnemySkillBalanceConfig? _enemySkillBalanceConfig;
+
         // ─── 内部状態 ────────────────────────────────────────────
         private Game2DContents              _contents;
         private TengekiButton?              _tengekiButton;
@@ -51,6 +57,7 @@ namespace App
         private CancellationTokenSource?    _stateCts;
         private TechSkillManager _techSkillManager;
         private SkillStockSystem _skillStockSystem;
+        private EnemySkillManager _enemySkillManager;
         private bool             _isSimulatorMode;
         private float            _remainingTime;
         private int              _lastNotifiedSecond = -1;
@@ -74,6 +81,7 @@ namespace App
             _ctx = new GameContext(contents, viewMng, _config, ChangeState);
             _ctx.Enemy         = _enemy;
             _ctx.RestartGame   = RestartGame;
+            _ctx.ReduceTime    = ReduceRemainingTime;
 
             // 敵イベント
             if (_enemy != null)
@@ -81,6 +89,10 @@ namespace App
                 _enemy.OnDefeated += OnEnemyDefeated;
                 _enemy.OnDamaged  += OnEnemyDamaged;
             }
+
+            // 敵スキル管理（StartGame / AdvanceToNextStage で Initialize する）
+            // アセット・バランス未アサイン時のフォールバックは EnemySkillManager 内部で行う
+            _enemySkillManager = new EnemySkillManager(_enemySkillAssetsConfig, _enemySkillBalanceConfig);
 
             // ストックシステム初期化
             _skillStockSystem = new SkillStockSystem();
@@ -147,6 +159,8 @@ namespace App
             _stateCts?.Dispose();
             _stateCts = null;
 
+            _enemySkillManager?.Release();
+
             if (_contents == null) return;
 
             var board = _contents.PuyoBoard;
@@ -189,6 +203,7 @@ namespace App
         {
             IsGameOver = false;
             ApplyStageConfig(_enemy?.EnemyIndex ?? 0, initBoard: true);
+            _enemySkillManager.Initialize(_ctx, _ctx.CurrentStage?.EnemySkills ?? Array.Empty<EnemySkillEntry>());
             AppSound.PlayBGMGame();
             ChangeState(new PlayingState(_ctx));
             var hud = ViewManager.GetView<GameMainHudView>();
@@ -196,7 +211,7 @@ namespace App
             if (_enemy != null) hud?.SetEnemy(_enemy);
             hud?.SetTime(_remainingTime);
             if (_enemy != null) hud?.SetStage(_enemy.EnemyIndex + 1, _enemy.TotalCount);
-            hud?.SetRound(_ctx.CurrentStage?.RoundNumber ?? 0);
+            hud?.SetEnemyLevel(_ctx.CurrentStage?.EnemyLevel ?? 1);
             hud?.SetRainbowProbability(_ctx.CurrentStage?.RainbowDenominator ?? _config.RainbowProbabilityDenominator);
         }
 
@@ -218,6 +233,10 @@ namespace App
             _contents.PuyoBoard.SetFallSpeedMultiplier(fallSpeed);
         }
 
+        /// <summary>敵スキル「時計」から呼ばれる。残り時間を減らす（0未満にはならない）</summary>
+        private void ReduceRemainingTime(float seconds)
+            => _remainingTime = Mathf.Max(0f, _remainingTime - seconds);
+
         public void RestartGame()
         {
             var sceneName = UnitySceneManager.GetActiveScene().name;
@@ -231,14 +250,19 @@ namespace App
 
         private void Update()
         {
-            var timeLimit = _ctx.CurrentStage?.TimeLimit ?? _config.TimeLimitSeconds;
-            if (IsGameOver || timeLimit <= 0f) return;
+            if (IsGameOver) return;
 
             var phase = _state?.Phase;
             if (phase == GamePhase.Paused       ||
                 phase == GamePhase.SkillExecuting ||
                 phase == GamePhase.EnemyDying   ||
                 phase == GamePhase.GameClear) return;
+
+            // 敵スキル（周期発動型）の Tick。時間制限の有無に関わらず進める
+            _enemySkillManager.Tick(Time.deltaTime);
+
+            var timeLimit = _ctx.CurrentStage?.TimeLimit ?? _config.TimeLimitSeconds;
+            if (timeLimit <= 0f) return;
 
             _remainingTime = Mathf.Max(0f, _remainingTime - Time.deltaTime);
 
@@ -305,6 +329,9 @@ namespace App
         {
             if (_enemy == null) return;
 
+            // ステージ選択画面のクリア済みフラグを立てる（StageScene側にインスタンスが無いため static 経由）
+            StageProgress.MarkCleared(_enemy.EnemyIndex);
+
             var nextIndex    = _enemy.EnemyIndex + 1;
             var hasNextStage = nextIndex < _enemy.TotalCount;
             Action? onNext   = hasNextStage ? () => AdvanceToNextStage(nextIndex) : null;
@@ -315,21 +342,36 @@ namespace App
         private void AdvanceToNextStage(int nextIndex)
         {
             if (_enemy == null) return;
+            _enemySkillManager.Release();
             _enemy.SetEnemy(nextIndex);
             ApplyStageConfig(nextIndex, initBoard: true);
+            _enemySkillManager.Initialize(_ctx, _ctx.CurrentStage?.EnemySkills ?? Array.Empty<EnemySkillEntry>());
             var hud = ViewManager.GetView<GameMainHudView>();
             hud?.SetEnemy(_enemy);
             hud?.SetStage(nextIndex + 1, _enemy.TotalCount);
             hud?.SetTime(_remainingTime);
-            hud?.SetRound(_ctx.CurrentStage?.RoundNumber ?? 0);
+            hud?.SetEnemyLevel(_ctx.CurrentStage?.EnemyLevel ?? 1);
             hud?.SetRainbowProbability(_ctx.CurrentStage?.RainbowDenominator ?? _config.RainbowProbabilityDenominator);
             ChangeState(new PlayingState(_ctx));
         }
 
         // ─── 入力公開メソッド（IAutoPlayTarget / PuyoInputView から呼ぶ）────
 
-        public void OnInputMoveLeft()    { if (AcceptsInput) _contents.PuyoBoard.ActivePair?.MoveLeft(); }
-        public void OnInputMoveRight()   { if (AcceptsInput) _contents.PuyoBoard.ActivePair?.MoveRight(); }
+        // 敵スキル「混乱」中は左右が反転する
+        public void OnInputMoveLeft()
+        {
+            if (!AcceptsInput) return;
+            if (_ctx.IsInputReversed) _contents.PuyoBoard.ActivePair?.MoveRight();
+            else                      _contents.PuyoBoard.ActivePair?.MoveLeft();
+        }
+
+        public void OnInputMoveRight()
+        {
+            if (!AcceptsInput) return;
+            if (_ctx.IsInputReversed) _contents.PuyoBoard.ActivePair?.MoveLeft();
+            else                      _contents.PuyoBoard.ActivePair?.MoveRight();
+        }
+
         public void OnInputRotateCW()    { if (AcceptsInput) _contents.PuyoBoard.ActivePair?.RotateCW(); }
         public void OnInputRotateCCW()   { if (AcceptsInput) _contents.PuyoBoard.ActivePair?.RotateCCW(); }
         public void OnInputSoftDrop()    { if (AcceptsInput) _contents.PuyoBoard.ActivePair?.BeginSoftDrop(); }

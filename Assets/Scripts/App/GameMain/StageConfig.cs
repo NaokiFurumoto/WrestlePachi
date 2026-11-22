@@ -14,8 +14,8 @@ namespace App
         public string  EnemyName   = "";
         public Sprite? EnemySprite;
         [Min(1)] public int EnemyHp = 10;
-        [Tooltip("0=Round表示なし（ラスボス等）、1以上=Round N と表示"), Min(0)]
-        public int RoundNumber = 0;
+        [Tooltip("敵レベル。HUDに常に「Lv.N」で表示する。同じ敵（名前・画像）を複数ステージで使い回す際の差別化に使う"), Min(1)]
+        public int EnemyLevel = 1;
 
         [Header("ボード")]
         [Tooltip("表示行数（10 or 12）"), Range(10, 12)]
@@ -36,14 +36,6 @@ namespace App
         [Tooltip("分母（20=1/20, 0=なし）"), Min(0)]
         public int RainbowDenominator = 50;
 
-        [Header("黒保留")]
-        [Tooltip("分母（20=1/20, 0=なし）"), Min(0)]
-        public int BlackHoldDenominator = 0;
-
-        [Header("黒ぷよ")]
-        [Tooltip("連鎖消去1回ごとに落下する黒ぷよ数（0=なし）"), Min(0)]
-        public int BlackPuyoCount = 0;
-
         [Header("ゲームパラメータ")]
         [Tooltip("ぷよ落下速度倍率（1=標準）"), Min(0.1f)]
         public float PuyoFallSpeed = 1f;
@@ -54,7 +46,7 @@ namespace App
 
         [Header("敵スキル")]
         [Tooltip("このステージで発動する敵スキル。空なら無し")]
-        public EnemySkillType[] EnemySkills = Array.Empty<EnemySkillType>();
+        public EnemySkillEntry[] EnemySkills = Array.Empty<EnemySkillEntry>();
     }
 
 }

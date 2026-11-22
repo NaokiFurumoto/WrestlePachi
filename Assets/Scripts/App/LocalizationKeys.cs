@@ -15,7 +15,7 @@ namespace App
             public const string YES           = "common.yes";
             public const string NO            = "common.no";
             public const string NEXT          = "common.next";
-            public const string ROUND         = "common.round";
+            public const string LV            = "common.lv";
         }
 
         /// <summary>HUD</summary>

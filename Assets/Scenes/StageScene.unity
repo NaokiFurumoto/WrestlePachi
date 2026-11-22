@@ -681,28 +681,8 @@ PrefabInstance:
       value: StageSelectView
       objectReference: {fileID: 0}
     - target: {fileID: 2072535771475352558, guid: 2880889a419b77b47a9c8bd801b0e8f4, type: 3}
-      propertyPath: m_Size
+      propertyPath: m_Value
       value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4301902364595879701, guid: 2880889a419b77b47a9c8bd801b0e8f4, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4301902364595879701, guid: 2880889a419b77b47a9c8bd801b0e8f4, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4301902364595879701, guid: 2880889a419b77b47a9c8bd801b0e8f4, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5567552278793534321, guid: 2880889a419b77b47a9c8bd801b0e8f4, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5567552278793534321, guid: 2880889a419b77b47a9c8bd801b0e8f4, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 1128
       objectReference: {fileID: 0}
     - target: {fileID: 6169690475496324234, guid: 2880889a419b77b47a9c8bd801b0e8f4, type: 3}
       propertyPath: m_LocalPosition.x
@@ -744,13 +724,13 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6308549260155301377, guid: 2880889a419b77b47a9c8bd801b0e8f4, type: 3}
-      propertyPath: _sizeScale
-      value: 5
+    - target: {fileID: 7671833186561941306, guid: 2880889a419b77b47a9c8bd801b0e8f4, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7671833186561941306, guid: 2880889a419b77b47a9c8bd801b0e8f4, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.0010511025
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

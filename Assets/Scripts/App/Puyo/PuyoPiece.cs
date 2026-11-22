@@ -60,6 +60,12 @@ namespace App.Puyo
         }
 
         /// <summary>
+        /// スプライトのみを差し替える（色・当たり判定は変えない）。
+        /// 岩のヒット演出など、見た目だけ変えたい場合に使う。
+        /// </summary>
+        public void SetSprite(Sprite sprite) => _renderer.sprite = sprite;
+
+        /// <summary>
         /// お邪魔ぷよ着地時のバウンス演出。
         /// </summary>
         public void PlayLandBounce()

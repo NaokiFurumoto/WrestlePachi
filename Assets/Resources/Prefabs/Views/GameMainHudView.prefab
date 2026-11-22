@@ -148,7 +148,7 @@ GameObject:
   - component: {fileID: 2543771643532147411}
   - component: {fileID: 3163972837322430175}
   m_Layer: 5
-  m_Name: RoundUI
+  m_Name: LevelUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1183,7 +1183,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4196fcef447850542817f5a7e585661d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizedText
-  key: common.stamina
+  _key: common.stamina
 --- !u!1 &3757322189958351087
 GameObject:
   m_ObjectHideFlags: 0
@@ -1538,7 +1538,7 @@ MonoBehaviour:
   _timerText: {fileID: 8733741880340794319}
   _stageText: {fileID: 8816207819549585117}
   _staminaText: {fileID: 8389621713731061415}
-  _roundText: {fileID: 8485643572947403538}
+  _levelText: {fileID: 8485643572947403538}
   _rainbowProbText: {fileID: 1130796170192079179}
 --- !u!1 &5750622925790750816
 GameObject:
@@ -1764,7 +1764,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4196fcef447850542817f5a7e585661d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizedText
-  key: common.stamina
+  _key: common.stamina
 --- !u!1 &6094388324771659564
 GameObject:
   m_ObjectHideFlags: 0
@@ -1951,7 +1951,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4196fcef447850542817f5a7e585661d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizedText
-  key: hud.stage
+  _key: hud.stage
 --- !u!1 &6517652662450099743
 GameObject:
   m_ObjectHideFlags: 0
@@ -2563,6 +2563,8 @@ MonoBehaviour:
   _popInDuration: 0.35
   _bobAmplitude: 5
   _bobDuration: 0.8
+  _slideAmplitude: 8
+  _slideDuration: 0.6
   _colorTo: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   _colorCycleDuration: 0.5
 --- !u!1 &8032805312816285729
@@ -2790,7 +2792,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4196fcef447850542817f5a7e585661d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizedText
-  key: hud.timelimit
+  _key: hud.timelimit
 --- !u!1 &8518505715913897165
 GameObject:
   m_ObjectHideFlags: 0
@@ -3133,7 +3135,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Round
+  m_text: Level
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d49d137a1bbc6d24b8e1f0b43cf30d97, type: 2}
   m_sharedMaterial: {fileID: -3420481776825388746, guid: d49d137a1bbc6d24b8e1f0b43cf30d97, type: 2}
@@ -3217,4 +3219,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4196fcef447850542817f5a7e585661d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizedText
-  key: common.round
+  _key: common.lv

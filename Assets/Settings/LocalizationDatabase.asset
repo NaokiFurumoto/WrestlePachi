@@ -41,10 +41,10 @@ MonoBehaviour:
     japanese: NEXT
     english: NEXT
     korean: "\uB2E4\uC74C"
-  - key: common.round
-    japanese: Round
-    english: Round
-    korean: "\uB77C\uC6B4\uB4DC"
+  - key: common.lv
+    japanese: Level
+    english: Level
+    korean: "\uB808\uBCA8"
   - key: hud.stage
     japanese: "\u30B9\u30C6\u30FC\u30B8"
     english: Stage

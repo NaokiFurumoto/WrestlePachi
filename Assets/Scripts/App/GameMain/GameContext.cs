@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using GameSys;
@@ -28,6 +29,21 @@ namespace App
 
         /// <summary>ゲームをリスタートする。GameClearView の RETRY ボタンから呼ぶ</summary>
         public Action? RestartGame { get; set; }
+
+        /// <summary>敵スキル「混乱」により左右入力が反転しているか</summary>
+        public bool IsInputReversed { get; set; }
+
+        /// <summary>敵スキル「スキル封印」により発動不可になっている HoldType の集合</summary>
+        public HashSet<HoldType> SealedHoldTypes { get; } = new();
+
+        /// <summary>敵スキル「黒保留強化」による黒保留出現分母の上書き値。null なら通常確率</summary>
+        public int? BlackHoldDenominatorOverride { get; set; }
+
+        /// <summary>敵スキル「黒保留威力」による黒保留消化時のお邪魔ぷよ数の上書き値。null なら通常値</summary>
+        public int? BlackHoldOjamaCountOverride { get; set; }
+
+        /// <summary>敵スキル「時計」から残り時間を削るためのコールバック。GameMainController が設定する</summary>
+        public Action<float>? ReduceTime { get; set; }
 
         private readonly Action<IGameState> _changeState;
 

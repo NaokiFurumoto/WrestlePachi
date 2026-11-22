@@ -14,8 +14,6 @@ namespace App
     {
         public enum CellState { Locked, Normal, Next, Cleared }
 
-        private const string KeyClearPrefix = "stage_clear_";
-
         private ViewManager? _viewMng;
 
         public Action? OnDetailClosed { get; set; }
@@ -33,9 +31,9 @@ namespace App
         /// </summary>
         public CellState GetCellState(int index)
         {
-            if (index > 0 && !IsCleared(index - 1)) return CellState.Locked;
-            if (IsCleared(index))                   return CellState.Cleared;
-            if (GetNextStageIndex() == index)        return CellState.Next;
+            if (index > 0 && !StageProgress.IsCleared(index - 1)) return CellState.Locked;
+            if (StageProgress.IsCleared(index))                   return CellState.Cleared;
+            if (GetNextStageIndex() == index)                     return CellState.Next;
             return CellState.Normal;
         }
 
@@ -44,17 +42,9 @@ namespace App
             var count = StageConfigList.Instance?.Count ?? 0;
             for (var i = 0; i < count; i++)
             {
-                if (!IsCleared(i)) return i;
+                if (!StageProgress.IsCleared(i)) return i;
             }
             return Mathf.Max(0, count - 1);
-        }
-
-        public bool IsCleared(int index) => PlayerPrefs.GetInt(KeyClearPrefix + index, 0) == 1;
-
-        public void MarkCleared(int index)
-        {
-            PlayerPrefs.SetInt(KeyClearPrefix + index, 1);
-            PlayerPrefs.Save();
         }
 
         // ─── ユーザー操作 ────────────────────────────────────────
@@ -66,14 +56,14 @@ namespace App
             var config = StageConfigList.Instance?.Get(index);
             if (config == null) return;
 
-            var data = new StageDetailPanel.StageDetailData
+            var data = new StageDetailView.StageDetailData
             {
                 StageIndex  = index,
                 Config      = config,
                 OnChallenge = () => Challenge(index),
                 OnClosed    = OnDetailClosed,
             };
-            ViewManager.PushViewAsync<StageDetailPanel>(ViewKeys.STAGE_DETAIL, data).Forget();
+            ViewManager.PushViewAsync<StageDetailView>(ViewKeys.STAGE_DETAIL, data).Forget();
         }
 
         private void Challenge(int index)

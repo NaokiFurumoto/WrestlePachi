@@ -17,6 +17,7 @@ namespace App
         // ─── StageSelect ──────────────────────────────────────────
         public const string STAGE_SELECT_NODE  = "Prefabs/Node/StageSelectNode";
         public const string STAGE_SELECT_VIEW   = "Prefabs/Views/StageSelectView";
-        public const string STAGE_DETAIL       = "Prefabs/Views/StageDetailPanel";
+        public const string STAGE_DETAIL       = "Prefabs/Views/StageDetailView";
+        public const string SKILL_ENTRY_NODE   = "Prefabs/Node/SkillEntryNode";
     }
 }

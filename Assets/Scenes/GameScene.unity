@@ -673,6 +673,8 @@ MonoBehaviour:
   _effectController: {fileID: 755883662}
   _holdBeamEffect: {fileID: 997954317}
   _comboViewPrefab: {fileID: 8635477782160755810, guid: 37d624318d81dbd46b81d34138d0896e, type: 3}
+  _enemySkillAssetsConfig: {fileID: 11400000, guid: feabebce0c6b4bb4caa4ef8404e28e67, type: 2}
+  _enemySkillBalanceConfig: {fileID: 11400000, guid: 502c780cb1c1d6f4c851ae08f3a81d4c, type: 2}
 --- !u!1 &100000021
 GameObject:
   m_ObjectHideFlags: 0
@@ -3126,7 +3128,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4196fcef447850542817f5a7e585661d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameSys.LocalizedText
-  key: common.next
+  _key: common.next
 --- !u!1 &1397471362
 GameObject:
   m_ObjectHideFlags: 0
@@ -12687,6 +12689,18 @@ PrefabInstance:
     - target: {fileID: 1130796170192079179, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
       propertyPath: m_hasFontAssetChanged
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1134033784293390399, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
+      propertyPath: _key
+      value: common.lv
+      objectReference: {fileID: 0}
+    - target: {fileID: 3023728321633449355, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
+      propertyPath: m_text
+      value: Level
+      objectReference: {fileID: 0}
+    - target: {fileID: 3023728321633449355, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
+      propertyPath: m_HorizontalAlignment
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 3281273115159325480, guid: 0f2515a004cf49243b650878d2fe14e9, type: 3}
       propertyPath: m_LocalPosition.x

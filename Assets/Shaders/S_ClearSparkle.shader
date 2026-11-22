@@ -12,6 +12,14 @@ Shader "App/ClearSparkle"
         _SparkleIntensity  ("Sparkle Intensity", Float)        = 1.8
         _PulseSpeed        ("Pulse Speed",       Float)        = 1.4
         _PulseAmplitude    ("Pulse Amplitude",   Range(0,0.4)) = 0.18
+
+        // ── UI Mask 対応（UnityEngine.UI.Mask のステンシル判定に必要） ──────
+        [HideInInspector] _Stencil          ("Stencil ID",          Float) = 0
+        [HideInInspector] _StencilComp      ("Stencil Comparison",  Float) = 8 // Always
+        [HideInInspector] _StencilOp        ("Stencil Operation",   Float) = 0 // Keep
+        [HideInInspector] _StencilWriteMask ("Stencil Write Mask",  Float) = 255
+        [HideInInspector] _StencilReadMask  ("Stencil Read Mask",   Float) = 255
+        [HideInInspector] _ColorMask        ("Color Mask",          Float) = 15
     }
 
     SubShader
@@ -27,6 +35,18 @@ Shader "App/ClearSparkle"
         Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
         Cull Off
+
+        // 親の Mask（Viewport等）に自身がクリップされるようにする。
+        // これが無いとスクロールで範囲外に出てもこのマテリアルを使うUIだけ描画され続ける。
+        Stencil
+        {
+            Ref [_Stencil]
+            Comp [_StencilComp]
+            Pass [_StencilOp]
+            ReadMask [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }
+        ColorMask [_ColorMask]
 
         Pass
         {

@@ -79,6 +79,16 @@ namespace App
         }
 
         /// <summary>
+        /// HP を回復する。敵スキル（サメ等）から呼ぶ。最大HPを超えて回復はしない。
+        /// </summary>
+        public void Heal(int amount)
+        {
+            if (IsDefeated || amount <= 0) return;
+            CurrentHp = Mathf.Min(MaxHp, CurrentHp + amount);
+            OnHpChanged?.Invoke(CurrentHp, MaxHp);
+        }
+
+        /// <summary>
         /// 虹スキル専用：HP を即座に 0 にして撃破する。
         /// </summary>
         public void InstantKill()

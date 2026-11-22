@@ -31,6 +31,8 @@ namespace App.EditorTools
 
             if (GUILayout.Button("盤面の岩に1回ヒットさせる（ヒビ・砕ける見た目の確認）"))
                 ctrl.Debug_HitAllRocks();
+            if (GUILayout.Button("盤面の爆弾をすぐ爆発させる"))
+                ctrl.Debug_ExplodeAllBombs();
 
             // 宙に浮いたぷよの検出（ペア操作中＝盤面が落ち着いているときに数える）
             var (now, max) = ctrl.Debug_GetFloatingPuyos();

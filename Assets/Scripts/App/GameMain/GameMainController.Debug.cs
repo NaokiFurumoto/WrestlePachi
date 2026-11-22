@@ -69,6 +69,7 @@ namespace App
 
         public void Debug_FillBoard(int rows = 6) => _contents?.PuyoBoard?.Debug_FillBoard(rows);
         public void Debug_HitAllRocks()           => _contents?.PuyoBoard?.Debug_HitAllRocks();
+        public void Debug_ExplodeAllBombs()       => _contents?.PuyoBoard?.Debug_ExplodeAllBombs();
 
         /// <summary>宙に浮いているぷよの数（今・これまでの最大）</summary>
         public (int now, int max) Debug_GetFloatingPuyos()

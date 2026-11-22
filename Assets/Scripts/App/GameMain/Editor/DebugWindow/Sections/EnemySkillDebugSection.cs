@@ -50,7 +50,7 @@ namespace App.EditorTools
         {
             EditorGUILayout.LabelField("録画（技を出した前後をコマ送りで確認）", EditorStyles.boldLabel);
             _recordOnTrigger = EditorGUILayout.Toggle("技を出すと同時に録画", _recordOnTrigger);
-            _recordSeconds   = EditorGUILayout.Slider("録画する秒数", _recordSeconds, 1f, 8f);
+            _recordSeconds   = EditorGUILayout.Slider("録画する秒数", _recordSeconds, 1f, 12f); // 時限爆弾（投げ込み〜爆発で約9秒）まで1本で撮れる長さ
 
             using (new EditorGUI.DisabledScope(DebugFrameRecorder.IsRecording))
             {

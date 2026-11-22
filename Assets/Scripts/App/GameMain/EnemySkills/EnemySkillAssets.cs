@@ -24,8 +24,12 @@ namespace App
         [SerializeField] private Sprite? _rockHitSprite;
 
         [Header("盤面演出：時限爆弾")]
-        [Tooltip("爆弾ぷよのスプライト")]
+        [Tooltip("爆弾ぷよのスプライト（基準点を丸い本体の中心に合わせてある）")]
         [SerializeField] private Sprite? _bombPuyoSprite;
+        [Tooltip("爆発の絵")]
+        [SerializeField] private Sprite? _bombExplosionSprite;
+        [Tooltip("爆弾の絵の中の導火線の先端の位置（左下0・右上1の割合）。火花をここに出す")]
+        [SerializeField] private Vector2 _bombFuseTip = new(0.614f, 0.797f);
 
         [Header("盤面演出：炎")]
         [Tooltip("炎マスで燃え続ける炎のスプライト")]
@@ -48,7 +52,9 @@ namespace App
         public Sprite? RockShellSprite      => _rockShellSprite;
         public Sprite? RockShellCrackSprite => _rockShellCrackSprite;
         public Sprite? RockHitSprite        => _rockHitSprite;
-        public Sprite? BombPuyoSprite => _bombPuyoSprite;
+        public Sprite? BombPuyoSprite      => _bombPuyoSprite;
+        public Sprite? BombExplosionSprite => _bombExplosionSprite;
+        public Vector2 BombFuseTip         => _bombFuseTip;
         public Sprite? FireTileSprite => _fireTileSprite;
         public Sprite? FireBallSprite => _fireBallSprite;
         public Material? FireTileMaterial => _fireTileMaterial;

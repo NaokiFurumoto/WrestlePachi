@@ -261,6 +261,10 @@ namespace App.Puyo
                     break;
                 }
 
+                // 時限爆弾：連鎖に巻き込まれた時点で導火線の火を消して解除する（消える演出の途中で爆発しないように）
+                foreach (var p in targets)
+                    if (p.TryGetComponent<BombPuyoState>(out var bomb)) bomb.Defuse();
+
                 chainCount++;
                 clearedCount += targets.Count;
 
@@ -750,20 +754,19 @@ namespace App.Puyo
         }
 
         /// <summary>
-        /// 敵スキル「時限爆弾」用：盤面の空きマスに爆弾ぷよを設置する。
+        /// 敵スキル「時限爆弾」用：指定マス（列のいちばん上など）に爆弾ぷよを設置する。
         /// お邪魔ぷよと同じ扱い（PuyoColor.OJAMA）にすることで、通常消去に隣接すればそのまま巻き込まれて解除される。
-        /// 空きマスがなければ何もせず null を返す。
+        /// マスが範囲外・ふさがっていれば何もせず false を返す。
         /// </summary>
-        public Vector2Int? PlaceBomb(Sprite? bombSprite, float fuseSeconds)
+        public bool PlaceBombAt(Vector2Int cell, float fuseSeconds, BombVisuals visuals)
         {
-            var cellOpt = GetRandomEmptyCell();
-            if (cellOpt == null) return null;
-            var cell = cellOpt.Value;
+            if (cell.x < 0 || cell.x >= COLS || cell.y < 0 || cell.y >= _visibleRows) return false;
+            if (_grid[cell.x, cell.y] != null) return false;
 
             var piece = Instantiate(_piecePrefab, transform);
-            if (bombSprite != null)
+            if (visuals.Bomb != null)
             {
-                piece.Setup(PuyoColor.OJAMA, bombSprite);
+                piece.Setup(PuyoColor.OJAMA, visuals.Bomb);
             }
             else
             {
@@ -776,9 +779,9 @@ namespace App.Puyo
             piece.transform.position = CellToWorld(cell);
 
             var bomb = piece.gameObject.AddComponent<BombPuyoState>();
-            bomb.Initialize(this, fuseSeconds, _cts.Token);
-
-            return cell;
+            bomb.Initialize(this, fuseSeconds, visuals, _cts.Token);
+            piece.PlayLandBounce();
+            return true;
         }
 
         /// <summary>
@@ -891,6 +894,9 @@ namespace App.Puyo
 
         /// <summary>表示されている縦の行数</summary>
         public int VisibleRows => _visibleRows;
+
+        /// <summary>ぷよの大きさ（盤面から見た拡大率）。演出で盤面のぷよと同じ大きさに描くときに使う</summary>
+        public Vector3 PieceLocalScale => _piecePrefab.transform.localScale;
 
         /// <summary>
         /// 演出用の SpriteRenderer を、ぷよと同じソーティングレイヤーで、ぷよより orderAbovePuyo 段手前に描くよう設定する。
@@ -1075,6 +1081,14 @@ namespace App.Puyo
                 await ClearPuyosAsync(broken, this.GetCancellationTokenOnDestroy());
                 await DropFloatingPuyosAsync(this.GetCancellationTokenOnDestroy());
             });
+        }
+
+        /// <summary>デバッグ用：盤面の時限爆弾をすべてすぐ爆発させる（見た目の確認用）</summary>
+        public void Debug_ExplodeAllBombs()
+        {
+            if (_grid == null) return;
+            foreach (var piece in _grid)
+                if (piece != null && piece.TryGetComponent<BombPuyoState>(out var bomb)) bomb.Debug_ExplodeNow();
         }
 
         /// <summary>デバッグ用：これまでに観測した浮いているぷよの最大数（自動プレイ中の取りこぼし確認用）</summary>

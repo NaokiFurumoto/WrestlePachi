@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using App.Effects;
 using App.Puyo;
@@ -9,9 +10,10 @@ using UnityEngine;
 namespace App
 {
     /// <summary>
-    /// 炎：ステージ開始時に火の玉が落ちてきて、着弾したマスが「炎マス」になる。
-    /// 炎マスにぷよが置かれると、連鎖判定より先に自動で焼き消える（PuyoBoard.BurnFireTilePiecesAsync）。
-    /// レベルが高いほど炎マスの数が増える。
+    /// 炎：ステージ開始時に、いくつかの列のいちばん上（次にぷよが乗る場所）へ火の玉が落ちてきて燃え続ける。
+    /// その列に落としたぷよは、最初の1個が連鎖判定より先に焼き消える（PuyoBoard.BurnFireTilePiecesAsync）。
+    /// 盤面が動くと、炎はその列の新しい「いちばん上」へついて回る（PuyoBoard.RelocateFireTilesToSurface）。
+    /// レベルが高いほど燃える列が増える。
     /// 数値バランスは EnemySkillBalanceConfig.FireTile で調整する。
     /// </summary>
     public sealed class FireTileSkill : EnemyPassiveSkillBase
@@ -22,64 +24,68 @@ namespace App
         private const float DropStagger = 0.15f;
 
         private readonly EnemySkillBalanceConfig.FireTileBalance _balance;
-        private readonly Sprite? _tileSprite;
-        private readonly Sprite? _ballSprite;
-        private readonly List<Vector2Int> _tiles = new();
+        private readonly Sprite?   _tileSprite;
+        private readonly Sprite?   _ballSprite;
+        private readonly Material? _tileMaterial;
+        /// <summary>このスキルが燃やしている列（解除時にこの列の炎だけを消す）</summary>
+        private readonly List<int> _columns = new();
         private CancellationTokenSource? _cts;
 
         public FireTileSkill(int level, EnemySkillAssets assets, EnemySkillBalanceConfig.FireTileBalance balance) : base(level)
         {
-            _tileSprite = assets.FireTileSprite;
-            _ballSprite = assets.FireBallSprite;
-            _balance    = balance;
+            _tileSprite   = assets.FireTileSprite;
+            _ballSprite   = assets.FireBallSprite;
+            _tileMaterial = assets.FireTileMaterial;
+            _balance      = balance;
         }
 
         public override void OnEnter(GameContext ctx)
         {
             var board     = ctx.Contents.PuyoBoard;
             var tileCount = _balance.BaseTileCount + (Level - 1);
-            var attempts  = 0;
 
-            // 炎マスにするマスを先に決める（同じマスを2回選ばない）
-            var cells = new List<Vector2Int>();
-            while (cells.Count < tileCount && attempts < tileCount * 4)
-            {
-                attempts++;
-                var cell = board.GetRandomEmptyCell();
-                if (cell == null) break;
-                if (board.IsFireTile(cell.Value) || cells.Contains(cell.Value)) continue;
-                cells.Add(cell.Value);
-            }
+            // 燃やす列を選ぶ：まだ燃えていない・満杯でない列からランダムに（同じ列は選ばない）
+            var columns = Enumerable.Range(0, PuyoBoard.COLS)
+                .Where(col => !board.IsColumnOnFire(col) && board.GetColumnSurface(col) != null)
+                .OrderBy(_ => Random.value)
+                .Take(tileCount)
+                .ToList();
 
             _cts = new CancellationTokenSource();
-            DropFireBallsAsync(board, cells, _cts.Token).Forget();
+            DropFireBallsAsync(board, columns, _cts.Token).Forget();
         }
 
         /// <summary>
-        /// 火の玉を少しずつ時間をずらして落とし、着弾したマスから炎マスにする。
-        /// 火の玉の絵が未設定なら、落とさずにすぐ炎マスにする。
+        /// 火の玉を少しずつ時間をずらして落とし、着弾した列から燃やす。
+        /// 火の玉の絵が未設定なら、落とさずにすぐ燃やす。
         /// </summary>
-        private async UniTaskVoid DropFireBallsAsync(PuyoBoard board, List<Vector2Int> cells, CancellationToken ct)
+        private async UniTaskVoid DropFireBallsAsync(PuyoBoard board, List<int> columns, CancellationToken ct)
         {
-            for (var i = 0; i < cells.Count; i++)
+            for (var i = 0; i < columns.Count; i++)
             {
                 if (i > 0 && await UniTask.Delay(Mathf.RoundToInt(DropStagger * 1000), cancellationToken: ct)
                         .SuppressCancellationThrow()) return;
 
-                FallAndIgniteAsync(board, cells[i], ct).Forget();
+                FallAndIgniteAsync(board, columns[i], ct).Forget();
             }
         }
 
-        private async UniTaskVoid FallAndIgniteAsync(PuyoBoard board, Vector2Int cell, CancellationToken ct)
+        private async UniTaskVoid FallAndIgniteAsync(PuyoBoard board, int column, CancellationToken ct)
         {
+            var target = board.GetColumnSurface(column);
+            if (target == null) return;
+
             if (_ballSprite != null)
             {
-                if (await FireBallEffect.DropAsync(board, cell, _ballSprite, ct).SuppressCancellationThrow()) return;
+                if (await FireBallEffect.DropAsync(board, target.Value, _ballSprite, ct).SuppressCancellationThrow()) return;
             }
             if (ct.IsCancellationRequested) return;
 
-            board.AddFireTile(cell, _tileSprite);
-            _tiles.Add(cell);
+            // 落ちている間に盤面が変わっていても、着弾した時点のいちばん上で燃やす
+            var cell = board.GetColumnSurface(column);
+            if (cell == null || board.IsColumnOnFire(column)) return;
+            board.AddFireTile(cell.Value, _tileSprite, _tileMaterial);
+            _columns.Add(column);
         }
 
         public override void OnRelease(GameContext ctx)
@@ -89,8 +95,8 @@ namespace App
             _cts = null;
 
             var board = ctx.Contents.PuyoBoard;
-            foreach (var cell in _tiles) board.RemoveFireTile(cell);
-            _tiles.Clear();
+            foreach (var column in _columns) board.RemoveFireTileInColumn(column);
+            _columns.Clear();
         }
     }
 }

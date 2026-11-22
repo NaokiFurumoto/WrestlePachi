@@ -240,8 +240,9 @@ namespace App.Puyo
         /// </summary>
         private async UniTaskVoid ProcessChainAsync(CancellationToken ct)
         {
-            // 敵スキル「炎」：炎マス上に置かれたぷよを連鎖判定より先に焼き消す
-            await BurnFireTilePiecesAsync(ct);
+            // 敵スキル「炎」：炎マス上に置かれたぷよを連鎖判定より先に焼き消し、上に乗っていたぷよを落とす
+            if (await BurnFireTilePiecesAsync(ct) > 0)
+                await DropFloatingPuyosAsync(ct);
 
             var chainCount   = 0;
             var clearedCount = 0;
@@ -285,6 +286,9 @@ namespace App.Puyo
             }
 
             if (ct.IsCancellationRequested) return;
+
+            // 盤面が落ち着いたので、炎マスを各列の「次にぷよが乗る場所」へ移す
+            RelocateFireTilesToSurface();
             SpawnNextPair();
         }
 
@@ -362,16 +366,18 @@ namespace App.Puyo
         /// <summary>
         /// 敵スキル「炎」用：炎マス上に乗っているぷよを連鎖判定前に焼き消す。
         /// </summary>
-        private async UniTask BurnFireTilePiecesAsync(CancellationToken ct)
+        /// <summary>炎マスの上にあるぷよを焼く。焼いた数を返す</summary>
+        private async UniTask<int> BurnFireTilePiecesAsync(CancellationToken ct)
         {
-            if (_fireTiles.Count == 0) return;
+            if (_fireTiles.Count == 0) return 0;
 
             var burning = _fireTiles.Where(cell =>
                 cell.x >= 0 && cell.x < COLS && cell.y >= 0 && cell.y < _rows && _grid[cell.x, cell.y] != null
             ).ToList();
-            if (burning.Count == 0) return;
+            if (burning.Count == 0) return 0;
 
             await UniTask.WhenAll(burning.Select(cell => BurnCellAsync(cell, ct)));
+            return burning.Count;
         }
 
         /// <summary>
@@ -753,7 +759,7 @@ namespace App.Puyo
         /// 敵スキル「炎」用：指定セルを炎マスに指定する（ぷよの有無は問わない）。
         /// ぷよの背面に表示用マーカーを生成する。sprite 未指定時は半透明オレンジの四角で仮表示する。
         /// </summary>
-        public void AddFireTile(Vector2Int cell, Sprite? sprite = null)
+        public void AddFireTile(Vector2Int cell, Sprite? sprite = null, Material? material = null)
         {
             _fireTiles.Add(cell);
             if (_fireTileMarkers.ContainsKey(cell)) return;
@@ -768,8 +774,10 @@ namespace App.Puyo
             renderer.sortingOrder   = pieceRenderer.sortingOrder - FireTileMarkerOrderOffset;
             if (sprite != null)
             {
-                // 炎の絵：マス1つに収まる大きさにし、ポンと出てからゆらゆら燃え続ける
+                // 炎の絵：マス1つに収まる大きさにし、ポンと出てから燃え続ける。
+                // 揺らめきは専用シェーダー（material）が担当し、ここでは軽い呼吸のような伸び縮みだけ付ける
                 renderer.sprite = sprite;
+                if (material != null) renderer.sharedMaterial = material;
                 var fit = _cellSize * FireTileSizeInCells / Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y);
                 marker.transform.localScale = Vector3.zero;
                 marker.transform.DOScale(fit, 0.2f).SetEase(Ease.OutBack).SetLink(marker)
@@ -788,14 +796,53 @@ namespace App.Puyo
         /// <summary>炎マスの絵の大きさ（ぷよ何個分か）</summary>
         private const float FireTileSizeInCells = 1.0f;
 
-        /// <summary>炎がゆらゆら燃える動き：縦に伸び縮みしながら左右に少し揺れる（ずっと繰り返す）</summary>
+        /// <summary>炎の呼吸のような伸び縮み（揺らめき本体はシェーダー側。ずっと繰り返す）</summary>
         private static void StartFlicker(Transform marker, float baseScale)
         {
-            marker.DOScale(new Vector3(baseScale * 0.94f, baseScale * 1.1f, 1f), 0.18f)
+            marker.DOScale(new Vector3(baseScale * 0.98f, baseScale * 1.04f, 1f), 0.35f)
                 .SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo).SetLink(marker.gameObject);
-            marker.localRotation = Quaternion.Euler(0f, 0f, -3f);
-            marker.DOLocalRotate(new Vector3(0f, 0f, 3f), 0.3f)
-                .SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo).SetLink(marker.gameObject);
+        }
+
+        // ─── 炎マスを「各列のいちばん上」で燃やす ──────────────────────
+
+        /// <summary>
+        /// 指定列で次にぷよが乗る場所（下から見て最初の空きマス）を返す。列が表示範囲いっぱいなら null。
+        /// </summary>
+        public Vector2Int? GetColumnSurface(int col)
+        {
+            if (col < 0 || col >= COLS) return null;
+            for (var y = 0; y < _visibleRows; y++)
+                if (_grid[col, y] == null) return new Vector2Int(col, y);
+            return null;
+        }
+
+        /// <summary>指定列に炎マスがあるか</summary>
+        public bool IsColumnOnFire(int col) => _fireTiles.Any(c => c.x == col);
+
+        /// <summary>指定列の炎マスを解除する（表示マーカーも破棄する）</summary>
+        public void RemoveFireTileInColumn(int col)
+        {
+            foreach (var cell in _fireTiles.Where(c => c.x == col).ToList())
+                RemoveFireTile(cell);
+        }
+
+        /// <summary>
+        /// 炎マスを、それぞれの列の「次にぷよが乗る場所」へ移す（ぷよが消えたり積み上がったりした後に呼ぶ）。
+        /// 炎の絵はスッと新しい位置へ移動する。列が満杯なら動かさない。
+        /// </summary>
+        private void RelocateFireTilesToSurface()
+        {
+            foreach (var cell in _fireTiles.ToList())
+            {
+                var surface = GetColumnSurface(cell.x);
+                if (surface == null || surface.Value == cell) continue;
+
+                _fireTiles.Remove(cell);
+                _fireTiles.Add(surface.Value);
+                if (!_fireTileMarkers.Remove(cell, out var marker)) continue;
+                _fireTileMarkers[surface.Value] = marker;
+                marker.transform.DOMove(CellToWorld(surface.Value), 0.2f).SetEase(Ease.OutQuad).SetLink(marker);
+            }
         }
 
         /// <summary>表示されている縦の行数</summary>

@@ -152,7 +152,7 @@ MonoBehaviour:
   m_ResidentUIParent: {fileID: 0}
   m_View: {fileID: 0}
   m_ResidentViews: []
-  _nextSceneName: GameScene
+  _nextSceneName: StageScene
 --- !u!4 &96501609
 Transform:
   m_ObjectHideFlags: 0

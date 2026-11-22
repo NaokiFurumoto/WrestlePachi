@@ -27,7 +27,7 @@ MonoBehaviour:
     BaseIntervalSec: 20
     IntervalStepSec: 2
     MinIntervalSec: 5
-    BaseCount: 1
+    BaseCount: 3
   Pineapple:
     BaseIntervalSec: 15
     IntervalStepSec: 1.5

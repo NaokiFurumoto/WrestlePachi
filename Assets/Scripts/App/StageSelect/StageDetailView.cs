@@ -170,7 +170,7 @@ namespace App
         {
             EnemySkillType.Shark          => "一定間隔でぷよを消去し、消した数に応じてHPを回復する。",
             EnemySkillType.FireTile       => "指定マスに炎を出現させ、通過したぷよを消滅させる。",
-            EnemySkillType.GarbageDrop    => "一定間隔でお邪魔ぷよを盤面に降らせる。",
+            EnemySkillType.GarbageDrop    => "いちばん高い列を狙い、拳でお邪魔ぷよを積み上げる。",
             EnemySkillType.Rock           => "ぷよを岩に変え、2回消去に巻き込まないと消えなくする。",
             EnemySkillType.TimeBomb       => "盤面に爆弾ぷよを設置する。放置すると周囲を巻き込んで爆発する。",
             EnemySkillType.SkillSeal      => "一部の技色を使用不可にする。",

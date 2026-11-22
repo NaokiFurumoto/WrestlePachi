@@ -39,7 +39,7 @@ namespace App
             [Tooltip("Lv1の発動間隔（秒）")]      public float BaseIntervalSec = 20f;
             [Tooltip("Lvごとに間隔が短くなる秒数")] public float IntervalStepSec = 2f;
             [Tooltip("発動間隔の下限（秒）")]       public float MinIntervalSec  = 5f;
-            [Tooltip("Lv1の落下数（Lvごとに+1）")]  public int   BaseCount       = 1;
+            [Tooltip("Lv1で狙った列に積む数（Lvごとに+1）")] public int BaseCount = 3;
         }
 
         [Serializable]

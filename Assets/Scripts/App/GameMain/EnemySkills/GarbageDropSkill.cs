@@ -4,8 +4,10 @@ using UnityEngine;
 namespace App
 {
     /// <summary>
-    /// お邪魔落下：一定間隔でお邪魔ぷよを盤面に降らせる。
-    /// レベルが高いほど間隔が短く、落下数が増える。
+    /// お邪魔落下（狙い撃ちの拳）：一定間隔で、いちばん高く積まれた列を狙う。
+    /// 狙われた列は赤く点滅して予告され、次のペアが出る直前に拳がドスンと叩いて、
+    /// その列にお邪魔ぷよがまとめて縦に積まれる。
+    /// レベルが高いほど間隔が短く、積まれる数が増える。
     /// 数値バランスは EnemySkillBalanceConfig.GarbageDrop で調整する。
     /// </summary>
     public sealed class GarbageDropSkill : EnemySkillBase
@@ -13,10 +15,14 @@ namespace App
         public override EnemySkillType Type => EnemySkillType.GarbageDrop;
 
         private readonly EnemySkillBalanceConfig.GarbageDropBalance _balance;
+        private readonly Sprite? _mark;
+        private readonly Sprite? _fist;
 
-        public GarbageDropSkill(int level, EnemySkillBalanceConfig.GarbageDropBalance balance) : base(level)
+        public GarbageDropSkill(int level, EnemySkillAssets assets, EnemySkillBalanceConfig.GarbageDropBalance balance) : base(level)
         {
             _balance = balance;
+            _mark    = assets.GetIcon(EnemySkillType.GarbageDrop);
+            _fist    = assets.GarbageFistSprite;
         }
 
         protected override float GetInterval(int level)
@@ -26,7 +32,10 @@ namespace App
 
         protected override void Execute(GameContext ctx)
         {
-            ctx.Contents.PuyoBoard.AddPendingOjama(GetPower(Level));
+            var board = ctx.Contents.PuyoBoard;
+            var col   = board.PickTallestColumn();
+            if (col < 0) return;
+            board.AnnounceColumnOjama(col, GetPower(Level), _mark, _fist);
         }
     }
 }

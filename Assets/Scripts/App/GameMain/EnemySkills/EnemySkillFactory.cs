@@ -15,7 +15,7 @@ namespace App
             {
                 EnemySkillType.Shark          => new SharkSkill(level, assets, balance.Shark),
                 EnemySkillType.FireTile       => new FireTileSkill(level, assets, balance.FireTile),
-                EnemySkillType.GarbageDrop    => new GarbageDropSkill(level, balance.GarbageDrop),
+                EnemySkillType.GarbageDrop    => new GarbageDropSkill(level, assets, balance.GarbageDrop),
                 EnemySkillType.Rock           => new RockSkill(level, assets, balance.Rock),
                 EnemySkillType.TimeBomb       => new TimeBombSkill(level, assets, balance.TimeBomb),
                 EnemySkillType.SkillSeal      => new SkillSealSkill(level, balance.SkillSeal),

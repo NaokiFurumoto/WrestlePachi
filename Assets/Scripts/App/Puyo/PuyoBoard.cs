@@ -294,6 +294,10 @@ namespace App.Puyo
             if (chainCount > 0)
                 OnChainCompleted?.Invoke(chainCount, clearedCount);
 
+            // 敵スキル「お邪魔落下」：狙われていた列を拳が叩き、その列にお邪魔ぷよを縦に積む
+            if (_columnOjama.Count > 0)
+                await DropColumnOjamaAsync(ct);
+
             // 積まれたお邪魔ぷよを次のペアスポーン前に降らせる（最大30個/ターン、超過分は持ち越し）
             if (_pendingOjama > 0)
             {
@@ -505,6 +509,69 @@ namespace App.Puyo
         /// 実際の落下は ProcessChainAsync 末尾（次ペアスポーン直前）で行われる。
         /// </summary>
         public void AddPendingOjama(int count) => _pendingOjama += count;
+
+        // ─── 敵スキル「お邪魔落下」：狙い撃ちの拳 ──────────────────
+
+        /// <summary>狙われている列と、その列に積むお邪魔ぷよの数（次のペアが出る直前に積む）</summary>
+        private readonly Dictionary<int, int> _columnOjama = new();
+        /// <summary>狙われている列の予告表示（赤く点滅する帯＋列の上のマーク）</summary>
+        private readonly Dictionary<int, GameObject> _columnOjamaMarkers = new();
+        /// <summary>列を叩く拳の絵（未設定なら予告マークの絵で叩く）</summary>
+        private Sprite? _columnOjamaFist;
+        private Sprite? _columnOjamaMark;
+
+        /// <summary>
+        /// 狙う列を選ぶ：いちばん高く積まれた列（満杯の列は除く）。同じ高さが並んだら random01 でどれか1つ。
+        /// 狙える列がなければ -1。
+        /// </summary>
+        public static int PickTallestColumn(IReadOnlyList<int> heights, int maxRows, float random01)
+        {
+            var best = -1;
+            for (var i = 0; i < heights.Count; i++)
+                if (heights[i] < maxRows && (best < 0 || heights[i] > heights[best])) best = i;
+            if (best < 0) return -1;
+            var ties = new List<int>();
+            for (var i = 0; i < heights.Count; i++)
+                if (heights[i] == heights[best]) ties.Add(i);
+            return ties[Mathf.Clamp((int)(random01 * ties.Count), 0, ties.Count - 1)];
+        }
+
+        /// <summary>今の盤面でお邪魔落下が狙う列（狙えなければ -1）</summary>
+        public int PickTallestColumn()
+        {
+            var heights = new int[COLS];
+            for (var x = 0; x < COLS; x++) heights[x] = GetColumnTop(x);
+            return PickTallestColumn(heights, _visibleRows, UnityEngine.Random.value);
+        }
+
+        /// <summary>
+        /// 列 col を狙うと予告する：列が赤く点滅し、列の上にマークが出る。
+        /// 次のペアが出る直前に拳が叩き、count 個のお邪魔ぷよがその列に縦に積まれる。
+        /// </summary>
+        public void AnnounceColumnOjama(int col, int count, Sprite? mark, Sprite? fist)
+        {
+            if (col < 0 || col >= COLS || count <= 0) return;
+            _columnOjama[col] = _columnOjama.TryGetValue(col, out var n) ? n + count : count;
+            _columnOjamaMark  = mark;
+            _columnOjamaFist  = fist;
+            if (!_columnOjamaMarkers.ContainsKey(col))
+                _columnOjamaMarkers[col] = ColumnTargetMarker.Create(this, col, mark);
+        }
+
+        /// <summary>狙われていた列を順に拳で叩き、お邪魔ぷよを縦に積む</summary>
+        private async UniTask DropColumnOjamaAsync(CancellationToken ct)
+        {
+            var targets = _columnOjama.ToList();
+            _columnOjama.Clear();
+            foreach (var (col, count) in targets)
+            {
+                if (_columnOjamaMarkers.Remove(col, out var marker)) ColumnTargetMarker.Dismiss(marker);
+                var surfaceY = Mathf.Min(GetColumnTop(col), _visibleRows - 1);
+                var sprite   = _columnOjamaFist != null ? _columnOjamaFist : _columnOjamaMark;
+                await FistSlamEffect.SlamAsync(this, CellToWorld(new Vector2Int(col, surfaceY)), sprite, ct);
+                await DropOjamaColumnAsync(col, count, 0, ct);
+            }
+        }
 
         /// <summary>お邪魔ぷよを1つ作る：ガラス玉の見た目にし、消えるときはガラスが割れて砕ける</summary>
         private PuyoPiece CreateOjamaPiece()

@@ -53,6 +53,10 @@ namespace App
         [Tooltip("ペアの頭上を回る、目を回したヒヨコ（右向き）。未設定なら黄色い丸で代用")]
         [SerializeField] private Sprite? _confusionChickSprite;
 
+        [Header("盤面演出：時計")]
+        [Tooltip("タイマーをかじるネズミ（右向き・口を開けた絵）。未設定なら灰色の四角で代用")]
+        [SerializeField] private Sprite? _clockMouseSprite;
+
         [Header("UI：スキルアイコン（ステージ詳細画面のバッジ用・10種）")]
         [SerializeField] private SkillIconEntry[] _skillIcons = System.Array.Empty<SkillIconEntry>();
 
@@ -70,6 +74,7 @@ namespace App
         public Sprite? SharkOpenSprite   => _sharkOpenSprite;
         public Sprite? SharkClosedSprite => _sharkClosedSprite;
         public Sprite? ConfusionChickSprite => _confusionChickSprite;
+        public Sprite? ClockMouseSprite     => _clockMouseSprite;
 
         /// <summary>指定スキルのアイコンを返す。未設定なら null。</summary>
         public Sprite? GetIcon(EnemySkillType type)

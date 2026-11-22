@@ -242,6 +242,19 @@ if (_damageEffect != null)
             _timerText.text = $"{sec / 60:00}:{sec % 60:00}";
         }
 
+        /// <summary>
+        /// 敵スキル「時計」：ネズミがタイマーを bites 回かじる演出（ClockMouseEffect）。onBite はかじるたびに呼ぶ。
+        /// </summary>
+        public UniTask PlayClockGnawAsync(Sprite? mouse, int bites, Action onBite, System.Threading.CancellationToken ct)
+        {
+            if (_timerText == null)
+            {
+                for (var i = 0; i < bites; i++) onBite();
+                return UniTask.CompletedTask;
+            }
+            return ClockMouseEffect.PlayAsync(_timerText, mouse, bites, onBite, ct);
+        }
+
         // ── ステージ数 ───────────────────────────────────────────────
 
         public void SetStage(int current, int total)

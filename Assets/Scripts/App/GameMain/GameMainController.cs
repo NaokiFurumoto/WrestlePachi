@@ -82,6 +82,7 @@ namespace App
             _ctx.Enemy         = _enemy;
             _ctx.RestartGame   = RestartGame;
             _ctx.ReduceTime    = ReduceRemainingTime;
+            _ctx.GnawTime      = GnawRemainingTimeAsync;
             _ctx.ShowEnemySkillWarning = ShowEnemySkillWarning;
 
             // 敵イベント
@@ -249,6 +250,28 @@ namespace App
         /// <summary>敵スキル「時計」から呼ばれる。残り時間を減らす（0未満にはならない）</summary>
         private void ReduceRemainingTime(float seconds)
             => _remainingTime = Mathf.Max(0f, _remainingTime - seconds);
+
+        /// <summary>
+        /// 敵スキル「時計」：ネズミがタイマーを bites 回かじり、1回ごとに1秒削って表示も更新する。
+        /// 制限時間のないステージでは何もしない（削る時間がない）。
+        /// </summary>
+        private UniTask GnawRemainingTimeAsync(int bites, System.Threading.CancellationToken ct)
+        {
+            var timeLimit = _ctx.CurrentStage?.TimeLimit ?? _config.TimeLimitSeconds;
+            if (timeLimit <= 0f) return UniTask.CompletedTask;
+
+            var hud = ViewManager.GetView<GameMainHudView>();
+            if (hud == null)
+            {
+                ReduceRemainingTime(bites);
+                return UniTask.CompletedTask;
+            }
+            return hud.PlayClockGnawAsync(_enemySkillAssetsConfig?.ClockMouseSprite, bites, () =>
+            {
+                ReduceRemainingTime(1f);
+                hud.SetTime(_remainingTime);
+            }, ct);
+        }
 
         /// <summary>敵スキルの予告：HUD の敵の顔の横に技アイコンを出す</summary>
         private void ShowEnemySkillWarning(EnemySkillType type)

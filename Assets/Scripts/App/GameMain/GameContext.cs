@@ -46,6 +46,12 @@ namespace App
         public Action<float>? ReduceTime { get; set; }
 
         /// <summary>
+        /// 敵スキル「時計」の演出つきで残り時間を削る（ネズミが1回かじるごとに1秒）。引数はかじる回数。
+        /// GameMainController が設定する。未設定なら ReduceTime で一度に削る。
+        /// </summary>
+        public Func<int, CancellationToken, UniTask>? GnawTime { get; set; }
+
+        /// <summary>
         /// 敵スキルの予告を表示する（技が出る直前に敵の顔の横で技アイコンを出す）。
         /// GameMainController が HUD の表示処理を登録する。
         /// </summary>

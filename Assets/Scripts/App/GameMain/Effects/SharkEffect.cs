@@ -168,7 +168,7 @@ namespace App.Effects
             bubble.transform.localScale = Vector3.one * size;
 
             var sr = bubble.AddComponent<SpriteRenderer>();
-            sr.sprite         = SoftCircleSprite;
+            sr.sprite         = FallbackSkillVisuals.SoftCircleSprite;
             sr.color          = new Color(1f, 1f, 1f, 0.9f);
             sr.sortingLayerID = sortingLayerId;
             sr.sortingOrder   = sortingOrder;
@@ -180,33 +180,6 @@ namespace App.Effects
                 .Join(sr.DOFade(0f, BubbleLife).SetEase(Ease.InQuad))
                 .OnComplete(() => Object.Destroy(bubble))
                 .SetLink(bubble);
-        }
-
-        private static Sprite? _softCircle;
-
-        /// <summary>
-        /// 縁がやわらかい白い丸（1ワールド単位）。泡に使う。初回だけ生成して使い回す。
-        /// </summary>
-        private static Sprite SoftCircleSprite
-        {
-            get
-            {
-                if (_softCircle != null) return _softCircle;
-                const int size = 64;
-                var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-                var center = (size - 1) * 0.5f;
-                for (var y = 0; y < size; y++)
-                for (var x = 0; x < size; x++)
-                {
-                    var d     = Vector2.Distance(new Vector2(x, y), new Vector2(center, center)) / center;
-                    var alpha = Mathf.Clamp01((1f - d) / 0.25f); // 外側25%で徐々に透明に
-                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
-                }
-                tex.Apply();
-                _softCircle = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
-                _softCircle.name = "SharkBubbleCircle";
-                return _softCircle;
-            }
         }
     }
 }

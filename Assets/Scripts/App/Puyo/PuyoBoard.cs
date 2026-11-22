@@ -381,7 +381,8 @@ namespace App.Puyo
         }
 
         /// <summary>
-        /// 炎マスの上のぷよを焼く：炎がボッと大きくなり、ぷよは黒く焦げながら縮んで少し浮き上がって消える。
+        /// 炎マスの上のぷよを焼く：炎がボッと大きくなってから燃え尽きて消え、
+        /// ぷよはジワッと黒く焦げながら震え、煙を上げて縮んで消える。
         /// </summary>
         private async UniTask BurnCellAsync(Vector2Int cell, CancellationToken ct)
         {
@@ -389,14 +390,18 @@ namespace App.Puyo
             if (piece == null) return;
             _grid[cell.x, cell.y] = null;
 
-            if (_fireTileMarkers.TryGetValue(cell, out var marker))
-                marker.transform.DOPunchScale(Vector3.one * marker.transform.localScale.x * 0.4f, 0.3f, 6)
-                    .SetLink(marker);
+            // 炎はぷよを1つ焼いたら燃え尽きる（敵スキル側が一定間隔で補充する）
+            _fireTiles.Remove(cell);
+            if (_fireTileMarkers.Remove(cell, out var marker))
+                ExtinguishMarker(marker);
 
-            const float charTime   = 0.12f; // 焦げる
-            const float shrinkTime = 0.15f; // 縮んで消える
-            piece.SetTint(new Color(0.25f, 0.18f, 0.12f));
+            const float charTime   = 0.25f; // 焦げる
+            const float shrinkTime = 0.18f; // 縮んで消える
+            var charColor = new Color(0.22f, 0.15f, 0.1f);
+            DOTween.To(() => 0f, t => piece.SetTint(Color.Lerp(Color.white, charColor, t)), 1f, charTime * 0.6f)
+                .SetLink(piece.gameObject);
             piece.transform.DOShakePosition(charTime, 0.08f * _cellSize, 20).SetLink(piece.gameObject);
+            BurnSmokeEffect.Spawn(piece.transform.position, _cellSize, piece.GetComponent<SpriteRenderer>(), transform);
             if (await UniTask.Delay(Mathf.RoundToInt(charTime * 1000), cancellationToken: ct)
                     .SuppressCancellationThrow()) { Destroy(piece.gameObject); return; }
 
@@ -405,6 +410,21 @@ namespace App.Puyo
             piece.transform.DOScale(0f, shrinkTime).SetEase(Ease.InQuad).SetLink(piece.gameObject);
             await UniTask.Delay(Mathf.RoundToInt(shrinkTime * 1000), cancellationToken: ct).SuppressCancellationThrow();
             Destroy(piece.gameObject);
+        }
+
+        /// <summary>燃え尽きる炎：一瞬ボッと大きくなってから、縮みながら消える</summary>
+        private static void ExtinguishMarker(GameObject marker)
+        {
+            var t = marker.transform;
+            t.DOKill();
+            var s = t.localScale;
+            var renderer = marker.GetComponent<SpriteRenderer>();
+            DOTween.Sequence()
+                .Append(t.DOScale(new Vector3(s.x * 1.3f, s.y * 1.4f, 1f), 0.12f).SetEase(Ease.OutQuad))
+                .Append(t.DOScale(new Vector3(s.x * 0.2f, s.y * 0.1f, 1f), 0.3f).SetEase(Ease.InQuad))
+                .Join(renderer.DOFade(0f, 0.3f))
+                .OnComplete(() => Destroy(marker))
+                .SetLink(marker);
         }
 
         /// <summary>
@@ -806,14 +826,17 @@ namespace App.Puyo
         // ─── 炎マスを「各列のいちばん上」で燃やす ──────────────────────
 
         /// <summary>
-        /// 指定列で次にぷよが乗る場所（下から見て最初の空きマス）を返す。列が表示範囲いっぱいなら null。
+        /// 指定列で次にぷよが乗る場所（その列でいちばん高いぷよのすぐ上）を返す。列が表示範囲いっぱいなら null。
+        /// 技で消されたマスの上にぷよが浮いていても、落ちてくるぷよはいちばん上に止まるので、隙間ではなくその上を返す。
         /// </summary>
         public Vector2Int? GetColumnSurface(int col)
         {
             if (col < 0 || col >= COLS) return null;
-            for (var y = 0; y < _visibleRows; y++)
-                if (_grid[col, y] == null) return new Vector2Int(col, y);
-            return null;
+            var top = -1;
+            for (var y = 0; y < _rows; y++)
+                if (_grid[col, y] != null) top = y;
+            var surface = top + 1;
+            return surface < _visibleRows ? new Vector2Int(col, surface) : null;
         }
 
         /// <summary>指定列に炎マスがあるか</summary>

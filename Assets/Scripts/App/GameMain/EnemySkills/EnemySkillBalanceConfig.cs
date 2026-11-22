@@ -27,7 +27,10 @@ namespace App
         [Serializable]
         public sealed class FireTileBalance
         {
-            [Tooltip("Lv1の炎マス数（Lvごとに+1）")] public int BaseTileCount = 1;
+            [Tooltip("Lv1で同時に燃える炎の数（Lvごとに+1）")] public int BaseTileCount = 1;
+            [Tooltip("Lv1で燃え尽きた炎を補充する間隔（秒）")]  public float BaseIntervalSec = 12f;
+            [Tooltip("Lvごとに補充間隔が短くなる秒数")]          public float IntervalStepSec = 2f;
+            [Tooltip("補充間隔の下限（秒）")]                    public float MinIntervalSec  = 6f;
         }
 
         [Serializable]

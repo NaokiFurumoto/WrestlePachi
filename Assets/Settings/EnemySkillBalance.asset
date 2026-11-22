@@ -20,6 +20,9 @@ MonoBehaviour:
     HealPerPuyo: 3
   FireTile:
     BaseTileCount: 1
+    BaseIntervalSec: 12
+    IntervalStepSec: 2
+    MinIntervalSec: 6
   GarbageDrop:
     BaseIntervalSec: 20
     IntervalStepSec: 2

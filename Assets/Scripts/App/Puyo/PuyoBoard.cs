@@ -371,7 +371,34 @@ namespace App.Puyo
             ).ToList();
             if (burning.Count == 0) return;
 
-            await UniTask.WhenAll(burning.Select(cell => ClearCellBySkillAsync(cell, ct)));
+            await UniTask.WhenAll(burning.Select(cell => BurnCellAsync(cell, ct)));
+        }
+
+        /// <summary>
+        /// 炎マスの上のぷよを焼く：炎がボッと大きくなり、ぷよは黒く焦げながら縮んで少し浮き上がって消える。
+        /// </summary>
+        private async UniTask BurnCellAsync(Vector2Int cell, CancellationToken ct)
+        {
+            var piece = _grid[cell.x, cell.y];
+            if (piece == null) return;
+            _grid[cell.x, cell.y] = null;
+
+            if (_fireTileMarkers.TryGetValue(cell, out var marker))
+                marker.transform.DOPunchScale(Vector3.one * marker.transform.localScale.x * 0.4f, 0.3f, 6)
+                    .SetLink(marker);
+
+            const float charTime   = 0.12f; // 焦げる
+            const float shrinkTime = 0.15f; // 縮んで消える
+            piece.SetTint(new Color(0.25f, 0.18f, 0.12f));
+            piece.transform.DOShakePosition(charTime, 0.08f * _cellSize, 20).SetLink(piece.gameObject);
+            if (await UniTask.Delay(Mathf.RoundToInt(charTime * 1000), cancellationToken: ct)
+                    .SuppressCancellationThrow()) { Destroy(piece.gameObject); return; }
+
+            piece.transform.DOMove(piece.transform.position + Vector3.up * (0.3f * _cellSize), shrinkTime)
+                .SetEase(Ease.OutQuad).SetLink(piece.gameObject);
+            piece.transform.DOScale(0f, shrinkTime).SetEase(Ease.InQuad).SetLink(piece.gameObject);
+            await UniTask.Delay(Mathf.RoundToInt(shrinkTime * 1000), cancellationToken: ct).SuppressCancellationThrow();
+            Destroy(piece.gameObject);
         }
 
         /// <summary>
@@ -741,7 +768,12 @@ namespace App.Puyo
             renderer.sortingOrder   = pieceRenderer.sortingOrder - FireTileMarkerOrderOffset;
             if (sprite != null)
             {
+                // 炎の絵：マス1つに収まる大きさにし、ポンと出てからゆらゆら燃え続ける
                 renderer.sprite = sprite;
+                var fit = _cellSize * FireTileSizeInCells / Mathf.Max(sprite.bounds.size.x, sprite.bounds.size.y);
+                marker.transform.localScale = Vector3.zero;
+                marker.transform.DOScale(fit, 0.2f).SetEase(Ease.OutBack).SetLink(marker)
+                    .OnComplete(() => StartFlicker(marker.transform, fit));
             }
             else
             {
@@ -751,6 +783,32 @@ namespace App.Puyo
                 marker.transform.localScale = Vector3.one * (_cellSize * 0.95f);
             }
             _fireTileMarkers[cell] = marker;
+        }
+
+        /// <summary>炎マスの絵の大きさ（ぷよ何個分か）</summary>
+        private const float FireTileSizeInCells = 1.0f;
+
+        /// <summary>炎がゆらゆら燃える動き：縦に伸び縮みしながら左右に少し揺れる（ずっと繰り返す）</summary>
+        private static void StartFlicker(Transform marker, float baseScale)
+        {
+            marker.DOScale(new Vector3(baseScale * 0.94f, baseScale * 1.1f, 1f), 0.18f)
+                .SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo).SetLink(marker.gameObject);
+            marker.localRotation = Quaternion.Euler(0f, 0f, -3f);
+            marker.DOLocalRotate(new Vector3(0f, 0f, 3f), 0.3f)
+                .SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo).SetLink(marker.gameObject);
+        }
+
+        /// <summary>表示されている縦の行数</summary>
+        public int VisibleRows => _visibleRows;
+
+        /// <summary>
+        /// 演出用の SpriteRenderer を、ぷよと同じソーティングレイヤーで、ぷよより orderAbovePuyo 段手前に描くよう設定する。
+        /// </summary>
+        public void ApplyPieceSorting(SpriteRenderer renderer, int orderAbovePuyo)
+        {
+            var pieceRenderer = _piecePrefab.GetComponent<SpriteRenderer>();
+            renderer.sortingLayerID = pieceRenderer.sortingLayerID;
+            renderer.sortingOrder   = pieceRenderer.sortingOrder + orderAbovePuyo;
         }
 
         /// <summary>指定セルの炎マス指定を解除する（表示マーカーも破棄する）。</summary>

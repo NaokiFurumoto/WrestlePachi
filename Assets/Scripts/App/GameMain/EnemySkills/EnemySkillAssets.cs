@@ -22,8 +22,10 @@ namespace App
         [SerializeField] private Sprite? _bombPuyoSprite;
 
         [Header("盤面演出：炎")]
-        [Tooltip("炎マスの背面表示スプライト")]
+        [Tooltip("炎マスで燃え続ける炎のスプライト")]
         [SerializeField] private Sprite? _fireTileSprite;
+        [Tooltip("炎マスに落ちてくる火の玉のスプライト")]
+        [SerializeField] private Sprite? _fireBallSprite;
 
         [Header("盤面演出：サメ")]
         [Tooltip("ぷよに食いつく瞬間の、口を開けたサメ（右向き）")]
@@ -37,6 +39,7 @@ namespace App
         public Sprite? RockHitSprite  => _rockHitSprite;
         public Sprite? BombPuyoSprite => _bombPuyoSprite;
         public Sprite? FireTileSprite => _fireTileSprite;
+        public Sprite? FireBallSprite => _fireBallSprite;
         public Sprite? SharkOpenSprite   => _sharkOpenSprite;
         public Sprite? SharkClosedSprite => _sharkClosedSprite;
 

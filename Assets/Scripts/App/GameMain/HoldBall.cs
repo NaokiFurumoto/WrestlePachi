@@ -41,6 +41,16 @@ namespace App
         /// <summary>この玉の保留種別</summary>
         public HoldType Type { get; private set; }
 
+        /// <summary>玉の絵（演出の位置・大きさ・描く順番の基準）</summary>
+        public SpriteRenderer Renderer => _renderer;
+
+        /// <summary>敵スキル「黒保留強化」：黒保留の絵に塗り替え、ぶるっと弾ませる</summary>
+        public void PaintBlack(Sprite[] sprites)
+        {
+            Setup(HoldType.Black, sprites);
+            transform.DOPunchScale(Vector3.one * 0.25f, 0.3f, 8, 0.6f).SetLink(gameObject);
+        }
+
         /// <summary>敵スキル「スキル封印」で封じられた色か（鎖がかかっている）。消化のとき不発で砕ける</summary>
         public bool IsSealed => _chain != null;
 

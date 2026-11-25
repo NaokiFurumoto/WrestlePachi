@@ -27,6 +27,8 @@ MonoBehaviour:
   _sharkClosedSprite: {fileID: 21300000, guid: 3da8cfc74c661f44f8fad914bce68650, type: 3}
   _confusionChickSprite: {fileID: 21300000, guid: 9aec31c2d35f45628dd578df43080d02, type: 3}
   _clockMouseSprite: {fileID: 21300000, guid: 62854b1d842e4db3ac7d46cc9a5f2b34, type: 3}
+  _sealChainSprite: {fileID: 21300000, guid: a1cf43538db2429aa677fc4b530c95aa, type: 3}
+  _blackDevilSprite: {fileID: 21300000, guid: 430e3a058f6a453a981ae97341bfcfd3, type: 3}
   _skillIcons:
   - Type: 0
     Icon: {fileID: -8964208715155943408, guid: 8e86dcf4989ba704d8f3918896e3abd8, type: 3}

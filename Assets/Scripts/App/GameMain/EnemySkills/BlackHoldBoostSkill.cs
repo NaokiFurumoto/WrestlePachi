@@ -4,13 +4,13 @@ using UnityEngine;
 namespace App
 {
     /// <summary>
-    /// 黒保留強化：ステージ中、黒保留（消化するとお邪魔ぷよが降る特殊保留）の出現率を上げる。
-    /// レベルが高いほど分母が小さくなり、出現しやすくなる。
-    /// 実際の抽選は GameMainController.Hold.cs の SelectHoldType が
-    /// GameContext.BlackHoldDenominatorOverride を参照して行う。
-    /// 数値バランスは EnemySkillBalanceConfig.BlackHoldBoost で調整する。
+    /// 黒保留強化＝黒塗り：一定間隔で黒い小悪魔が保留スロットへ飛んできて、並んでいる保留のうち
+    /// いちばん新しい普通の保留を筆で黒く塗り、黒保留（消化するとお邪魔ぷよが降る）に変えてしまう。
+    /// 並んでいなければ次に出てきた保留を塗る。虹・黒・鎖のかかった保留は塗らない（HoldSystem.RequestPaint）。
+    /// 塗る演出は HoldDisplay.OnHoldPainted（BlackPaintEffect）。
+    /// レベルが高いほど間隔が短い。数値バランスは EnemySkillBalanceConfig.BlackHoldBoost で調整する。
     /// </summary>
-    public sealed class BlackHoldBoostSkill : EnemyPassiveSkillBase
+    public sealed class BlackHoldBoostSkill : EnemySkillBase
     {
         public override EnemySkillType Type => EnemySkillType.BlackHoldBoost;
 
@@ -21,16 +21,12 @@ namespace App
             _balance = balance;
         }
 
-        public override void OnEnter(GameContext ctx)
-        {
-            ctx.BlackHoldDenominatorOverride = Mathf.Max(
-                _balance.MinDenominator, _balance.BaseDenominator - (Level - 1) * _balance.DenominatorStep);
-        }
+        protected override float GetInterval(int level)
+            => Mathf.Max(_balance.MinIntervalSec, _balance.BaseIntervalSec - (level - 1) * _balance.IntervalStepSec);
 
-        public override void OnRelease(GameContext ctx)
-        {
-            ctx.BlackHoldDenominatorOverride = null;
-        }
+        protected override void Execute(GameContext ctx) => ctx.RequestHoldPaint?.Invoke();
+
+        public override void OnRelease(GameContext ctx) => ctx.CancelHoldPaint?.Invoke();
     }
 }
 #nullable disable

@@ -85,6 +85,9 @@ namespace App
             _ctx.GnawTime      = GnawRemainingTimeAsync;
             _ctx.RequestHoldLock = () => _holdSystem.RequestLock();
             _ctx.CancelHoldLock  = () => _holdSystem.CancelLockRequest();
+            _ctx.RequestHoldPaint = () => _holdSystem.RequestPaint();
+            _ctx.CancelHoldPaint  = () => _holdSystem.CancelPaintRequest();
+            _ctx.PlayBlackPowerUp = PlayBlackPowerUpAsync;
             _ctx.ShowEnemySkillWarning = ShowEnemySkillWarning;
 
             // 敵イベント
@@ -142,6 +145,8 @@ namespace App
                 _holdSystem.OnHoldShifted  += _contents.HoldDisplay.OnHoldShifted;
                 _holdSystem.OnHoldConsumed += _contents.HoldDisplay.OnHoldConsumed;
                 _holdSystem.OnHoldLocked   += _contents.HoldDisplay.OnHoldLocked;
+                _holdSystem.OnHoldPainted  += _contents.HoldDisplay.OnHoldPainted;
+                _contents.HoldDisplay.PaintDevilSprite = _enemySkillAssetsConfig != null ? _enemySkillAssetsConfig.BlackDevilSprite : null;
                 // 敵スキル「スキル封印」の鎖：絵が未設定ならコードで描いた仮の鎖
                 _contents.HoldDisplay.LockChainSprite =
                     _enemySkillAssetsConfig != null && _enemySkillAssetsConfig.SealChainSprite != null
@@ -202,6 +207,7 @@ namespace App
                 _holdSystem.OnHoldShifted  -= _contents.HoldDisplay.OnHoldShifted;
                 _holdSystem.OnHoldConsumed -= _contents.HoldDisplay.OnHoldConsumed;
                 _holdSystem.OnHoldLocked   -= _contents.HoldDisplay.OnHoldLocked;
+                _holdSystem.OnHoldPainted  -= _contents.HoldDisplay.OnHoldPainted;
             }
 
             if (_contents.NextPuyoDisplay != null)
@@ -280,6 +286,16 @@ namespace App
                 ReduceRemainingTime(1f);
                 hud.SetTime(_remainingTime);
             }, ct);
+        }
+
+        /// <summary>敵スキル「黒保留威力」：黒保留の消化時に、小悪魔が玉を膨らませてお邪魔ぷよの数が増えるのを見せる</summary>
+        private UniTask PlayBlackPowerUpAsync(int from, int to, CancellationToken ct)
+        {
+            var hud = ViewManager.GetView<GameMainHudView>();
+            if (hud == null) return UniTask.CompletedTask;
+            var ball  = _contents.HoldDisplay != null ? _contents.HoldDisplay.SpriteFor(HoldType.Black) : null;
+            var devil = _enemySkillAssetsConfig != null ? _enemySkillAssetsConfig.BlackDevilSprite : null;
+            return hud.PlayBlackPowerUpAsync(ball, devil, from, to, ct);
         }
 
         /// <summary>敵スキルの予告：画面の縁が脈打ち、敵の顔が怒って、顔の横に技アイコンと技名を出す</summary>

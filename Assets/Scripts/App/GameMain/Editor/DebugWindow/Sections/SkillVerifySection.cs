@@ -41,6 +41,8 @@ namespace App.EditorTools
             public int FillRows;
             /// <summary>自動プレイを入れる（ペアが動くのを見たい技）</summary>
             public bool AutoPlay;
+            /// <summary>発動の前にする操作（保留を並べておくなど）。終わってから録画・発動する</summary>
+            public Func<GameMainController, CancellationToken, UniTask> Before;
             /// <summary>発動したあとにする操作（保留を入れる・岩を叩くなど）</summary>
             public Func<GameMainController, CancellationToken, UniTask> After;
         }
@@ -70,10 +72,17 @@ namespace App.EditorTools
                         c.Debug_AddHold(HoldType.Yellow);
                     } },
             new() { Type = EnemySkillType.Confusion,      Label = "混乱",       RecordSeconds = 8f, FillRows = 2, AutoPlay = true },
-            new() { Type = EnemySkillType.BlackHoldBoost, Label = "黒保留強化", RecordSeconds = 6f, FillRows = 3,
-                    After = async (c, ct) => { await UniTask.Delay(1500, cancellationToken: ct); c.Debug_AddHold(HoldType.Black); } },
-            new() { Type = EnemySkillType.BlackHoldPower, Label = "黒保留威力", RecordSeconds = 8f, FillRows = 3,
-                    After = async (c, ct) => { await UniTask.Delay(1500, cancellationToken: ct); c.Debug_AddHold(HoldType.Black); } },
+            new() { Type = EnemySkillType.BlackHoldBoost, Label = "黒塗り",     RecordSeconds = 6f, FillRows = 3,
+                    // 普通の保留を2つ並べてから発動：小悪魔が新しいほう（緑）を黒く塗る
+                    Before = async (c, ct) =>
+                    {
+                        c.Debug_AddHold(HoldType.Red);
+                        c.Debug_AddHold(HoldType.Green);
+                        await UniTask.Delay(1300, cancellationToken: ct); // 保留玉が画面に出るまで
+                    } },
+            new() { Type = EnemySkillType.BlackHoldPower, Label = "黒保留威力", RecordSeconds = 7f, FillRows = 3,
+                    // 黒保留を入れて、消化のときに膨らんで数が増えるのを見る
+                    After = async (c, ct) => { await UniTask.Delay(300, cancellationToken: ct); c.Debug_AddHold(HoldType.Black); } },
             new() { Type = EnemySkillType.Clock,          Label = "時計",       RecordSeconds = 4f },
         };
 
@@ -118,7 +127,11 @@ namespace App.EditorTools
 
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
+            RunAsync(ctrl, manager, s, _cts.Token).SuppressCancellationThrow().Forget();
+        }
 
+        private async UniTask RunAsync(GameMainController ctrl, EnemySkillManager manager, Scenario s, CancellationToken ct)
+        {
             manager.Debug_RemoveAll();
             if (s.FillRows > 0)
             {
@@ -128,9 +141,11 @@ namespace App.EditorTools
             if (s.AutoPlay && !ctrl.Debug_IsAutoPlaying) ctrl.Debug_StartAutoPlay();
             if (!s.AutoPlay && ctrl.Debug_IsAutoPlaying)  ctrl.Debug_StopAutoPlay();
 
+            if (s.Before != null) await s.Before(ctrl, ct);
+
             DebugFrameRecorder.Begin(s.RecordSeconds, RecordFps, $"Verify_{s.Type}_Lv{_level}");
             manager.Debug_AddAndTrigger(s.Type, _level);
-            if (s.After != null) s.After(ctrl, _cts.Token).SuppressCancellationThrow().Forget();
+            if (s.After != null) await s.After(ctrl, ct);
         }
     }
 }

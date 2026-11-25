@@ -26,6 +26,9 @@ namespace App
         /// <summary>敵スキル「スキル封印」で保留玉にかぶせる鎖の絵（GameMainController が設定する）</summary>
         public Sprite? LockChainSprite { get; set; }
 
+        /// <summary>敵スキル「黒保留強化」で保留を黒く塗りに来る小悪魔の絵（GameMainController が設定する）</summary>
+        public Sprite? PaintDevilSprite { get; set; }
+
         // ─── イベントハンドラ（GameMainController から購読）────────
 
         /// <summary>slot4（index=3）に保留玉を生成する。</summary>
@@ -75,6 +78,28 @@ namespace App
             var ball = _activeBalls[index];
             if (ball == null || LockChainSprite == null) return;
             ball.SetSealed(LockChainSprite, delay: 0.3f);
+        }
+
+        /// <summary>
+        /// 敵スキル「黒保留強化」：小悪魔が飛んできて index の保留玉を筆で黒く塗る（BlackPaintEffect）。
+        /// 中身はもう黒保留になっているので、ここでは見た目だけを変える。
+        /// </summary>
+        public void OnHoldPainted(int index)
+        {
+            if (!IsValidIndex(index)) return;
+            var ball = _activeBalls[index];
+            if (ball == null) return;
+            App.Effects.BlackPaintEffect.Play(ball.Renderer, PaintDevilSprite, () =>
+            {
+                if (ball != null) ball.PaintBlack(_sprites);
+            });
+        }
+
+        /// <summary>保留種別の玉の絵（HUD の演出などで使う）</summary>
+        public Sprite? SpriteFor(HoldType type)
+        {
+            var index = (int)type;
+            return _sprites != null && index >= 0 && index < _sprites.Length ? _sprites[index] : null;
         }
 
         /// <summary>保留消化スロット（slot0）のワールド座標。ビーム発射元として使用。</summary>

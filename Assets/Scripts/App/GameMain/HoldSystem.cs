@@ -34,6 +34,8 @@ namespace App
         private readonly bool[] _locked = new bool[MaxHolds];
         /// <summary>敵が狙っている：次に出てきた（ロックできる）保留をロックする</summary>
         private bool _lockRequested;
+        /// <summary>小悪魔が黒く塗りに来ている：塗れる保留がなければ、次に出てきた保留を塗る</summary>
+        private bool _paintRequested;
         private bool _isActivating;
 
         // RevealHoldAsync の遅延中にシフトが発生した場合に正しい index を伝えるための参照
@@ -68,6 +70,12 @@ namespace App
         /// <summary>保留に鎖がかかったとき発火（index: 表示されたスロット番号）。保留玉が画面に出た直後に呼ぶ</summary>
         public event Action<int>? OnHoldLocked;
 
+        /// <summary>
+        /// 敵スキル「黒保留強化」で保留が黒く塗り替えられたとき発火（index: スロット番号）。
+        /// 保留玉が画面に出たあとに呼ぶ（出る前に塗られた場合は、出た直後に呼ぶ）
+        /// </summary>
+        public event Action<int>? OnHoldPainted;
+
         /// <summary>鎖のかかった保留が消化され、不発になったとき発火（技は出ない）</summary>
         public event Action<HoldType>? OnLockedHoldFizzled;
 
@@ -97,6 +105,42 @@ namespace App
         /// <summary>狙いを取り消す（ステージ終了・技が外れたとき）</summary>
         public void CancelLockRequest() => _lockRequested = false;
 
+        /// <summary>小悪魔が塗りに来ているか（塗れる保留が出てくるのを待っている）</summary>
+        public bool HasPaintRequest => _paintRequested;
+
+        /// <summary>指定スロットの保留の種別（空なら null）</summary>
+        public HoldType? TypeAt(int index) => index >= 0 && index < MaxHolds ? _slots[index] : null;
+
+        /// <summary>黒く塗れる保留か。虹・黒・鎖のかかった保留は塗らない</summary>
+        private bool IsPaintable(int index) => _slots[index] is { } t && IsLockable(t) && !_locked[index];
+
+        /// <summary>
+        /// 敵スキル「黒保留強化」：並んでいる保留のうち、いちばん新しい普通の保留を黒保留に塗り替える。
+        /// 塗れる保留がなければ、次に出てきた保留を塗る（重ねて呼んでも1つだけ）。
+        /// </summary>
+        public void RequestPaint()
+        {
+            for (var i = MaxHolds - 1; i >= 0; i--)
+            {
+                if (!IsPaintable(i)) continue;
+                _slots[i] = HoldType.Black;
+                // 画面に出る前の保留なら、出た直後に塗る演出を出す（RevealHoldAsync）
+                if (!IsRevealPending(i)) OnHoldPainted?.Invoke(i);
+                return;
+            }
+            _paintRequested = true;
+        }
+
+        /// <summary>塗りに来ているのを取り消す（ステージ終了時）</summary>
+        public void CancelPaintRequest() => _paintRequested = false;
+
+        private bool IsRevealPending(int index)
+        {
+            foreach (var r in _pendingRevealIndices)
+                if (r[0] == index) return true;
+            return false;
+        }
+
         /// <summary>
         /// へそ入賞時に呼ぶ。左から最初の空きスロットに直接配置する。
         /// slot0 に配置された場合は消化シーケンスを開始する。
@@ -124,6 +168,12 @@ namespace App
                 _locked[index] = true;
                 _lockRequested = false;
             }
+            else if (_paintRequested && IsLockable(holdType))
+            {
+                // 黒く塗る（画面には元の色で出してから、塗る演出で黒に変える）
+                _slots[index]   = HoldType.Black;
+                _paintRequested = false;
+            }
             OnHoldCountChanged?.Invoke(HoldCount);
 
             // 表示は遅延後に通知（実機スロット演出相当）
@@ -147,6 +197,8 @@ namespace App
             if (_ct.IsCancellationRequested) return;
             OnHoldAdded?.Invoke(indexRef[0], holdType);
             if (IsLocked(indexRef[0])) OnHoldLocked?.Invoke(indexRef[0]);
+            // 出る前に黒く塗られていたら、出た直後に塗る演出を出す
+            if (holdType != HoldType.Black && _slots[indexRef[0]] == HoldType.Black) OnHoldPainted?.Invoke(indexRef[0]);
         }
 
         /// <summary>

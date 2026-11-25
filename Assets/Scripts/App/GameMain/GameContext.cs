@@ -42,8 +42,20 @@ namespace App
         /// <summary>敵スキル「スキル封印」の狙いを取り消す（ステージ終了時）。GameMainController が登録する</summary>
         public Action? CancelHoldLock { get; set; }
 
-        /// <summary>敵スキル「黒保留強化」による黒保留出現分母の上書き値。null なら通常確率</summary>
-        public int? BlackHoldDenominatorOverride { get; set; }
+        /// <summary>
+        /// 敵スキル「黒保留強化」：保留を1つ黒く塗って黒保留に変えるよう頼む（HoldSystem.RequestPaint）。
+        /// GameMainController が登録する。
+        /// </summary>
+        public Action? RequestHoldPaint { get; set; }
+
+        /// <summary>敵スキル「黒保留強化」の塗りを取り消す（ステージ終了時）。GameMainController が登録する</summary>
+        public Action? CancelHoldPaint { get; set; }
+
+        /// <summary>
+        /// 敵スキル「黒保留威力」：黒保留を消化するとき、小悪魔が玉を膨らませて降るお邪魔ぷよの数が
+        /// 普段の数（引数1）から増えた数（引数2）へ跳ね上がるのを見せる演出。GameMainController が登録する
+        /// </summary>
+        public Func<int, int, CancellationToken, UniTask>? PlayBlackPowerUp { get; set; }
 
         /// <summary>敵スキル「黒保留威力」による黒保留消化時のお邪魔ぷよ数の上書き値。null なら通常値</summary>
         public int? BlackHoldOjamaCountOverride { get; set; }

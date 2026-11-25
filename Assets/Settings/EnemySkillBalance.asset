@@ -47,9 +47,9 @@ MonoBehaviour:
     BaseDurationSec: 5
     DurationStepSec: 1
   BlackHoldBoost:
-    BaseDenominator: 20
-    DenominatorStep: 2
-    MinDenominator: 4
+    BaseIntervalSec: 18
+    IntervalStepSec: 3
+    MinIntervalSec: 8
   BlackHoldPower:
     BaseOjamaCount: 6
     OjamaCountStep: 2

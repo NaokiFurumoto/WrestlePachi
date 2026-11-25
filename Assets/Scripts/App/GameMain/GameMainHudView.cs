@@ -305,8 +305,7 @@ if (_damageEffect != null)
         private Image? EnsureEdgeGlow()
         {
             if (_edgeGlow != null) return _edgeGlow;
-            var canvas = GetComponentInParent<Canvas>();
-            if (canvas == null) canvas = GetComponentInChildren<Canvas>();
+            var canvas = FindHudCanvas();
             if (canvas == null) return null;
 
             var go = new GameObject("EnemyWarningEdgeGlow", typeof(RectTransform), typeof(Image));
@@ -321,6 +320,14 @@ if (_damageEffect != null)
             _edgeGlow.raycastTarget = false;
             _edgeGlow.color         = new Color(EdgeGlowColor.r, EdgeGlowColor.g, EdgeGlowColor.b, 0f);
             return _edgeGlow;
+        }
+
+        /// <summary>演出を載せる HUD のキャンバス（View の子にあるので、親になければ子から探す）</summary>
+        private Canvas? FindHudCanvas()
+        {
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas == null) canvas = GetComponentInChildren<Canvas>();
+            return canvas;
         }
 
         private static Sprite CreateEdgeGlowSprite()
@@ -398,6 +405,109 @@ if (_damageEffect != null)
                 return UniTask.CompletedTask;
             }
             return ClockMouseEffect.PlayAsync(_timerText, mouse, bites, onBite, ct);
+        }
+
+        // ── 敵スキル「黒保留威力」：パンパン ────────────────────────────
+
+        /// <summary>
+        /// 黒保留の消化時：画面の上寄りに黒い保留玉が出て、横から黒い小悪魔が筆でシュコシュコあおるたびに玉が膨らみ、
+        /// 「お邪魔 2個」の数字が跳ね上がって、最後に破裂する。破裂した瞬間に完了する（残りの演出は裏で続く）。
+        /// </summary>
+        public async UniTask PlayBlackPowerUpAsync(Sprite? ball, Sprite? devil, int from, int to, System.Threading.CancellationToken ct)
+        {
+            var canvas = FindHudCanvas();
+            if (canvas == null || _enemyHpText == null) return;
+            var canvasRt = (RectTransform)canvas.transform;
+            var size     = Mathf.Min(canvasRt.rect.width, canvasRt.rect.height) * 0.2f;
+            var center   = new Vector3(size * 0.25f, canvasRt.rect.height * 0.1f, 0f);
+
+            var root = new GameObject("BlackPowerUp", typeof(RectTransform));
+            var rrt  = (RectTransform)root.transform;
+            rrt.SetParent(canvasRt, false);
+            rrt.SetAsLastSibling();
+            rrt.localPosition = center;
+
+            // 黒い保留玉
+            var ballGo = new GameObject("Ball", typeof(RectTransform), typeof(Image));
+            var brt    = (RectTransform)ballGo.transform;
+            brt.SetParent(rrt, false);
+            brt.sizeDelta = new Vector2(size, size);
+            var ballImg = ballGo.GetComponent<Image>();
+            ballImg.sprite = ball; ballImg.preserveAspect = true; ballImg.raycastTarget = false;
+            if (ball == null) ballImg.color = new Color(0.1f, 0.05f, 0.15f);
+            brt.localScale = Vector3.zero;
+
+            // 小悪魔（玉の左。筆先が玉にかかる）
+            var devilGo = new GameObject("Devil", typeof(RectTransform), typeof(Image));
+            var drt     = (RectTransform)devilGo.transform;
+            drt.SetParent(rrt, false);
+            var aspect = devil != null ? devil.rect.width / devil.rect.height : 1f;
+            drt.sizeDelta = new Vector2(size * 1.3f, size * 1.3f / aspect);
+            var devilImg = devilGo.GetComponent<Image>();
+            devilImg.sprite = devil; devilImg.preserveAspect = true; devilImg.raycastTarget = false;
+            if (devil == null) devilImg.color = new Color(0.18f, 0.1f, 0.25f);
+            var devilRest = new Vector3(-size * 0.95f, size * 0.25f, 0f);
+            drt.localPosition = devilRest + new Vector3(-size * 3f, size * 1.5f, 0f);
+
+            // 数字（HP の数字の見た目を借りる）
+            var label = Instantiate(_enemyHpText, rrt);
+            label.name             = "Count";
+            label.raycastTarget    = false;
+            label.enableAutoSizing = false;
+            label.alignment        = TextAlignmentOptions.Center;
+            label.fontSize         = size * 0.32f;
+            label.text             = $"お邪魔 {from}個";
+            var lrt = label.rectTransform;
+            lrt.anchorMin = lrt.anchorMax = lrt.pivot = new Vector2(0.5f, 0.5f);
+            lrt.sizeDelta     = new Vector2(size * 3f, size * 0.5f);
+            lrt.localPosition = new Vector3(0f, -size * 0.85f, 0f);
+            lrt.localScale    = Vector3.one;
+
+            try
+            {
+                brt.DOScale(1f, 0.18f).SetEase(Ease.OutBack).SetLink(ballGo);
+                drt.DOLocalJump(devilRest, size * 0.4f, 1, 0.3f).SetLink(devilGo);
+                await UniTask.Delay(320, cancellationToken: ct);
+
+                // シュコ×3：あおるたびに膨らんで数字が増える
+                const int pumps = 3;
+                for (var k = 1; k <= pumps; k++)
+                {
+                    DOTween.Sequence()
+                        .Append(drt.DOLocalRotate(new Vector3(0f, 0f, -22f), 0.08f))
+                        .Append(drt.DOLocalRotate(Vector3.zero, 0.12f))
+                        .SetLink(devilGo);
+                    await UniTask.Delay(80, cancellationToken: ct);
+                    var shown = from + Mathf.RoundToInt((to - from) * k / (float)pumps);
+                    label.text = $"お邪魔 {shown}個";
+                    lrt.DOKill(complete: true);
+                    lrt.DOPunchScale(Vector3.one * 0.35f, 0.2f, 6, 0.5f).SetLink(label.gameObject);
+                    brt.DOScale(1f + 0.28f * k, 0.16f).SetEase(Ease.OutBack).SetLink(ballGo);
+                    await UniTask.Delay(260, cancellationToken: ct);
+                }
+
+                // 破裂：ふくらみきって弾け、画面が揺れる
+                brt.DOKill();
+                brt.DOScale(2.6f, 0.12f).SetEase(Ease.OutQuad).SetLink(ballGo);
+                ballImg.DOFade(0f, 0.12f).SetLink(ballGo);
+                ScreenShakeController.Shake(ShakePreset.Medium);
+                label.color = new Color(1f, 0.35f, 0.35f);
+                lrt.DOScale(1.5f, 0.15f).SetEase(Ease.OutBack).SetLink(label.gameObject);
+            }
+            catch (System.OperationCanceledException)
+            {
+                Destroy(root);
+                throw;
+            }
+
+            // 小悪魔は笑って去り、数字は少し残ってから消える（裏で続ける）
+            DOTween.Sequence()
+                .Append(drt.DOPunchPosition(new Vector3(0f, size * 0.15f, 0f), 0.4f, 8, 0.6f))
+                .Append(drt.DOLocalMove(devilRest + new Vector3(size * 4f, size * 2.5f, 0f), 0.4f).SetEase(Ease.InQuad))
+                .Join(devilImg.DOFade(0f, 0.4f))
+                .Insert(0.5f, label.DOFade(0f, 0.3f))
+                .OnComplete(() => Destroy(root))
+                .SetLink(root);
         }
 
         // ── ステージ数 ───────────────────────────────────────────────

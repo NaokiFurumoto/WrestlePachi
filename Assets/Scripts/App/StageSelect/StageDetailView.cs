@@ -175,8 +175,8 @@ namespace App
             EnemySkillType.TimeBomb       => "盤面に爆弾ぷよを設置する。放置すると周囲を巻き込んで爆発する。",
             EnemySkillType.SkillSeal      => "一定間隔で、次に出てくる保留を鎖でロックして不発にする。",
             EnemySkillType.Confusion      => "一定時間、左右の操作を反転させる。",
-            EnemySkillType.BlackHoldBoost => "黒保留（お邪魔落下の特殊保留）の出現率を上げる。",
-            EnemySkillType.BlackHoldPower => "黒保留消化時に降るお邪魔ぷよの数を増やす。",
+            EnemySkillType.BlackHoldBoost => "一定間隔で、保留を1つ黒く塗って黒保留（お邪魔ぷよが降る）に変える。",
+            EnemySkillType.BlackHoldPower => "黒保留を膨らませて、降るお邪魔ぷよの数を増やす。",
             EnemySkillType.Clock          => "一定間隔で残り時間を削る。",
             _                             => "",
         };

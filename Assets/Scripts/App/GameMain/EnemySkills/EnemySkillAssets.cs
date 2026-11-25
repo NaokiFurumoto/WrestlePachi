@@ -61,6 +61,10 @@ namespace App
         [Tooltip("封じた色の保留玉にかぶせる鎖（X字の鎖＋南京錠、中央以外は透明）。未設定ならコードで描いた仮の鎖")]
         [SerializeField] private Sprite? _sealChainSprite;
 
+        [Header("盤面演出：黒保留強化・黒保留威力")]
+        [Tooltip("筆を持った黒い小悪魔（右向き）。保留を黒く塗る・黒保留を膨らませる。未設定なら黒い丸で代用")]
+        [SerializeField] private Sprite? _blackDevilSprite;
+
         [Header("UI：スキルアイコン（ステージ詳細画面のバッジ用・10種）")]
         [SerializeField] private SkillIconEntry[] _skillIcons = System.Array.Empty<SkillIconEntry>();
 
@@ -80,6 +84,7 @@ namespace App
         public Sprite? ConfusionChickSprite => _confusionChickSprite;
         public Sprite? ClockMouseSprite     => _clockMouseSprite;
         public Sprite? SealChainSprite      => _sealChainSprite;
+        public Sprite? BlackDevilSprite     => _blackDevilSprite;
 
         /// <summary>指定スキルのアイコンを返す。未設定なら null。</summary>
         public Sprite? GetIcon(EnemySkillType type)

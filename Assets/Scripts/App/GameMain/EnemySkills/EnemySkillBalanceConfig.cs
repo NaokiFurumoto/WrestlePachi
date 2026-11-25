@@ -82,9 +82,12 @@ namespace App
         [Serializable]
         public sealed class BlackHoldBoostBalance
         {
-            [Tooltip("Lv1の黒保留出現分母")]        public int BaseDenominator = 20;
-            [Tooltip("Lvごとに分母が下がる量")]      public int DenominatorStep = 2;
-            [Tooltip("分母の下限（これ以上出やすくならない）")] public int MinDenominator = 4;
+            [Tooltip("Lv1の発動間隔（秒）。発動するたびに、保留を1つ黒く塗って黒保留に変える")]
+            public float BaseIntervalSec = 18f;
+            [Tooltip("Lvごとに短くなる秒数")]
+            public float IntervalStepSec = 3f;
+            [Tooltip("発動間隔の下限（秒）")]
+            public float MinIntervalSec = 8f;
         }
 
         [Serializable]

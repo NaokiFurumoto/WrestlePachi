@@ -1093,8 +1093,15 @@ namespace App.Puyo
             // スポーン位置が塞がれていればゲームオーバー
             if (!IsEmpty(spawnCell))
             {
-                OnGameOver?.Invoke();
-                return;
+#if UNITY_EDITOR
+                // デバッグ「ゲームオーバーにしない」：盤面を空にして続ける
+                if (Debug_PreventGameOver) Debug_ClearBoardNow();
+                else
+#endif
+                {
+                    OnGameOver?.Invoke();
+                    return;
+                }
             }
 
             var colors = _nextQueue.Dequeue();
@@ -1138,6 +1145,17 @@ namespace App.Puyo
                 for (var y = _rows - 1; y >= 0; y--)
                     if (_grid[x, y] != null) { heights[x] = y + 1; break; }
             return heights;
+        }
+
+        /// <summary>デバッグ用：オンの間は、ぷよがあふれてもゲームオーバーにせず盤面を空にして続ける（検証が途切れないように）</summary>
+        public static bool Debug_PreventGameOver;
+
+        /// <summary>デバッグ用：盤面のぷよを演出なしで全部消す</summary>
+        public void Debug_ClearBoardNow()
+        {
+            for (var x = 0; x < COLS; x++)
+            for (var y = 0; y < _rows; y++)
+                RemoveCellInstant(new Vector2Int(x, y));
         }
 
         /// <summary>デバッグ用：盤面の下 heightRows 行をランダムなぷよで埋める。</summary>

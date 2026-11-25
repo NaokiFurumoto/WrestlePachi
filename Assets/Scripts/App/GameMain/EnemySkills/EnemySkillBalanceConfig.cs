@@ -63,12 +63,12 @@ namespace App
         [Serializable]
         public sealed class SkillSealBalance
         {
-            [Tooltip("封印対象の優先順（レベルが低いうちは先頭からLv個ぶんを封印）")]
-            public HoldType[] SealOrder =
-            {
-                HoldType.Red, HoldType.Yellow, HoldType.Green,
-                HoldType.Blue, HoldType.Purple, HoldType.Black,
-            };
+            [Tooltip("Lv1の発動間隔（秒）。発動するたびに、次に出てくる保留を1つ鎖でロックする")]
+            public float BaseIntervalSec = 20f;
+            [Tooltip("Lvごとに短くなる秒数")]
+            public float IntervalStepSec = 3f;
+            [Tooltip("発動間隔の下限（秒）")]
+            public float MinIntervalSec = 8f;
         }
 
         [Serializable]

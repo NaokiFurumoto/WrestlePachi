@@ -23,6 +23,9 @@ namespace App
         // ─── 状態 ───────────────────────────────────────────────
         private readonly HoldBall?[] _activeBalls = new HoldBall?[HoldSystem.MaxHolds];
 
+        /// <summary>敵スキル「スキル封印」で保留玉にかぶせる鎖の絵（GameMainController が設定する）</summary>
+        public Sprite? LockChainSprite { get; set; }
+
         // ─── イベントハンドラ（GameMainController から購読）────────
 
         /// <summary>slot4（index=3）に保留玉を生成する。</summary>
@@ -60,6 +63,18 @@ namespace App
 
             _activeBalls[index] = null;
             ball.HideAsync(destroyCancellationToken).Forget();
+        }
+
+        /// <summary>
+        /// 敵スキル「スキル封印」：index の保留玉に鎖をガシャンとかける（玉が出てきた直後に呼ばれる）。
+        /// 鎖のかかった玉は、消化のとき震えて砕ける（HoldBall.HideAsync）。
+        /// </summary>
+        public void OnHoldLocked(int index)
+        {
+            if (!IsValidIndex(index)) return;
+            var ball = _activeBalls[index];
+            if (ball == null || LockChainSprite == null) return;
+            ball.SetSealed(LockChainSprite, delay: 0.3f);
         }
 
         /// <summary>保留消化スロット（slot0）のワールド座標。ビーム発射元として使用。</summary>

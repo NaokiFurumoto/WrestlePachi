@@ -68,6 +68,7 @@ namespace App
         public void Debug_StopAutoPlay() => _autoPlayAgent?.Stop();
 
         public void Debug_FillBoard(int rows = 6) => _contents?.PuyoBoard?.Debug_FillBoard(rows);
+        public void Debug_ClearBoard()            => _contents?.PuyoBoard?.Debug_ClearBoardNow();
         public void Debug_HitAllRocks()           => _contents?.PuyoBoard?.Debug_HitAllRocks();
         public void Debug_ExplodeAllBombs()       => _contents?.PuyoBoard?.Debug_ExplodeAllBombs();
         public void Debug_AddOjama(int count)     => _contents?.PuyoBoard?.AddPendingOjama(count);

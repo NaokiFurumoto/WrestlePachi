@@ -173,7 +173,7 @@ namespace App
             EnemySkillType.GarbageDrop    => "いちばん高い列を狙い、拳でお邪魔ぷよを積み上げる。",
             EnemySkillType.Rock           => "ぷよを岩に変え、2回消去に巻き込まないと消えなくする。",
             EnemySkillType.TimeBomb       => "盤面に爆弾ぷよを設置する。放置すると周囲を巻き込んで爆発する。",
-            EnemySkillType.SkillSeal      => "一部の技色を使用不可にする。",
+            EnemySkillType.SkillSeal      => "一定間隔で、次に出てくる保留を鎖でロックして不発にする。",
             EnemySkillType.Confusion      => "一定時間、左右の操作を反転させる。",
             EnemySkillType.BlackHoldBoost => "黒保留（お邪魔落下の特殊保留）の出現率を上げる。",
             EnemySkillType.BlackHoldPower => "黒保留消化時に降るお邪魔ぷよの数を増やす。",

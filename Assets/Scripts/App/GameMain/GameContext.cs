@@ -33,8 +33,14 @@ namespace App
         /// <summary>敵スキル「混乱」により左右入力が反転しているか</summary>
         public bool IsInputReversed { get; set; }
 
-        /// <summary>敵スキル「スキル封印」により発動不可になっている HoldType の集合</summary>
-        public HashSet<HoldType> SealedHoldTypes { get; } = new();
+        /// <summary>
+        /// 敵スキル「スキル封印」：次に出てくる保留を鎖でロックするよう頼む（ロックされた保留は消化のとき不発）。
+        /// GameMainController が HoldSystem.RequestLock を登録する。
+        /// </summary>
+        public Action? RequestHoldLock { get; set; }
+
+        /// <summary>敵スキル「スキル封印」の狙いを取り消す（ステージ終了時）。GameMainController が登録する</summary>
+        public Action? CancelHoldLock { get; set; }
 
         /// <summary>敵スキル「黒保留強化」による黒保留出現分母の上書き値。null なら通常確率</summary>
         public int? BlackHoldDenominatorOverride { get; set; }

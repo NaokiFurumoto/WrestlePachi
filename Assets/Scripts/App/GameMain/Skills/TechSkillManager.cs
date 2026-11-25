@@ -33,10 +33,9 @@ namespace App.Skills
         /// HasCutIn=false → ブロックなしで即時実行。UniTask.CompletedTask を返す。
         /// CanExecute=false はストックに積み UniTask.CompletedTask を返す。
         /// </summary>
-        /// <summary>指定した保留種別がスキル発動可能かどうかを返す。敵スキル「スキル封印」中は常に false。</summary>
+        /// <summary>指定した保留種別がスキル発動可能かどうかを返す。</summary>
         public bool CanExecute(HoldType holdType, GameContext ctx)
-            => !ctx.SealedHoldTypes.Contains(holdType)
-               && _skills.TryGetValue(holdType, out var skill)
+            => _skills.TryGetValue(holdType, out var skill)
                && skill.CanExecute(ctx);
 
         public UniTask StartSkillAsync(HoldType holdType, GameContext ctx, SkillStockSystem stocks, CancellationToken ct)

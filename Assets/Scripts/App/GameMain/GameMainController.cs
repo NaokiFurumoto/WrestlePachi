@@ -83,6 +83,8 @@ namespace App
             _ctx.RestartGame   = RestartGame;
             _ctx.ReduceTime    = ReduceRemainingTime;
             _ctx.GnawTime      = GnawRemainingTimeAsync;
+            _ctx.RequestHoldLock = () => _holdSystem.RequestLock();
+            _ctx.CancelHoldLock  = () => _holdSystem.CancelLockRequest();
             _ctx.ShowEnemySkillWarning = ShowEnemySkillWarning;
 
             // 敵イベント
@@ -139,6 +141,12 @@ namespace App
                 _holdSystem.OnHoldAdded    += _contents.HoldDisplay.OnHoldAdded;
                 _holdSystem.OnHoldShifted  += _contents.HoldDisplay.OnHoldShifted;
                 _holdSystem.OnHoldConsumed += _contents.HoldDisplay.OnHoldConsumed;
+                _holdSystem.OnHoldLocked   += _contents.HoldDisplay.OnHoldLocked;
+                // 敵スキル「スキル封印」の鎖：絵が未設定ならコードで描いた仮の鎖
+                _contents.HoldDisplay.LockChainSprite =
+                    _enemySkillAssetsConfig != null && _enemySkillAssetsConfig.SealChainSprite != null
+                        ? _enemySkillAssetsConfig.SealChainSprite
+                        : FallbackSkillVisuals.SealChainSprite;
             }
 
             // NEXTぷよ表示
@@ -193,6 +201,7 @@ namespace App
                 _holdSystem.OnHoldAdded    -= _contents.HoldDisplay.OnHoldAdded;
                 _holdSystem.OnHoldShifted  -= _contents.HoldDisplay.OnHoldShifted;
                 _holdSystem.OnHoldConsumed -= _contents.HoldDisplay.OnHoldConsumed;
+                _holdSystem.OnHoldLocked   -= _contents.HoldDisplay.OnHoldLocked;
             }
 
             if (_contents.NextPuyoDisplay != null)
@@ -314,7 +323,13 @@ namespace App
             }
 
             if (_remainingTime <= 0f)
+            {
+#if UNITY_EDITOR
+                // デバッグ「ゲームオーバーにしない」：時間切れでも残り時間を戻して続ける
+                if (PuyoBoard.Debug_PreventGameOver) { _remainingTime = timeLimit; return; }
+#endif
                 _state?.OnBoardGameOver();
+            }
         }
 
         // ─── ステートマシン ───────────────────────────────────────

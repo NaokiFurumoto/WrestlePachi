@@ -39,7 +39,9 @@ MonoBehaviour:
     MinIntervalSec: 6
     FuseSeconds: 8
   SkillSeal:
-    SealOrder: 000000000100000002000000030000000400000005000000
+    BaseIntervalSec: 20
+    IntervalStepSec: 3
+    MinIntervalSec: 8
   Confusion:
     BaseIntervalSec: 15
     BaseDurationSec: 5

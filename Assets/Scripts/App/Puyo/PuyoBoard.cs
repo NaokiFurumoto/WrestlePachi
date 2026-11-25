@@ -221,6 +221,11 @@ namespace App.Puyo
         private void Place(PuyoPiece piece)
         {
             var cell = piece.Cell;
+            // 着地したマスが、ペアが落ちている間に別のぷよ（敵スキルで置かれた爆弾など）で埋まっていたら、
+            // 上書きせずに、その上の空いているマスに置く（上書きすると元のぷよが記録から外れて浮いたまま残る）
+            while (cell.y < _rows && _grid[cell.x, cell.y] != null && _grid[cell.x, cell.y] != piece)
+                cell.y++;
+            piece.Cell = cell;
             if (cell.y < _rows)
                 _grid[cell.x, cell.y] = piece;
 
@@ -240,6 +245,30 @@ namespace App.Puyo
         /// 連鎖がなくなったら次のペアをスポーンする。
         /// </summary>
         private async UniTaskVoid ProcessChainAsync(CancellationToken ct)
+        {
+            try
+            {
+                await ProcessChainCoreAsync(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                // ステージ切替・破棄など。ここで止めてよい
+            }
+            catch (Exception e)
+            {
+                // 予想外のエラーで連鎖処理が止まると、次のペアが出ずにゲームが止まる。
+                // エラーは残しつつ、盤面を落ち着かせて次のペアを出して続ける
+                Debug.LogException(e);
+                if (ct.IsCancellationRequested) return;
+                await DropFloatingPuyosAsync(ct).SuppressCancellationThrow();
+                if (ct.IsCancellationRequested) return;
+                RelocateFireTilesToSurface();
+                SpawnNextPair();
+            }
+        }
+
+        /// <summary>ProcessChainAsync の本体</summary>
+        private async UniTask ProcessChainCoreAsync(CancellationToken ct)
         {
             // 着地したペアの片方が段差で浮いていたら、まず下まで落とす（ちぎり）
             await DropFloatingPuyosAsync(ct);
@@ -279,6 +308,8 @@ namespace App.Puyo
                 OnAboutToClear?.Invoke(targets.Select(p => p.Cell).ToList());
                 AppSound.PlayPuyoFlash();
                 await UniTask.WhenAll(targets.Select(p => p.FlashMatchedAsync(ct)));
+                // 光っている間に敵スキルで消えた・外されたぷよは、ここから先の対象から外す
+                targets = targets.Where(IsAt).ToList();
                 AppSound.PlayPuyoClear();
                 // 岩：耐えた岩はヒビが入り、耐久が尽きた岩は殻が砕ける（どちらも消える瞬間に合わせる）
                 foreach (var rock in hitRocks) rock.PlayHitEffect(_cellSize, transform);
@@ -378,10 +409,26 @@ namespace App.Puyo
         /// </summary>
         private async UniTask ClearPuyosAsync(List<PuyoPiece> targets, CancellationToken ct)
         {
+            // 光っている間に敵スキル（サメが食べる・爆発など）で消えたり動いたりしたぷよは消さない。
+            // 盤面のその場所にまだ本人がいるものだけを消す（別のぷよが落ちてきた場所を空にして、
+            // 記録から外れた「浮いたまま残るぷよ」を作らないように）
+            var alive = new List<PuyoPiece>(targets.Count);
             foreach (var piece in targets)
+            {
+                if (!IsAt(piece)) continue;
                 _grid[piece.Cell.x, piece.Cell.y] = null;
+                alive.Add(piece);
+            }
 
-            await UniTask.WhenAll(targets.Select(p => ((IClearable)p).ClearAsync(ct)));
+            await UniTask.WhenAll(alive.Select(p => ((IClearable)p).ClearAsync(ct)));
+        }
+
+        /// <summary>piece がまだ盤面の自分の場所にいるか（消えた・別の処理で外された・場所がずれたものは false）</summary>
+        private bool IsAt(PuyoPiece piece)
+        {
+            if (piece == null) return false;
+            var c = piece.Cell;
+            return c.x >= 0 && c.x < COLS && c.y >= 0 && c.y < _rows && _grid[c.x, c.y] == piece;
         }
 
         /// <summary>
@@ -1238,11 +1285,51 @@ namespace App.Puyo
         /// <summary>デバッグ用：これまでに観測した浮いているぷよの最大数（自動プレイ中の取りこぼし確認用）</summary>
         public int Debug_MaxFloatingSeen { get; private set; }
 
+        /// <summary>デバッグ用：浮いたぷよが残り続けたら、エディタを一時停止する（原因を探すとき用）</summary>
+        public static bool Debug_PauseOnStuckFloating;
+
+        /// <summary>デバッグ用：浮いたぷよが続いている時間（秒）。0.5秒を超えたら「残り続けている」とみなして知らせる</summary>
+        private float _debugFloatingTime;
+        private bool  _debugFloatingReported;
+
         private void LateUpdate()
         {
             // 連鎖処理中は一時的に浮くことがあるので、ペアが操作中（＝盤面が落ち着いている）ときだけ数える
-            if (_activePair != null)
-                Debug_MaxFloatingSeen = Mathf.Max(Debug_MaxFloatingSeen, Debug_CountFloatingPuyos());
+            // 技の演出中（重力停止中）は、技が消してから落とすまでの間に浮くので数えない
+            if (_activePair == null || _activePair.IsGravityPaused) { _debugFloatingTime = 0f; _debugFloatingReported = false; return; }
+
+            var floating = Debug_CountFloatingPuyos();
+            Debug_MaxFloatingSeen = Mathf.Max(Debug_MaxFloatingSeen, floating);
+
+            // 盤面の記録に載っていないのに画面に残っているぷよ（記録上は空なので、落ちもせず消えもしない）
+            var orphans = new System.Text.StringBuilder();
+            var orphanCount = 0;
+            foreach (var piece in GetComponentsInChildren<PuyoPiece>())
+            {
+                if (_activePair != null && piece.transform.IsChildOf(_activePair.transform)) continue;
+                // 消える演出中（サメに食べられて縮んだ・割れて非表示）のぷよは見えないので数えない
+                var pr = piece.GetComponent<SpriteRenderer>();
+                if (piece.transform.lossyScale.x < 0.05f || pr == null || !pr.enabled || pr.color.a < 0.05f) continue;
+                var c = piece.Cell;
+                var inGrid = c.x >= 0 && c.x < COLS && c.y >= 0 && c.y < _rows && _grid[c.x, c.y] == piece;
+                if (inGrid) continue;
+                orphanCount++;
+                orphans.Append($"({c.x},{c.y}:{piece.Color}) ");
+            }
+
+            if (floating == 0 && orphanCount == 0) { _debugFloatingTime = 0f; _debugFloatingReported = false; return; }
+
+            _debugFloatingTime += Time.unscaledDeltaTime;
+            if (_debugFloatingTime < 0.5f || _debugFloatingReported) return;
+            _debugFloatingReported = true;
+
+            var cells = new System.Text.StringBuilder();
+            for (var x = 0; x < COLS; x++)
+            for (var y = 1; y < _rows; y++)
+                if (_grid[x, y] != null && _grid[x, y - 1] == null)
+                    cells.Append($"({x},{y}:{_grid[x, y].Color}) ");
+            Debug.LogWarning($"[浮きぷよ] {Time.time:0.00}秒 浮いたまま {floating} 個：{cells}／盤面の記録にない残りぷよ {orphanCount} 個：{orphans}");
+            if (Debug_PauseOnStuckFloating) UnityEditor.EditorApplication.isPaused = true;
         }
 
 #endif

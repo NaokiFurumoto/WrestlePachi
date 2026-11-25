@@ -151,6 +151,8 @@ namespace App.Puyo
                 await ClearWithScaleAsync(ct);
             }
 
+            // 消える演出の間に別の処理（デバッグの盤面リセットなど）で先に消されていたら何もしない
+            if (this == null) return;
             Destroy(gameObject);
         }
 

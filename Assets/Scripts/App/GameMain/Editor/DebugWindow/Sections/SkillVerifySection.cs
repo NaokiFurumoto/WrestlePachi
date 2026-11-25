@@ -93,6 +93,10 @@ namespace App.EditorTools
             if (newPrevent != prevent) EditorPrefs.SetBool(PreventGameOverPrefKey, newPrevent);
             PuyoBoard.Debug_PreventGameOver = newPrevent;
 
+            PuyoBoard.Debug_PauseOnStuckFloating = EditorGUILayout.ToggleLeft(
+                "浮いたぷよが残ったら一時停止（0.5秒以上浮いたままならコンソールに場所を出して止める）",
+                PuyoBoard.Debug_PauseOnStuckFloating);
+
             _level = GUILayout.Toolbar(_level - 1, new[] { "Lv1", "Lv2", "Lv3" }) + 1;
 
             var manager = ctrl.Debug_EnemySkills;

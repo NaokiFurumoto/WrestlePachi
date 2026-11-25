@@ -91,6 +91,9 @@ namespace App.Puyo
             _fallTimer = 0f;
         }
 
+        /// <summary>スキル実行中で重力が止まっているか（技がぷよを消して落とす途中）</summary>
+        public bool IsGravityPaused => _isGravityPaused;
+
         /// <summary>スキル完了後に重力を再開する。</summary>
         public void ResumeGravity() => _isGravityPaused = false;
 

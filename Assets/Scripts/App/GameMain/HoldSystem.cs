@@ -61,6 +61,12 @@ namespace App
         /// <summary>保留が追加されたとき発火（index: 配置されたスロット番号、type: 保留種別）</summary>
         public event Action<int, HoldType>? OnHoldAdded;
 
+        /// <summary>
+        /// 保留が満杯（MaxHolds 個）のときにへそに入ったとき発火（保留には並ばない）。
+        /// GameMainController が天撃ボタンのストックに回す（黒保留はその場で降らせる）
+        /// </summary>
+        public event Action<HoldType>? OnHoldOverflow;
+
         /// <summary>保留がスロット間を移動したとき発火（from→to）</summary>
         public event Action<int, int>? OnHoldShifted;
 
@@ -158,6 +164,7 @@ namespace App
 
             if (index < 0)
             {
+                OnHoldOverflow?.Invoke(holdType);
                 return;
             }
 

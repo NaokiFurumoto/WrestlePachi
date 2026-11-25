@@ -41,20 +41,62 @@ namespace App
         // ─── 保留・スキル発動 ────────────────────────────────────
 
         /// <summary>
-        /// HoldSystem から await される非同期ハンドラ。
+        /// HoldSystem から await される非同期ハンドラ。保留の番が来たときに呼ばれる。
         /// 返した UniTask が完了するまで HoldSystem は次の保留へ進まない。
+        /// 連鎖中など技を割り込ませられない・技を出せないときは、ストックせず出せるようになるまで待つ
+        /// （ゲームオーバー・ゲームクリアになったら出さずに捨てる）。黒保留は待たずに降らせる。
         /// </summary>
-        private UniTask OnTechActivatedAsync(HoldType holdType)
+        private async UniTask OnTechActivatedAsync(HoldType holdType)
         {
-            bool willStock = _state is not PlayingState || !_techSkillManager.CanExecute(holdType, _ctx);
-            FireHoldBeam(holdType, willStock);
-
-            if (_state is not PlayingState)
+            var ct = destroyCancellationToken;
+            while (true)
             {
-                _skillStockSystem.SetStock(holdType);
-                return UniTask.CompletedTask;
+                var phase = _state?.Phase ?? GamePhase.Playing;
+                var act   = DecideActivation(holdType, phase, _techSkillManager.CanExecute(holdType, _ctx));
+                if (act == HoldActivation.Drop) return;
+                if (act == HoldActivation.Fire) break;
+                if (await UniTask.Yield(PlayerLoopTiming.Update, ct).SuppressCancellationThrow()) return;
             }
-            return _techSkillManager.StartSkillAsync(holdType, _ctx, _skillStockSystem, destroyCancellationToken);
+
+            FireHoldBeam(holdType, willStock: false);
+            await _techSkillManager.StartSkillAsync(holdType, _ctx, _skillStockSystem, ct);
+        }
+
+        /// <summary>保留の番が来たときの出し方</summary>
+        public enum HoldActivation { Fire, Wait, Drop }
+
+        /// <summary>
+        /// 保留の番が来たとき、今出すか・出せるまで待つか・捨てるか。
+        /// プレイ中で技を出せるなら出す。連鎖中・技の演出中・一時停止中・敵の撃破演出中・技を出せないときは待つ。
+        /// ゲームオーバー・ゲームクリアになったら捨てる。黒保留は（ゲームが終わっていなければ）待たずに降らせる。
+        /// </summary>
+        public static HoldActivation DecideActivation(HoldType holdType, GamePhase phase, bool canExecute)
+        {
+            if (phase == GamePhase.GameOver || phase == GamePhase.GameClear) return HoldActivation.Drop;
+            if (holdType == HoldType.Black) return HoldActivation.Fire;
+            return phase == GamePhase.Playing && canExecute ? HoldActivation.Fire : HoldActivation.Wait;
+        }
+
+        /// <summary>
+        /// 保留が満杯のときの入賞を天撃ボタンにストックするか。普通の技と虹はストックし（1個・新しいほうで上書き）、
+        /// 黒保留（敵側の保留）はストックせずその場で降らせる。
+        /// </summary>
+        public static bool ShouldStockOverflow(HoldType holdType) => holdType != HoldType.Black;
+
+        /// <summary>保留が満杯のときの入賞：天撃ボタンへストックする（光が保留の列からボタンへ飛ぶ）。黒はその場で降らせる</summary>
+        private void OnHoldSystemOverflow(HoldType holdType)
+        {
+            if (_isSimulatorMode) return;
+            if (!ShouldStockOverflow(holdType))
+            {
+                _techSkillManager.StartSkillAsync(holdType, _ctx, _skillStockSystem, destroyCancellationToken).Forget();
+                return;
+            }
+            _skillStockSystem.SetStock(holdType);
+            AppSound.PlayHoldAdd();
+            if (_holdBeamEffect != null && _contents.HoldDisplay != null && _tengekiButton != null)
+                _holdBeamEffect.PlayAsync(_contents.HoldDisplay.LastSlotPosition, _tengekiButton.transform.position,
+                                          HoldTypeToBeamColor(holdType), destroyCancellationToken).Forget();
         }
 
         private void FireHoldBeam(HoldType holdType, bool willStock)

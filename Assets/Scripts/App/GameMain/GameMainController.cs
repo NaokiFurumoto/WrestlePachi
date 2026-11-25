@@ -139,6 +139,7 @@ namespace App
             // 保留システム → View
             _holdSystem.OnTechActivated = OnTechActivatedAsync;
             _holdSystem.OnHoldAdded     += OnHoldSystemAdded;
+            _holdSystem.OnHoldOverflow  += OnHoldSystemOverflow;
             if (_contents.HoldDisplay != null)
             {
                 _holdSystem.OnHoldAdded    += _contents.HoldDisplay.OnHoldAdded;
@@ -201,6 +202,7 @@ namespace App
 
             _holdSystem.OnTechActivated = null;
             _holdSystem.OnHoldAdded     -= OnHoldSystemAdded;
+            _holdSystem.OnHoldOverflow  -= OnHoldSystemOverflow;
             if (_contents.HoldDisplay != null)
             {
                 _holdSystem.OnHoldAdded    -= _contents.HoldDisplay.OnHoldAdded;

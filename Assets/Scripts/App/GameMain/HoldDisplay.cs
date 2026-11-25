@@ -102,6 +102,9 @@ namespace App
             return _sprites != null && index >= 0 && index < _sprites.Length ? _sprites[index] : null;
         }
 
+        /// <summary>いちばん後ろのスロットのワールド座標。保留が満杯のときの入賞を天撃ボタンへ飛ばす光の発射元</summary>
+        public Vector3 LastSlotPosition => _slots.Length > 0 ? _slots[_slots.Length - 1].position : Vector3.zero;
+
         /// <summary>保留消化スロット（slot0）のワールド座標。ビーム発射元として使用。</summary>
         public Vector3 ConsumeOriginPosition => _slots.Length > 0 ? _slots[0].position : Vector3.zero;
 

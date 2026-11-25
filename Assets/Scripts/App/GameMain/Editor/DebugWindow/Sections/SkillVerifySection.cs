@@ -34,7 +34,10 @@ namespace App.EditorTools
             public EnemySkillType Type;
             public string Label = "";
             public float RecordSeconds = 6f;
-            /// <summary>発動前に盤面の下に置くぷよの行数（0なら置かない。先に盤面を空にする）</summary>
+            /// <summary>
+            /// 発動前に盤面の下に置くぷよの行数（0なら置かない。先に盤面を空にする）。
+            /// 保留の技はぷよがないと出せず天撃ボタンへストックされるので、保留を入れる技では必ず置く
+            /// </summary>
             public int FillRows;
             /// <summary>自動プレイを入れる（ペアが動くのを見たい技）</summary>
             public bool AutoPlay;
@@ -57,7 +60,7 @@ namespace App.EditorTools
                         c.Debug_HitAllRocks();
                     } },
             new() { Type = EnemySkillType.TimeBomb,    Label = "時限爆弾",   RecordSeconds = 12f, FillRows = 3 },
-            new() { Type = EnemySkillType.SkillSeal,   Label = "封印",       RecordSeconds = 9f,
+            new() { Type = EnemySkillType.SkillSeal,   Label = "封印",       RecordSeconds = 9f,  FillRows = 3,
                     // 狙われたあとに赤と黄の保留を入れる：赤はロックされて砕け、黄は普通に技が出る
                     After = async (c, ct) =>
                     {
@@ -67,9 +70,9 @@ namespace App.EditorTools
                         c.Debug_AddHold(HoldType.Yellow);
                     } },
             new() { Type = EnemySkillType.Confusion,      Label = "混乱",       RecordSeconds = 8f, FillRows = 2, AutoPlay = true },
-            new() { Type = EnemySkillType.BlackHoldBoost, Label = "黒保留強化", RecordSeconds = 6f,
+            new() { Type = EnemySkillType.BlackHoldBoost, Label = "黒保留強化", RecordSeconds = 6f, FillRows = 3,
                     After = async (c, ct) => { await UniTask.Delay(1500, cancellationToken: ct); c.Debug_AddHold(HoldType.Black); } },
-            new() { Type = EnemySkillType.BlackHoldPower, Label = "黒保留威力", RecordSeconds = 8f, FillRows = 2,
+            new() { Type = EnemySkillType.BlackHoldPower, Label = "黒保留威力", RecordSeconds = 8f, FillRows = 3,
                     After = async (c, ct) => { await UniTask.Delay(1500, cancellationToken: ct); c.Debug_AddHold(HoldType.Black); } },
             new() { Type = EnemySkillType.Clock,          Label = "時計",       RecordSeconds = 4f },
         };
